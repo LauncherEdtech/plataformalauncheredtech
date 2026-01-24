@@ -1,0 +1,325 @@
+{% extends "layout.html" %}
+
+{% block title %}Simulados - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    
+    .container {
+        max-width: 1200px;
+        padding: 0 15px;
+        margin: 0 auto;
+    }
+    
+    h1, h2 {
+        font-weight: 600;
+    }
+    
+    h1 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .center-content {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 60px auto;
+    }
+    
+    .card {
+        background-color: rgba(13, 17, 23, 0.8);
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-header {
+        background-color: rgba(13, 17, 23, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px 20px;
+        font-weight: 500;
+    }
+    
+    .progress {
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background-color: #00b4d8;
+    }
+    
+    .btn-primary {
+        background-color: #6c13d3;
+        border: none;
+        border-radius: 30px;
+        font-weight: 500;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary:hover {
+        background-color: #7e25e3;
+    }
+    
+    .simulado-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .simulado-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        background-color: #00b4d8;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+    
+    .simulado-info {
+        display: flex;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .simulado-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    .badge {
+        font-weight: normal;
+        padding: 7px 12px;
+        border-radius: 20px;
+    }
+    
+    .text-muted {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    .text-secondary {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="simulados">
+    <!-- Título centralizado -->
+    <div class="center-content">
+        <h1>Simulados Inteligentes com Correção TRI</h1>
+        <p class="text-secondary mb-5">Prepare-se de verdade com a experiência mais próxima do ENEM.</p>
+        
+        <a href="{{ url_for('agendar_simulado.index') }}" class="btn btn-primary btn-lg px-4 py-2 mb-3">Fazer meu próximo Simulado</a>
+        <div>
+            <a href="{{ url_for('analise.index') }}" class="text-secondary text-decoration-none">Ver desempenho anterior</a>
+        </div>
+    </div>
+    
+    <!-- Seu Desempenho -->
+    <h2 class="mb-4">Seu Desempenho</h2>
+    <div class="row mb-5">
+        <!-- Acertos por Área -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Acertos por Área</h5>
+                </div>
+                <div class="card-body">
+                    {% for area, percentual in desempenho_areas.items() %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ area }}</span>
+                            <span>{{ percentual }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ percentual }}%" aria-valuenow="{{ percentual }}" 
+                                 aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evolução TRI -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Evolução TRI <small class="text-muted">(últimos simulados)</small></h5>
+                </div>
+                <div class="card-body">
+                    <!-- Não alterando a lógica do gráfico, apenas apresentação visual -->
+                    <div id="graph-container" style="height: 200px; position: relative;">
+                        <canvas id="chartTRI" width="100%" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- O que é TRI? -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">O que é TRI?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary">A TRI, ou Teoria de Resposta ao Item, é um método estatístico usado pelo ENEM para calcular a nota dos candidatos de forma mais precisa e justa, levando em consideração a dificuldade de cada questão e a coerência do padrão de respostas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agenda de Simulados -->
+    <h2 class="mb-4">Agenda de Simulados</h2>
+    
+    {% if simulados_pendentes %}
+        {% for simulado in simulados_pendentes %}
+        <div class="card simulado-card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="card-title">{{ simulado.titulo }}</h5>
+                        <div class="simulado-info">
+                            <div class="simulado-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <span class="text-secondary">
+                                Tempo: {{ simulado.duracao_minutos // 60 }}{% if simulado.duracao_minutos % 60 > 0 %}:{{ '{:02d}'.format(simulado.duracao_minutos % 60) }}{% endif %} horas
+                                
+                                {% if simulado.data_agendada %}
+                                - Agendado: {{ simulado.data_agendada.strftime('%d/%m/%Y') }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
+                            <span class="badge bg-secondary mb-2 mb-md-0 me-md-3">Situação: Pendente</span>
+                            <a href="{{ url_for('simulados.iniciar_simulado', simulado_id=simulado.id) }}" class="btn btn-primary">Fazer Simulado</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card bg-dark mb-5">
+            <div class="card-body text-center py-4">
+                <p class="mb-3">Não há simulados pendentes no momento.</p>
+                <a href="{{ url_for('agendar_simulado.index') }}" class="btn btn-primary">Agendar Novo Simulado</a>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Histórico de Simulados -->
+    <h2 class="mb-4 mt-5">Histórico de Simulados</h2>
+    
+    {% if simulados_concluidos %}
+        {% for simulado in simulados_concluidos %}
+        <div class="card simulado-card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="card-title">{{ simulado.titulo }}</h5>
+                        <div class="simulado-info">
+                            <div class="simulado-icon">
+                                <i class="bi bi-calendar"></i>
+                            </div>
+                            <span class="text-secondary">
+                                Feito no dia {{ simulado.data_realizado.strftime('%d/%m/%Y') }} em {{ simulado.tempo_realizado }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
+                            <span class="badge bg-success mb-2 mb-md-0 me-md-3">Situação: Concluído</span>
+                            <a href="{{ url_for('simulados.resultado', simulado_id=simulado.id) }}" class="btn btn-primary">Ver Gabarito</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card bg-dark mb-3">
+            <div class="card-body text-center py-4">
+                <p>Você ainda não concluiu nenhum simulado.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Mantendo o script original do gráfico, sem alterações na lógica -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de evolução TRI - sem alterar a lógica
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('chartTRI').getContext('2d');
+        const chartTRI = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ datas_grafico|tojson }},
+                datasets: [{
+                    label: 'Nota TRI',
+                    data: {{ notas_grafico|tojson }},
+                    backgroundColor: 'rgba(0, 180, 216, 0.2)',
+                    borderColor: 'rgba(0, 180, 216, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointBackgroundColor: 'rgba(0, 180, 216, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 800,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,345 @@
+# app/models/user.py - VERSÃO RESISTENTE A ERROS DE CONEXÃO
+
+from datetime import datetime
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login_manager
+from sqlalchemy.exc import OperationalError, DatabaseError
+from sqlalchemy import event
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128), index=True, unique=True)
+    email = db.Column(db.String(256), index=True, unique=True)
+    password_hash = db.Column(db.String(256))
+    nome_completo = db.Column(db.String(256))
+    
+    # Sistema XP e Diamantes
+    xp_total = db.Column(db.Integer, default=0)  # XP acumulativo, nunca diminui
+    diamantes = db.Column(db.Integer, default=0)  # Moeda consumível para shop
+    ultimo_reset_diamantes = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Campos legados (manter para compatibilidade)
+    total_moedas = db.Column(db.Integer, default=0)  # Descontinuar gradualmente
+    
+    data_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    cpf = db.Column(db.String(14))
+    password_changed = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    
+    # Relacionamentos básicos
+    simulados = db.relationship('Simulado', backref='usuario', lazy='dynamic')
+
+    def safe_db_operation(self, operation_func, max_retries=3, delay=1):
+        """Executa operação de banco com retry automático"""
+        for attempt in range(max_retries):
+            try:
+                return operation_func()
+            except (OperationalError, DatabaseError) as e:
+                logger.warning(f"Tentativa {attempt + 1} falhou para {operation_func.__name__}: {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep(delay * (attempt + 1))  # Backoff exponencial
+                    try:
+                        db.session.rollback()
+                    except:
+                        pass
+                else:
+                    logger.error(f"Todas as tentativas falharam para {operation_func.__name__}")
+                    raise e
+
+    # ------------------------
+    # Funções de senha
+    # ------------------------
+    def set_password(self, password):
+        """Define senha de forma segura"""
+        try:
+            self.password_hash = generate_password_hash(password)
+            logger.info(f"Senha definida para usuário {self.id or 'novo'}")
+        except Exception as e:
+            logger.error(f"Erro ao definir senha: {e}")
+            raise
+        
+    def check_password(self, password):
+        """Verifica senha de forma segura"""
+        try:
+            if not self.password_hash:
+                logger.warning(f"Usuário {self.id} sem hash de senha")
+                return False
+            return check_password_hash(self.password_hash, password)
+        except Exception as e:
+            logger.error(f"Erro ao verificar senha do usuário {self.id}: {e}")
+            return False
+    
+    @property
+    def active(self):
+        """Propriedade para Flask-Login"""
+        try:
+            return bool(self.is_active)
+        except:
+            return True  # Default seguro
+    
+    def needs_password_change(self):
+        """Verifica se precisa mudar senha"""
+        try:
+            return not bool(self.password_changed)
+        except (OperationalError, DatabaseError) as e:
+            logger.warning(f"Erro ao verificar necessidade de mudança de senha: {e}")
+            return False  # Default seguro
+
+    # ------------------------
+    # Funções de XP e Diamantes com tratamento de erros
+    # ------------------------
+    def adicionar_xp(self, quantidade, atividade='geral', descricao=''):
+        """Adiciona XP de forma segura"""
+        try:
+            def operacao_xp():
+                from app.services.xp_service import XpService
+                resultado = XpService.conceder_xp(self, quantidade, atividade, descricao)
+                return resultado is not None
+            
+            return self.safe_db_operation(operacao_xp)
+        except Exception as e:
+            logger.error(f"Erro ao adicionar XP para usuário {self.id}: {e}")
+            return False
+    
+    def pode_gastar_diamantes(self, quantidade):
+        """Verifica se pode gastar diamantes"""
+        try:
+            diamantes_atual = getattr(self, 'diamantes', 0) or 0
+            return diamantes_atual >= quantidade
+        except Exception as e:
+            logger.warning(f"Erro ao verificar diamantes do usuário {self.id}: {e}")
+            return False
+    
+    def gastar_diamantes(self, quantidade, motivo=''):
+        """Gasta diamantes de forma segura"""
+        try:
+            def operacao_diamantes():
+                from app.services.xp_service import XpService
+                sucesso, resultado = XpService.gastar_diamantes(self, quantidade, motivo)
+                return sucesso
+            
+            return self.safe_db_operation(operacao_diamantes)
+        except Exception as e:
+            logger.error(f"Erro ao gastar diamantes do usuário {self.id}: {e}")
+            return False
+    
+    def adicionar_diamantes(self, quantidade, motivo=''):
+        """Adiciona diamantes de forma segura"""
+        try:
+            def operacao_add_diamantes():
+                self.diamantes = (getattr(self, 'diamantes', 0) or 0) + quantidade
+                logger.info(f"Usuário {self.id} ganhou {quantidade} diamantes. Total: {self.diamantes}")
+                return True
+            
+            return self.safe_db_operation(operacao_add_diamantes)
+        except Exception as e:
+            logger.error(f"Erro ao adicionar diamantes para usuário {self.id}: {e}")
+            return False
+
+    # ------------------------
+    # PROPRIEDADES DINÂMICAS DE TEMPO (com tratamento de erros)
+    # ------------------------
+    @property
+    def tempo_estudo_hoje(self):
+        """Calcula tempo de estudo de hoje de forma segura"""
+        try:
+            def operacao_tempo_hoje():
+                from app.models.estatisticas import TempoEstudo
+                return TempoEstudo.calcular_tempo_hoje(self.id) or 0
+            
+            return self.safe_db_operation(operacao_tempo_hoje)
+        except Exception as e:
+            logger.warning(f"Erro ao calcular tempo de hoje para usuário {self.id}: {e}")
+            return 0
+
+    @property
+    def tempo_estudo_semana(self):
+        """Calcula tempo de estudo da semana de forma segura"""
+        try:
+            def operacao_tempo_semana():
+                from app.models.estatisticas import TempoEstudo
+                return TempoEstudo.calcular_tempo_semana(self.id) or 0
+            
+            return self.safe_db_operation(operacao_tempo_semana)
+        except Exception as e:
+            logger.warning(f"Erro ao calcular tempo da semana para usuário {self.id}: {e}")
+            return 0
+
+    @property
+    def tempo_estudo_mes(self):
+        """Calcula tempo de estudo do mês de forma segura"""
+        try:
+            def operacao_tempo_mes():
+                from app.models.estatisticas import TempoEstudo
+                return TempoEstudo.calcular_tempo_mes(self.id) or 0
+            
+            return self.safe_db_operation(operacao_tempo_mes)
+        except Exception as e:
+            logger.warning(f"Erro ao calcular tempo do mês para usuário {self.id}: {e}")
+            return 0
+
+    # ------------------------
+    # LEGADO: Funções de moedas (com avisos)
+    # ------------------------
+    def adicionar_moedas(self, quantidade, tipo='geral', descricao=''):
+        """LEGADO: Convertido para usar o novo sistema XP"""
+        logger.warning("Método adicionar_moedas é legado. Use adicionar_xp")
+        return self.adicionar_xp(quantidade, tipo, descricao)
+    
+    def gastar_moedas(self, quantidade, tipo='compra', descricao=''):
+        """LEGADO: Convertido para usar diamantes"""
+        logger.warning("Método gastar_moedas é legado. Use gastar_diamantes")
+        return self.gastar_diamantes(quantidade, descricao)
+
+    # ------------------------
+    # Propriedades úteis com tratamento de erros
+    # ------------------------
+    @property
+    def status_diamantes(self):
+        """Retorna informações sobre os diamantes do usuário"""
+        try:
+            return {
+                'diamantes': getattr(self, 'diamantes', 0) or 0,
+                'xp_total': getattr(self, 'xp_total', 0) or 0,
+                'ratio_diamantes': "1 XP = 0.5 💎",
+                'proximo_reset': self.calcular_proximo_reset()
+            }
+        except Exception as e:
+            logger.warning(f"Erro ao obter status de diamantes: {e}")
+            return {
+                'diamantes': 0,
+                'xp_total': 0,
+                'ratio_diamantes': "1 XP = 0.5 💎",
+                'proximo_reset': None
+            }
+    
+    def calcular_proximo_reset(self):
+        """Calcula quando será o próximo reset de diamantes"""
+        try:
+            hoje = datetime.utcnow()
+            if hoje.month == 12:
+                proximo_mes = hoje.replace(year=hoje.year + 1, month=1, day=1)
+            else:
+                proximo_mes = hoje.replace(month=hoje.month + 1, day=1)
+            return proximo_mes
+        except Exception as e:
+            logger.warning(f"Erro ao calcular próximo reset: {e}")
+            return None
+    
+    # ------------------------
+    # Funções de estudo com tratamento de erros
+    # ------------------------
+    def calcular_sequencia_estudo(self):
+        """Calcula sequência de dias estudando de forma segura"""
+        try:
+            def operacao_sequencia():
+                from app.models.estudo import SessaoEstudo
+                from sqlalchemy import func
+                from datetime import datetime, timedelta
+                
+                hoje = datetime.now().date()
+                sequencia = 0
+                data_verificacao = hoje
+                
+                while sequencia < 365:
+                    sessoes_do_dia = SessaoEstudo.query.filter(
+                        SessaoEstudo.user_id == self.id,
+                        func.date(SessaoEstudo.inicio) == data_verificacao,
+                        SessaoEstudo.tempo_ativo > 300
+                    ).first()
+                    if sessoes_do_dia:
+                        sequencia += 1
+                        data_verificacao -= timedelta(days=1)
+                    else:
+                        break
+                return sequencia
+            
+            return self.safe_db_operation(operacao_sequencia)
+        except Exception as e:
+            logger.error(f"Erro ao calcular sequência de estudo: {e}")
+            return 0
+
+    def calcular_total_moedas_from_history(self):
+        """LEGADO: Mantido para compatibilidade"""
+        try:
+            return getattr(self, 'xp_total', 0) or 0
+        except:
+            return 0
+
+    # ------------------------
+    # Métodos de classe para queries seguras
+    # ------------------------
+    @classmethod
+    def safe_get_by_email(cls, email):
+        """Busca usuário por email de forma segura"""
+        try:
+            return cls.query.filter_by(email=email).first()
+        except (OperationalError, DatabaseError) as e:
+            logger.error(f"Erro ao buscar usuário por email: {e}")
+            raise e
+    
+    @classmethod
+    def safe_get_by_id(cls, user_id):
+        """Busca usuário por ID de forma segura"""
+        try:
+            return cls.query.get(int(user_id))
+        except (OperationalError, DatabaseError, ValueError) as e:
+            logger.error(f"Erro ao buscar usuário por ID: {e}")
+            return None
+
+# ------------------------
+# Configuração de relacionamentos
+# ------------------------
+def setup_user_relationships():
+    """Adiciona relacionamentos extras ao User depois que todos os modelos estão definidos"""
+    try:
+        # Relacionamentos dinâmicos
+        if not hasattr(User, 'historico_moedas'):
+            from app.models.estudo import Moeda
+            User.historico_moedas = db.relationship('Moeda', backref='usuario', lazy='dynamic')
+        
+        if not hasattr(User, 'xp_sessions'):
+            # Será definido no XpSession model
+            pass
+            
+        logger.info("✅ Relacionamentos do User configurados com sucesso")
+    except Exception as e:
+        logger.warning(f"Aviso ao configurar relacionamentos: {e}")
+
+# ------------------------
+# Event listeners para melhor tratamento de erros
+# ------------------------
+@event.listens_for(db.engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Configura opções de conexão para melhor performance"""
+    if 'postgresql' in str(dbapi_connection):
+        # Configurações específicas para PostgreSQL
+        try:
+            cursor = dbapi_connection.cursor()
+            cursor.execute("SET statement_timeout = 30000")  # 30 segundos
+            cursor.execute("SET idle_in_transaction_session_timeout = 60000")  # 1 minuto
+            cursor.close()
+        except Exception as e:
+            logger.warning(f"Erro ao configurar conexão PostgreSQL: {e}")
+
+@event.listens_for(db.engine, "invalidate")
+def receive_invalidate(dbapi_connection, connection_record, exception):
+    """Log quando conexão é invalidada"""
+    logger.warning(f"Conexão de banco invalidada: {exception}")
+
+@login_manager.user_loader
+def load_user(user_id):
+    """User loader resistente a erros"""
+    try:
+        return User.safe_get_by_id(user_id)
+    except Exception as e:
+        logger.error(f"Erro no user_loader para ID {user_id}: {e}")
+        return None

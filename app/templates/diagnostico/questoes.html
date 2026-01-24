@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questões - Diagnóstico ENEM</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-color: #0062cc;
+      --secondary-color: #3399ff;
+      --accent-color: #e9ecef;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --dark: #212529;
+      --light: #ffffff;
+      --gray-bg: #f8f9fa;
+    }
+
+    body {
+      background: var(--gray-bg);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      padding-bottom: 110px;
+      color: var(--dark);
+    }
+
+    .questoes-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .topo-info {
+      background: var(--light);
+      border-radius: 15px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 20px rgba(0, 98, 204, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border: 1px solid #eef2f5;
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      backdrop-filter: blur(6px);
+    }
+
+    .info-estudante { flex: 1; min-width: 220px; }
+    .info-estudante h4 {
+      color: var(--primary-color);
+      font-size: 1.25rem;
+      margin: 0;
+      font-weight: 800;
+    }
+    .info-estudante p {
+      color: #6c757d;
+      margin: 5px 0 0 0;
+      font-size: 0.95rem;
+    }
+
+    .cronometro {
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      color: white;
+      padding: 10px 24px;
+      border-radius: 50px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(51, 153, 255, 0.25);
+      transition: all 0.25s;
+      min-width: 150px;
+    }
+    .cronometro-label {
+      font-size: 0.72rem;
+      opacity: 0.9;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .cronometro-tempo {
+      font-size: 1.65rem;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      line-height: 1;
+    }
+    .cronometro.warning {
+      background: linear-gradient(135deg, #ffc107, #dc3545);
+      animation: pulse 1s infinite;
+    }
+    .cronometro.emergencia {
+      background: linear-gradient(135deg, #DC2626, #991B1B);
+      animation: shake 0.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+    .alerta-mobile {
+      display: none;
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 14px;
+      border-radius: 10px;
+      margin: 10px 0 18px;
+      color: #856404;
+    }
+
+    .progresso-container {
+      background: var(--light);
+      border-radius: 15px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
+    }
+    .progresso-bar {
+      background: #e9ecef;
+      height: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progresso-fill {
+      background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+      height: 100%;
+      transition: width 0.25s ease;
+    }
+    .progresso-texto {
+      text-align: center;
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    .questao-card {
+      background: var(--light);
+      border-radius: 15px;
+      padding: 32px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      animation: slideIn 0.5s ease;
+      transition: all 0.25s;
+      border: 1px solid #f0f0f0;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .questao-card.nao-respondida {
+      border: 2px solid var(--danger-color) !important;
+      box-shadow: 0 0 18px rgba(220, 53, 69, 0.18) !important;
+      animation: shakeCard 0.5s;
+    }
+    @keyframes shakeCard { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+    .questao-card.respondida {
+      border: 2px solid var(--secondary-color);
+      box-shadow: 0 4px 15px rgba(51, 153, 255, 0.12);
+    }
+
+    .questao-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .questao-numero {
+      background: var(--dark);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .questao-area {
+      background: #e6f7ff;
+      color: var(--primary-color);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .questao-enunciado {
+      color: var(--dark);
+      font-size: 1.06rem;
+      line-height: 1.7;
+      margin-bottom: 22px;
+      font-weight: 500;
+      white-space: pre-wrap; /* respeita quebras de linha do enunciado */
+    }
+
+    .opcoes-list { list-style: none; padding: 0; margin: 0; }
+    .opcao-item { margin-bottom: 14px; }
+
+    /* radio invisível (melhor que display:none) */
+    .opcao-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .opcao-label {
+      display: flex;
+      align-items: flex-start;
+      padding: 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      background: white;
+      gap: 12px;
+    }
+
+    .opcao-label:hover {
+      border-color: var(--secondary-color);
+      background: #f8fbff;
+      transform: translateX(4px);
+    }
+
+    .opcao-letra { color: var(--primary-color); min-width: 34px; font-weight: 900; }
+    .opcao-texto { flex: 1; color: #495057; line-height: 1.5; font-size: 1rem; }
+
+    /* selecionado */
+    .opcao-item input[type="radio"]:checked + .opcao-label {
+      border-color: var(--primary-color);
+      background: #e6f7ff;
+      box-shadow: 0 4px 10px rgba(0, 98, 204, 0.08);
+    }
+    .opcao-item input[type="radio"]:checked + .opcao-label .opcao-texto {
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    .btn-finalizar {
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 22px;
+      font-size: 1.1rem;
+      font-weight: 900;
+      box-shadow: 0 10px 25px rgba(51, 153, 255, 0.25);
+      transition: all 0.25s;
+      display: block;
+      margin: 28px auto 0;
+      width: 100%;
+      max-width: 420px;
+    }
+    .btn-finalizar:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(51, 153, 255, 0.32);
+    }
+    .btn-finalizar:disabled {
+      background: #c9c9c9;
+      opacity: 0.8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .contador-questoes {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: var(--dark);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 50px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.18);
+      z-index: 1000;
+      font-weight: 900;
+      transition: all 0.25s;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+    .contador-questoes.completo {
+      background: var(--success-color);
+      animation: celebrate 0.5s;
+    }
+    @keyframes celebrate { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    @media (max-width: 768px) {
+      .alerta-mobile { display: block; }
+      .topo-info { flex-direction: column; text-align: center; }
+      .cronometro { width: 100%; }
+      .questao-card { padding: 22px 18px; }
+      .opcao-label { padding: 14px; }
+      .contador-questoes { bottom: 14px; right: 14px; padding: 10px 14px; font-size: 0.85rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="questoes-container">
+
+    <!-- Topo -->
+    <div class="topo-info">
+      <div class="info-estudante">
+        <h4><i class="fas fa-user-circle"></i> {{ nome }}</h4>
+        <p><i class="fas fa-graduation-cap"></i> Curso desejado: <strong>{{ curso }}</strong></p>
+      </div>
+
+      <div class="cronometro" id="cronometro">
+        <div class="cronometro-label" id="cronometro-label">Tempo Restante</div>
+        <div class="cronometro-tempo" id="tempo-display">20:00</div>
+      </div>
+    </div>
+
+    <!-- Alerta Mobile -->
+    <div class="alerta-mobile">
+      <i class="fas fa-info-circle"></i>
+      <strong>Dica:</strong> role a página para ver todas as questões.
+    </div>
+
+    <!-- Barra de Progresso -->
+    <div class="progresso-container">
+      <div class="progresso-bar">
+        <div class="progresso-fill" id="progresso-fill" style="width: 0%"></div>
+      </div>
+      <div class="progresso-texto" id="progresso-texto">0 de {{ questoes|length }} questões respondidas</div>
+    </div>
+
+    <!-- Form -->
+    <form id="formQuestoes" method="POST" action="{{ url_for('diagnostico.finalizar') }}">
+      {% for questao in questoes %}
+        <div class="questao-card" data-questao-id="{{ questao.id }}">
+          <div class="questao-header">
+            <span class="questao-numero">Questão {{ loop.index }}</span>
+            <span class="questao-area"><i class="fas fa-tag"></i> {{ questao.area }}</span>
+          </div>
+
+          <div class="questao-enunciado">{{ questao.enunciado }}</div>
+
+          <ul class="opcoes-list">
+            {% for letra in ['A','B','C','D','E'] %}
+              <li class="opcao-item">
+                <input
+                  type="radio"
+                  name="questao_{{ questao.id }}"
+                  id="q{{ questao.id }}_{{ letra }}"
+                  value="{{ letra }}"
+                  class="opcao-radio"
+                />
+                <label for="q{{ questao.id }}_{{ letra }}" class="opcao-label">
+                  <span class="opcao-letra">{{ letra }})</span>
+                  <span class="opcao-texto">
+                    {% if letra == 'A' %}{{ questao.opcao_a }}
+                    {% elif letra == 'B' %}{{ questao.opcao_b }}
+                    {% elif letra == 'C' %}{{ questao.opcao_c }}
+                    {% elif letra == 'D' %}{{ questao.opcao_d }}
+                    {% elif letra == 'E' %}{{ questao.opcao_e }}
+                    {% endif %}
+                  </span>
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn-finalizar" id="btnFinalizar" disabled>
+        <i class="fas fa-check-circle"></i> FINALIZAR DIAGNÓSTICO
+      </button>
+    </form>
+
+    <!-- contador fixo -->
+    <div class="contador-questoes" id="contadorQuestoes">
+      <span id="textoContador">0/{{ questoes|length }} respondidas</span>
+    </div>
+  </div>
+
+  <script>
+    // URLs dinâmicas (evita hardcode)
+    const FINALIZAR_URL = "{{ url_for('diagnostico.finalizar') }}";
+    const HOME_URL = "{{ url_for('diagnostico.index') if 'diagnostico.inicio' else '/diagnostico-enem' }}";
+
+    const totalQuestoes = Number("{{ questoes|length }}");
+    const form = document.getElementById('formQuestoes');
+    const btnFinalizar = document.getElementById('btnFinalizar');
+
+    // ============================================
+    // CRONÔMETRO
+    // ============================================
+    let tempoRestante = 20 * 60;
+    let tempoEmergenciaUsado = false;
+    let jaSubmeteu = false;
+
+    const cronometroEl = document.getElementById('cronometro');
+    const tempoDisplayEl = document.getElementById('tempo-display');
+    const cronometroLabelEl = document.getElementById('cronometro-label');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function atualizarCronometro() {
+      if (jaSubmeteu) return;
+
+      if (tempoRestante <= 0 && !tempoEmergenciaUsado) {
+        tempoEmergenciaUsado = true;
+        tempoRestante = 5 * 60;
+
+        cronometroEl.classList.remove('warning');
+        cronometroEl.classList.add('emergencia');
+        cronometroLabelEl.textContent = '🚨 TEMPO EXTRA';
+
+        alert('🚨 TEMPO ESGOTADO!\n\n⏰ Você ganhou +5 MINUTOS EXTRAS!\n\n⚠️ Responda o que falta agora!');
+        destacarQuestoesNaoRespondidas();
+        tempoDisplayEl.textContent = formatTime(tempoRestante);
+        return;
+      }
+
+      if (tempoRestante <= 0 && tempoEmergenciaUsado) {
+        alert('⏰ TEMPO EXTRA ESGOTADO!\n\nO diagnóstico será finalizado agora com o que você respondeu.');
+        btnFinalizar.disabled = true;
+        btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finalizando...';
+        enviarFormularioForcado();
+        return;
+      }
+
+      tempoDisplayEl.textContent = formatTime(tempoRestante);
+
+      if (tempoRestante === 300 && !tempoEmergenciaUsado) alert('⚠️ Atenção: faltam 5 minutos!');
+      if (tempoRestante === 60 && !tempoEmergenciaUsado) alert('🚨 URGENTE: falta 1 minuto!');
+      if (tempoRestante === 60 && tempoEmergenciaUsado) alert('🚨 ÚLTIMO MINUTO do tempo extra!');
+
+      if (tempoRestante <= 180 && !tempoEmergenciaUsado) cronometroEl.classList.add('warning');
+
+      tempoRestante--;
+    }
+
+    const timerId = setInterval(atualizarCronometro, 1000);
+
+    // ============================================
+    // PROGRESSO + HABILITAR BOTÃO
+    // ============================================
+    function getRespondidasSet() {
+      const radios = document.querySelectorAll('input[type="radio"]:checked');
+      const respondidas = new Set();
+      radios.forEach(r => respondidas.add(r.getAttribute('name')));
+      return respondidas;
+    }
+
+    function atualizarProgresso() {
+      const respondidas = getRespondidasSet();
+      const numRespondidas = respondidas.size;
+      const percentual = (numRespondidas / totalQuestoes) * 100;
+
+      document.getElementById('progresso-fill').style.width = percentual + '%';
+      document.getElementById('progresso-texto').textContent = `${numRespondidas} de ${totalQuestoes} questões respondidas`;
+
+      const contador = document.getElementById('contadorQuestoes');
+      const textoContador = document.getElementById('textoContador');
+
+      if (numRespondidas === totalQuestoes) {
+        contador.classList.add('completo');
+        textoContador.innerHTML = '<i class="fas fa-check-circle"></i> Todas respondidas!';
+        btnFinalizar.disabled = false;
+      } else {
+        contador.classList.remove('completo');
+        textoContador.textContent = `${numRespondidas}/${totalQuestoes} respondidas`;
+        // Mantém bloqueio (só libera quando completar)
+        btnFinalizar.disabled = true;
+      }
+
+
+      document.querySelectorAll('.questao-card').forEach(card => {
+        const radios = card.querySelectorAll('input[type="radio"]');
+        const algumMarcado = Array.from(radios).some(r => r.checked);
+
+        if (algumMarcado) {
+          card.classList.add('respondida');
+          card.classList.remove('nao-respondida');
+        } else {
+          card.classList.remove('respondida');
+        }
+      });
+    }
+
+    // Atualiza ao clicar em qualquer opção
+    document.querySelectorAll('.opcao-label').forEach(label => {
+      label.addEventListener('click', function() {
+        setTimeout(() => {
+          atualizarProgresso();
+
+          // scroll suave para próxima questão
+          const nextCard = this.closest('.questao-card')?.nextElementSibling;
+          if (nextCard && nextCard.classList.contains('questao-card')) {
+            nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 50);
+      });
+    });
+
+    // Primeira atualização
+    document.addEventListener('DOMContentLoaded', atualizarProgresso);
+
+    // ============================================
+    // DESTACAR NÃO RESPONDIDAS
+    // ============================================
+    function destacarQuestoesNaoRespondidas() {
+      let primeira = null;
+
+      document.querySelectorAll('.questao-card').forEach(card => {
+        const radios = card.querySelectorAll('input[type="radio"]');
+        const algumMarcado = Array.from(radios).some(r => r.checked);
+
+        if (!algumMarcado) {
+          card.classList.add('nao-respondida');
+          if (!primeira) primeira = card;
+        } else {
+          card.classList.remove('nao-respondida');
+        }
+      });
+
+      if (primeira) {
+        setTimeout(() => primeira.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
+      }
+    }
+
+    // ============================================
+    // SUBMIT: valida + envia
+    // ============================================
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const respondidas = getRespondidasSet();
+
+      if (respondidas.size < totalQuestoes) {
+        const faltam = totalQuestoes - respondidas.size;
+        alert(
+          `⚠️ ATENÇÃO!\n\nVocê precisa responder TODAS as ${totalQuestoes} questões.\n\n` +
+          `✅ Respondidas: ${respondidas.size}\n❌ Faltam: ${faltam}\n\n` +
+          `Role a página e responda as que faltam.`
+        );
+        destacarQuestoesNaoRespondidas();
+        return;
+      }
+
+      enviarFormulario();
+    });
+
+    async function enviarFormulario() {
+      jaSubmeteu = true;
+      clearInterval(timerId);
+
+      btnFinalizar.disabled = true;
+      btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+      // evita popup de saída
+      window.onbeforeunload = null;
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(FINALIZAR_URL, { method: 'POST', body: formData });
+
+        // Se backend redirecionar/HTML, cai aqui sem quebrar
+        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+
+        if (response.redirected) {
+          window.location.href = response.url;
+          return;
+        }
+
+        if (!contentType.includes('application/json')) {
+          // fallback: se veio HTML, joga pra página inicial (ou você pode abrir response.url)
+          window.location.href = HOME_URL;
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data && data.sucesso && data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+
+        alert('Erro: ' + (data?.erro || 'Erro desconhecido'));
+        btnFinalizar.disabled = false;
+        btnFinalizar.innerHTML = '<i class="fas fa-check-circle"></i> FINALIZAR DIAGNÓSTICO';
+        jaSubmeteu = false;
+
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao processar. Tente novamente.');
+        btnFinalizar.disabled = false;
+        btnFinalizar.innerHTML = '<i class="fas fa-check-circle"></i> FINALIZAR DIAGNÓSTICO';
+        jaSubmeteu = false;
+      }
+    }
+
+    async function enviarFormularioForcado() {
+      jaSubmeteu = true;
+      clearInterval(timerId);
+      window.onbeforeunload = null;
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(FINALIZAR_URL, { method: 'POST', body: formData });
+        if (response.redirected) return (window.location.href = response.url);
+
+        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          if (data?.sucesso && data?.redirect) return (window.location.href = data.redirect);
+        }
+
+        window.location.href = HOME_URL;
+      } catch (e) {
+        window.location.href = HOME_URL;
+      }
+    }
+
+    // ============================================
+    // PREVENIR SAÍDA ACIDENTAL (somente se começou)
+    // ============================================
+    window.onbeforeunload = function(e) {
+      if (jaSubmeteu) return;
+      const respondidas = getRespondidasSet().size;
+      if (respondidas > 0 && respondidas < totalQuestoes) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+  </script>
+</body>
+</html>

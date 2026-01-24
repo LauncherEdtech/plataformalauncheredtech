@@ -1,0 +1,1834 @@
+<!-- templates/ranking/tempo_estudo.html -->
+{% extends "layout.html" %}
+
+{% block title %}Ranking Tempo de Estudo - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-color: #001233;
+        --secondary-color: #003d82;
+        --tertiary-color: #004080;
+        --accent-gold: #FFD700;
+        --accent-silver: #C0C0C0;
+        --accent-bronze: #CD7F32;
+        --accent-green: #28a745;
+        --accent-orange: #ff6b35;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --gradient-primary: linear-gradient(135deg, #001233, #003d82);
+        --gradient-secondary: linear-gradient(135deg, #003d82, #004080);
+        --gradient-tempo: linear-gradient(135deg, #ff6b35, #ff9068);
+        --gradient-gold: linear-gradient(135deg, #FFD700, #FFA500);
+        --gradient-silver: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+        --gradient-bronze: linear-gradient(135deg, #CD7F32, #8B4513);
+        --gradient-card: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+        --gradient-hero: linear-gradient(135deg, rgba(0, 18, 51, 0.4), rgba(0, 64, 128, 0.2));
+        --glow-gold: 0 0 30px rgba(255, 215, 0, 0.5);
+        --glow-orange: 0 0 30px rgba(255, 107, 53, 0.4);
+        --glow-blue: 0 0 30px rgba(0, 64, 128, 0.4);
+        --glow-green: 0 0 30px rgba(40, 167, 69, 0.4);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        overflow-x: hidden;
+    }
+
+    .ranking-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        min-height: 100vh;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        background: var(--gradient-hero);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0, 64, 128, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+        z-index: -1;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: #ffffff;
+        background-clip: text;
+        position: relative;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
+        margin: 0 auto 2rem auto;
+        line-height: 1.6;
+    }
+
+    .clock-icon {
+        color: var(--tertiary-color);
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+        animation: tickTock 2s infinite;
+    }
+
+    /* Marathon Highlight Banner */
+    .marathon-highlight {
+        background: var(--gradient-card);
+        border: 2px solid rgba(0, 64, 128, 0.4);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            var(--glow-blue),
+            0 15px 35px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.2s both;
+    }
+
+    .marathon-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .marathon-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .marathon-description {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .stopwatch-icon {
+        color: var(--accent-orange);
+        font-size: 1.3rem;
+        animation: pulse 2s infinite;
+    }
+
+    /* Navigation Tabs */
+    .tab-navigation {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 1rem;
+        margin-bottom: 3rem;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.8s ease-out 0.4s both;
+    }
+
+    .nav-tabs-custom {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-width: 200px;
+        padding: 1.25rem 2rem;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+        backdrop-filter: blur(10px);
+    }
+
+    .tab-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+
+    .tab-btn:hover::before {
+        left: 100%;
+    }
+
+    .tab-btn:hover {
+        background: rgba(0, 64, 128, 0.3);
+        color: white;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 64, 128, 0.4);
+        border-color: rgba(0, 64, 128, 0.5);
+    }
+
+    .tab-btn.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--glow-blue);
+        border-color: var(--tertiary-color);
+        transform: translateY(-2px);
+    }
+
+    .tab-btn.active::before {
+        display: none;
+    }
+
+    /* User Stats */
+    .user-stats {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.6s both;
+    }
+
+    .user-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateY(-8px) scale(1.02);
+        border-color: var(--tertiary-color);
+        box-shadow: 0 15px 35px rgba(0, 64, 128, 0.3);
+    }
+
+    .stat-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--accent-orange);
+        display: block;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.4);
+        position: relative;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .stat-icon {
+        font-size: 1.5rem;
+        color: var(--tertiary-color);
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    /* Study Streak */
+    .study-streak {
+        background: rgba(40, 167, 69, 0.2);
+        border: 2px solid rgba(40, 167, 69, 0.4);
+        border-radius: 15px;
+        padding: 1rem;
+        margin-top: 2rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--glow-green);
+        animation: glow 3s infinite alternate;
+    }
+
+    .streak-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    /* Time Badges */
+    .time-badge {
+        border-radius: 20px;
+        padding: 0.5rem 1.2rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .time-badge:hover {
+        transform: scale(1.05);
+    }
+
+    .time-maratonista { 
+        background: var(--gradient-tempo); 
+        color: white; 
+        box-shadow: var(--glow-orange);
+        border-color: rgba(255, 107, 53, 0.5);
+    }
+    .time-dedicado { 
+        background: var(--gradient-primary); 
+        color: white; 
+        box-shadow: var(--glow-blue);
+        border-color: rgba(0, 64, 128, 0.5);
+    }
+    .time-consistente { 
+        background: linear-gradient(45deg, #28a745, #20c997); 
+        color: white; 
+        box-shadow: var(--glow-green);
+        border-color: rgba(40, 167, 69, 0.5);
+    }
+    .time-iniciante { 
+        background: var(--gradient-secondary); 
+        color: white; 
+        box-shadow: var(--glow-blue);
+        border-color: rgba(0, 61, 130, 0.5);
+    }
+
+    /* Podium Section */
+    .podium-section {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            var(--glow-gold);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.8s both;
+    }
+
+    .podium-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-gold);
+        opacity: 0.9;
+    }
+
+    .podium-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        background: var(--gradient-gold);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+    }
+
+    .crown-icon {
+        color: var(--accent-gold);
+        font-size: 1.8rem;
+        margin-left: 0.5rem;
+        animation: pulse 2s infinite;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+    }
+
+    .podium-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 2rem;
+        align-items: end;
+    }
+
+    .podium-position {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .podium-position::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+
+    .podium-position.first {
+        height: 320px;
+        border: 3px solid var(--accent-gold);
+        box-shadow: var(--glow-gold);
+    }
+
+    .podium-position.first::before {
+        background: var(--gradient-gold);
+    }
+
+    .podium-position.second {
+        height: 270px;
+        border: 3px solid var(--accent-silver);
+        box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
+    }
+
+    .podium-position.second::before {
+        background: var(--gradient-silver);
+    }
+
+    .podium-position.third {
+        height: 220px;
+        border: 3px solid var(--accent-bronze);
+        box-shadow: 0 0 20px rgba(205, 127, 50, 0.4);
+    }
+
+    .podium-position.third::before {
+        background: var(--gradient-bronze);
+    }
+
+    .podium-position:hover::before {
+        opacity: 0.1;
+    }
+
+    .podium-position:hover {
+        transform: translateY(-10px) scale(1.05);
+    }
+
+    .rank-badge {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.8rem;
+        margin: 0 auto 1.5rem auto;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .rank-badge.rank-1 {
+        background: var(--gradient-gold);
+        color: #000;
+        box-shadow: var(--glow-gold);
+        animation: shine 3s infinite;
+    }
+
+    .rank-badge.rank-2 {
+        background: var(--gradient-silver);
+        color: #000;
+        box-shadow: 0 0 20px rgba(192, 192, 192, 0.5);
+    }
+
+    .rank-badge.rank-3 {
+        background: var(--gradient-bronze);
+        color: #fff;
+        box-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+    }
+
+    .podium-position:hover .rank-badge {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    .podium-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .podium-time {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--accent-orange);
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.4);
+        margin-bottom: 0.5rem;
+    }
+
+    .podium-subtitle {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 1rem;
+    }
+
+    .podium-badge {
+        margin-top: 1rem;
+    }
+
+    /* Ranking Cards */
+    .ranking-card {
+        background: var(--gradient-card);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        animation: slideInUp 0.8s ease-out 1s both;
+    }
+
+    .ranking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .ranking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .ranking-header {
+        padding: 2rem 2.5rem 1rem 2.5rem;
+        border-bottom: 1px solid rgba(0, 64, 128, 0.3);
+    }
+
+    .ranking-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .ranking-list {
+        padding: 1.5rem;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .ranking-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .ranking-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+    }
+
+    .ranking-list::-webkit-scrollbar-thumb {
+        background: var(--gradient-primary);
+        border-radius: 4px;
+    }
+
+    .ranking-item {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .ranking-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 64, 128, 0.3), transparent);
+        transition: left 0.6s;
+    }
+
+    .ranking-item:hover::before {
+        left: 100%;
+    }
+
+    .ranking-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateX(10px) scale(1.02);
+        border-color: var(--tertiary-color);
+        box-shadow: 0 10px 25px rgba(0, 64, 128, 0.3);
+    }
+
+    .ranking-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .ranking-item.user-highlight {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+        border: 2px solid rgba(255, 215, 0, 0.5);
+        box-shadow: var(--glow-gold);
+        animation: glow 2s infinite alternate;
+    }
+
+    .ranking-item.user-highlight::before {
+        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+    }
+
+    .rank-badge-small {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .rank-other {
+        background: linear-gradient(45deg, #495057, #6c757d);
+        color: #fff;
+    }
+
+    .ranking-item:hover .rank-badge-small {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .user-info {
+        flex-grow: 1;
+    }
+
+    .user-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .user-username {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-container {
+        margin-top: 0.75rem;
+    }
+
+    .progress {
+        height: 6px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-bar-time {
+        background: var(--gradient-tempo);
+        border-radius: 10px;
+        height: 100%;
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar-time::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: progressShine 2s infinite;
+    }
+
+    .time-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .mini-stat {
+        background: rgba(0, 64, 128, 0.2);
+        border-radius: 15px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .mini-stat:hover {
+        background: rgba(0, 64, 128, 0.3);
+        transform: scale(1.05);
+    }
+
+    .user-time {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .time-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--accent-orange);
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+    }
+
+    .time-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 0.25rem;
+    }
+
+    .badge-you {
+        background: var(--gradient-gold);
+        color: #000;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        opacity: 0.3;
+        animation: pulse 2s infinite;
+    }
+
+    .empty-state h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+
+    .no-time-state {
+        background: rgba(0, 64, 128, 0.1);
+        border: 2px dashed rgba(0, 64, 128, 0.3);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .start-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+    }
+
+    .start-btn:hover {
+        background: linear-gradient(135deg, #004080, #003366);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: var(--glow-blue);
+        color: white;
+    }
+
+    /* Tips Section */
+    .tips-section {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 2.5rem;
+        margin-top: 3rem;
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.8s ease-out 1.2s both;
+    }
+
+    .tips-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .tip-item {
+        padding: 1.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tip-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateY(-5px);
+        border-color: var(--tertiary-color);
+    }
+
+    .tip-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .tip-icon {
+        font-size: 1.3rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+
+    .tip-icon.robot { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+    .tip-icon.shield { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+    .tip-icon.pause { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .tip-icon.calendar { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+
+    .tip-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .tip-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes tickTock {
+        0%, 50%, 100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(10deg);
+        }
+        75% {
+            transform: rotate(-10deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes shine {
+        0%, 100% {
+            filter: brightness(1) saturate(1);
+        }
+        50% {
+            filter: brightness(1.2) saturate(1.3);
+        }
+    }
+
+    @keyframes glow {
+        0% {
+            box-shadow: var(--glow-gold);
+        }
+        100% {
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+        }
+    }
+
+    @keyframes progressShine {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* Loading Animation */
+    .loading-skeleton {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Responsiveness */
+    @media (max-width: 1200px) {
+        .podium-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .podium-position {
+            height: auto !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .ranking-container {
+            padding: 0 0.5rem;
+        }
+        
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .nav-tabs-custom {
+            flex-direction: column;
+        }
+        
+        .tab-btn {
+            min-width: auto;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minWidth(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            padding: 1.5rem 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+        }
+        
+        .podium-section, .marathon-highlight, .tips-section {
+            padding: 2rem 1rem;
+        }
+        
+        .ranking-header {
+            padding: 1.5rem;
+        }
+        
+        .ranking-item {
+            padding: 1rem 1.5rem;
+        }
+        
+        .user-name {
+            font-size: 1rem;
+        }
+        
+        .time-value {
+            font-size: 1.2rem;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .tip-item {
+            padding: 1rem;
+        }
+        
+        .time-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .ranking-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .user-time {
+            text-align: center;
+        }
+        
+        .rank-badge-small {
+            margin-bottom: 1rem;
+        }
+        
+        .user-name {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ranking-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">
+            <i class="bi bi-clock clock-icon"></i>
+            Ranking Tempo de Estudo
+        </h1>
+        <p class="hero-subtitle">
+            Os estudantes mais dedicados de {{ mes_atual }}! ⏱️<br>
+            Tempo registrado automaticamente. Mostre sua persistência!
+        </p>
+    </section>
+
+    <!-- Marathon Highlight Banner -->
+    <section class="marathon-highlight">
+        <h2 class="marathon-title">
+            <i class="bi bi-stopwatch stopwatch-icon"></i>
+            Maratona de Estudos de {{ mes_atual.split()[0] }}
+        </h2>
+        <p class="marathon-description">
+            Quanto mais você estuda, mais alto você sobe! Tempo registrado automaticamente em simulados, 
+            redações e exercícios. Prove sua dedicação e constância!
+        </p>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+        <div class="nav-tabs-custom">
+            <a href="{{ url_for('ranking.index') }}" class="tab-btn">
+                <i class="bi bi-trophy me-2"></i>
+                XP Geral
+            </a>
+            <a href="{{ url_for('ranking.mensal') }}" class="tab-btn">
+                <i class="bi bi-calendar-month me-2"></i>
+                Mensal
+            </a>
+            <a href="{{ url_for('ranking.tempo_estudo') }}" class="tab-btn active">
+                <i class="bi bi-clock me-2"></i>
+                Tempo de Estudo
+            </a>
+            <a href="{{ url_for('ranking.simulados') }}" class="tab-btn">
+                <i class="bi bi-journal-check me-2"></i>
+                Simulados
+            </a>
+        </div>
+    </nav>
+
+    <!-- User Stats -->
+    <section class="user-stats">
+        <div class="stats-grid">
+            <div class="stat-item" onclick="showStatsDetail('tempo')">
+                <i class="stat-icon bi bi-clock-history"></i>
+                <div class="stat-value" data-count="{{ tempo_usuario_mes or 0 }}">{{ tempo_usuario_formatado }}</div>
+                <div class="stat-label">Seu tempo em {{ mes_atual.split()[0] }}</div>
+            </div>
+            <div class="stat-item" onclick="showStatsDetail('position')">
+                <i class="stat-icon bi bi-award-fill"></i>
+                <div class="stat-value">
+                    {% if posicao_usuario %}#{{ posicao_usuario }}{% else %}--{% endif %}
+                </div>
+                <div class="stat-label">Sua Posição</div>
+            </div>
+            <div class="stat-item" onclick="showStatsDetail('ativos')">
+                <i class="stat-icon bi bi-people-fill"></i>
+                <div class="stat-value" data-count="{{ ranking_tempo|length * 100 }}">{{ ranking_tempo|length * 100 }}</div>
+                <div class="stat-label">Estudantes Ativos</div>
+            </div>
+        </div>
+        
+        <!-- Study Streak -->
+        {% if tempo_usuario_mes > 0 %}
+        <div class="study-streak">
+            <div class="streak-text">
+                <i class="bi bi-check-circle"></i>
+                {% if tempo_usuario_mes >= 1200 %}
+                    <span>🔥 Incrível! Você já estudou mais de 20 horas este mês! Verdadeiro maratonista!</span>
+                {% elif tempo_usuario_mes >= 600 %}
+                    <span>⚡ Parabéns! Você já estudou mais de 10 horas este mês! Dedicação exemplar!</span>
+                {% elif tempo_usuario_mes >= 300 %}
+                    <span>⭐ Ótimo progresso! Já são mais de 5 horas de estudo! Continue assim!</span>
+                {% elif tempo_usuario_mes >= 120 %}
+                    <span>📚 Bom começo! Continue estudando para subir no ranking!</span>
+                {% else %}
+                    <span>💪 Cada minuto conta! Continue sua jornada de estudos!</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Podium Section -->
+    {% if ranking_tempo|length >= 3 %}
+    <section class="podium-section">
+        <h2 class="podium-title">
+            <i class="bi bi-award crown-icon"></i>
+            Maratonistas de {{ mes_atual.split()[0] }}
+        </h2>
+        
+        <div class="podium-grid">
+            <!-- 2º Lugar -->
+            <div class="podium-position second" onclick="showUserProfile({{ ranking_tempo[1].id }})">
+                <div class="rank-badge rank-2">2º</div>
+                <h3 class="podium-name">{{ ranking_tempo[1].nome_completo or ranking_tempo[1].username }}</h3>
+                <div class="podium-time">{{ formatar_tempo(ranking_tempo[1].tempo_total) }}</div>
+                <div class="podium-subtitle">de estudo dedicado</div>
+            </div>
+            
+            <!-- 1º Lugar -->
+            <div class="podium-position first" onclick="showUserProfile({{ ranking_tempo[0].id }})">
+                <div class="rank-badge rank-1">1º</div>
+                <h3 class="podium-name">
+                    {{ ranking_tempo[0].nome_completo or ranking_tempo[0].username }}
+                    <i class="bi bi-crown crown-icon"></i>
+                </h3>
+                <div class="podium-time">{{ formatar_tempo(ranking_tempo[0].tempo_total) }}</div>
+                <div class="podium-subtitle">de estudo dedicado</div>
+                <div class="podium-badge">
+                    <span class="time-badge time-maratonista">
+                        <i class="bi bi-fire"></i>
+                        Maratonista
+                    </span>
+                </div>
+            </div>
+            
+            <!-- 3º Lugar -->
+            <div class="podium-position third" onclick="showUserProfile({{ ranking_tempo[2].id }})">
+                <div class="rank-badge rank-3">3º</div>
+                <h3 class="podium-name">{{ ranking_tempo[2].nome_completo or ranking_tempo[2].username }}</h3>
+                <div class="podium-time">{{ formatar_tempo(ranking_tempo[2].tempo_total) }}</div>
+                <div class="podium-subtitle">de estudo dedicado</div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Ranking List -->
+    <section class="ranking-card">
+        <div class="ranking-header">
+            <h2 class="ranking-title">
+                <i class="bi bi-list-ol"></i>
+                Ranking de Dedicação - {{ mes_atual }}
+            </h2>
+        </div>
+        
+        {% if ranking_tempo %}
+            <div class="ranking-list" id="rankingList">
+                {% for user in ranking_tempo %}
+                <div class="ranking-item {% if user.id == usuario_atual.id %}user-highlight{% endif %}"
+                     onclick="showUserProfile({{ user.id }})">
+                    <div class="rank-badge-small {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                        {{ loop.index }}
+                    </div>
+                    
+                    <div class="user-info">
+                        <h4 class="user-name">
+                            {{ user.nome_completo or user.username }}
+                            {% if user.id == usuario_atual.id %}
+                                <span class="badge-you">Você</span>
+                            {% endif %}
+                            
+                            <!-- Time Achievement Badges -->
+                            {% if user.tempo_total >= 1200 %}
+                                <span class="time-badge time-maratonista">
+                                    <i class="bi bi-fire"></i> Maratonista
+                                </span>
+                            {% elif user.tempo_total >= 600 %}
+                                <span class="time-badge time-dedicado">
+                                    <i class="bi bi-lightning"></i> Dedicado
+                                </span>
+                            {% elif user.tempo_total >= 300 %}
+                                <span class="time-badge time-consistente">
+                                    <i class="bi bi-star"></i> Consistente
+                                </span>
+                            {% elif user.tempo_total >= 60 %}
+                                <span class="time-badge time-iniciante">
+                                    <i class="bi bi-arrow-up"></i> Iniciante
+                                </span>
+                            {% endif %}
+                        </h4>
+                        <div class="user-username">@{{ user.username }}</div>
+                        
+                        <!-- Time Stats -->
+                        <div class="time-stats">
+                            <div class="mini-stat">
+                                <i class="bi bi-clock-history me-1"></i>~{{ (user.tempo_total / 60)|round }} sessões
+                            </div>
+                            <div class="mini-stat">
+                                <i class="bi bi-calendar me-1"></i>Este mês
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        {% if ranking_tempo[0].tempo_total > 0 %}
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar-time" 
+                                     data-width="{{ (user.tempo_total / ranking_tempo[0].tempo_total * 100)|round }}"
+                                     style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="user-time">
+                        <div class="time-value">{{ formatar_tempo(user.tempo_total) }}</div>
+                        <div class="time-label">este mês</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- User Position if not in ranking -->
+            {% if posicao_usuario and posicao_usuario > 50 %}
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(0, 64, 128, 0.3);">
+                <div class="ranking-item user-highlight">
+                    <div class="rank-badge-small rank-other">{{ posicao_usuario }}</div>
+                    
+                    <div class="user-info">
+                        <h4 class="user-name">
+                            {{ usuario_atual.nome_completo or usuario_atual.username }}
+                            <span class="badge-you">Você</span>
+                        </h4>
+                        <div class="user-username">@{{ usuario_atual.username }}</div>
+                    </div>
+                    
+                    <div class="user-time">
+                        <div class="time-value">{{ tempo_usuario_formatado }}</div>
+                        <div class="time-label">este mês</div>
+                    </div>
+                </div>
+            </div>
+            {% elif tempo_usuario_mes == 0 %}
+            <div class="no-time-state">
+                <i class="bi bi-clock" style="font-size: 3rem; color: var(--tertiary-color); margin-bottom: 1.5rem;"></i>
+                <h4>Você ainda não tem tempo registrado</h4>
+                <p>Comece a estudar para aparecer no ranking de tempo!</p>
+                <a href="{{ url_for('simulados.index') }}" class="start-btn">
+                    <i class="bi bi-play-circle"></i>
+                    Começar Cronômetro
+                </a>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-clock-history"></i>
+                <h4>Nenhum tempo registrado este mês</h4>
+                <p>Seja o primeiro a começar a maratona de estudos!</p>
+                <a href="{{ url_for('simulados.index') }}" class="start-btn">
+                    <i class="bi bi-stopwatch"></i>
+                    Iniciar Agora
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Tips Section -->
+    <section class="tips-section">
+        <h3 class="tips-title">
+            <i class="bi bi-gear-fill"></i>
+            Como o tempo é registrado?
+        </h3>
+        
+        <div class="tips-grid">
+            <div class="tip-item">
+                <div class="tip-header">
+                    <div class="tip-icon robot">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h4 class="tip-title">Automático e preciso</h4>
+                </div>
+                <p class="tip-description">O sistema detecta automaticamente quando você está estudando e registra o tempo real de atividade.</p>
+            </div>
+            
+            <div class="tip-item">
+                <div class="tip-header">
+                    <div class="tip-icon shield">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="tip-title">Anti-trapaça</h4>
+                </div>
+                <p class="tip-description">Apenas atividade real conta: fazer questões, escrever redações, navegar ativamente nos conteúdos.</p>
+            </div>
+            
+            <div class="tip-item">
+                <div class="tip-header">
+                    <div class="tip-icon pause">
+                        <i class="bi bi-pause-circle"></i>
+                    </div>
+                    <h4 class="tip-title">Pausas automáticas</h4>
+                </div>
+                <p class="tip-description">O cronômetro pausa automaticamente após 3 minutos de inatividade para garantir precisão.</p>
+            </div>
+            
+            <div class="tip-item">
+                <div class="tip-header">
+                    <div class="tip-icon calendar">
+                        <i class="bi bi-calendar-month"></i>
+                    </div>
+                    <h4 class="tip-title">Reset mensal</h4>
+                </div>
+                <p class="tip-description">O ranking de tempo reinicia todo mês para uma competição justa e motivar novos hábitos.</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializações
+    initializeCounterAnimations();
+    initializeProgressBars();
+    setupRealTimeUpdates();
+    setupInteractiveElements();
+    setupEasterEggs();
+    
+    function initializeCounterAnimations() {
+        const counters = document.querySelectorAll('.stat-value[data-count]');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.dataset.count);
+                    
+                    if (target > 0) {
+                        animateTimeValue(counter, 0, target, 2000);
+                    }
+                    observer.unobserve(counter);
+                }
+            });
+        });
+        
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    }
+    
+    function initializeProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-bar-time');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const targetWidth = bar.dataset.width + '%';
+                    
+                    setTimeout(() => {
+                        bar.style.width = targetWidth;
+                    }, index * 150);
+                    
+                    observer.unobserve(bar);
+                }
+            });
+        });
+        
+        progressBars.forEach(bar => {
+            observer.observe(bar);
+        });
+    }
+    
+    function animateTimeValue(element, start, end, duration) {
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function updateValue(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            
+            const current = Math.floor(start + (range * easeOutQuart));
+            
+            // Format time for display
+            if (element.textContent.includes('h') || element.textContent.includes('min')) {
+                element.textContent = formatTime(current);
+            } else {
+                element.textContent = current.toLocaleString();
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateValue);
+            } else {
+                if (element.textContent.includes('h') || element.textContent.includes('min')) {
+                    element.textContent = formatTime(end);
+                } else {
+                    element.textContent = end.toLocaleString();
+                }
+            }
+        }
+        
+        requestAnimationFrame(updateValue);
+    }
+    
+    function formatTime(minutes) {
+        if (minutes < 60) {
+            return minutes + ' min';
+        } else {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+        }
+    }
+    
+    function setupRealTimeUpdates() {
+        // Atualizar tempo de estudo a cada 30 segundos
+        setInterval(function() {
+            fetch('/ranking/api/posicao?tipo=tempo_estudo')
+                .then(response => response.json())
+                .then(data => {
+                    updateTempoStats(data);
+                })
+                .catch(error => console.log('Erro ao atualizar tempo:', error));
+        }, 30000);
+    }
+    
+    function updateTempoStats(data) {
+        if (data.tempo_minutos !== undefined) {
+            const tempoElement = document.querySelector('.stat-value');
+            if (tempoElement && data.tempo_minutos > 0) {
+                const currentMinutes = parseInt(tempoElement.dataset.count) || 0;
+                if (data.tempo_minutos > currentMinutes) {
+                    tempoElement.dataset.count = data.tempo_minutos;
+                    animateTimeValue(tempoElement, currentMinutes, data.tempo_minutos, 1000);
+                    showNotification(`⏱️ Novo tempo registrado: +${data.tempo_minutos - currentMinutes} minutos!`, 'success');
+                }
+            }
+        }
+    }
+    
+    function setupInteractiveElements() {
+        // Efeito hover melhorado nos badges de tempo
+        document.querySelectorAll('.time-badge').forEach(badge => {
+            badge.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.15) rotate(3deg)';
+                this.style.filter = 'brightness(1.2)';
+            });
+            
+            badge.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+                this.style.filter = 'brightness(1)';
+            });
+        });
+        
+        // Efeito nas mini-stats
+        document.querySelectorAll('.mini-stat').forEach(stat => {
+            stat.addEventListener('click', function() {
+                this.style.animation = 'pulse 0.6s ease-out';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 600);
+            });
+        });
+        
+        // Clock tick effect
+        const clockIcon = document.querySelector('.clock-icon');
+        if (clockIcon) {
+            setInterval(() => {
+                clockIcon.style.animation = 'none';
+                clockIcon.offsetHeight; // Trigger reflow
+                clockIcon.style.animation = 'tickTock 2s infinite';
+            }, 10000);
+        }
+        
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    }
+    
+    function setupEasterEggs() {
+        // Easter egg no ícone do relógio
+        let clockClicks = 0;
+        const clock = document.querySelector('.clock-icon');
+        
+        if (clock) {
+            clock.addEventListener('click', function() {
+                clockClicks++;
+                
+                // Efeito visual imediato
+                this.style.animation = 'none';
+                this.style.transform = 'scale(1.3) rotate(360deg)';
+                this.style.color = '#0066ff';
+                
+                setTimeout(() => {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                    this.style.color = '#004080';
+                    this.style.animation = 'tickTock 2s infinite';
+                }, 600);
+                
+                if (clockClicks === 5) {
+                    createTimeConfetti();
+                    showNotification('⏰ Parabéns! Você descobriu o easter egg do tempo!', 'success');
+                    clockClicks = 0;
+                }
+            });
+        }
+        
+        // Easter egg no cronômetro
+        const stopwatch = document.querySelector('.stopwatch-icon');
+        if (stopwatch) {
+            stopwatch.addEventListener('click', function(e) {
+                e.stopPropagation();
+                createTimeExplosion();
+                showNotification('⏱️ O tempo voa quando você está estudando!', 'info');
+            });
+        }
+    }
+    
+    function createTimeConfetti() {
+        const timeColors = ['#004080', '#003d82', '#001233', '#ff6b35', '#ff9068'];
+        
+        for (let i = 0; i < 40; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.innerHTML = '⏰';
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-20px';
+                confetti.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                confetti.style.color = timeColors[Math.floor(Math.random() * timeColors.length)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }, i * 80);
+        }
+    }
+    
+    function createTimeExplosion() {
+        const timeEmojis = ['⏰', '⏱️', '⌚', '🕐', '🕑', '🕒'];
+        
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+                const timeIcon = document.createElement('div');
+                timeIcon.innerHTML = timeEmojis[Math.floor(Math.random() * timeEmojis.length)];
+                timeIcon.style.position = 'fixed';
+                timeIcon.style.left = '50%';
+                timeIcon.style.top = '30%';
+                timeIcon.style.fontSize = '20px';
+                timeIcon.style.pointerEvents = 'none';
+                timeIcon.style.zIndex = '9999';
+                
+                const angle = (i * 30) * Math.PI / 180;
+                const distance = 150;
+                const deltaX = Math.cos(angle) * distance;
+                const deltaY = Math.sin(angle) * distance;
+                
+                timeIcon.style.animation = `timeExplosion 2s ease-out forwards`;
+                timeIcon.style.setProperty('--deltaX', deltaX + 'px');
+                timeIcon.style.setProperty('--deltaY', deltaY + 'px');
+                
+                document.body.appendChild(timeIcon);
+                
+                setTimeout(() => {
+                    if (timeIcon.parentNode) {
+                        timeIcon.parentNode.removeChild(timeIcon);
+                    }
+                }, 2000);
+            }, i * 60);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 350px;
+            animation: slideInRight 0.3s ease-out;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid currentColor;
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 4000);
+    }
+});
+
+// Funções globais
+function showUserProfile(userId) {
+    window.location.href = `/user/profile/${userId}`;
+}
+
+function showStatsDetail(type) {
+    let message = '';
+    switch(type) {
+        case 'tempo':
+            message = '⏱️ Seu tempo total de estudo registrado automaticamente este mês!';
+            break;
+        case 'position':
+            message = '🏆 Sua posição no ranking de dedicação ao estudo!';
+            break;
+        case 'ativos':
+            message = '👥 Número de estudantes que registraram tempo de estudo este mês!';
+            break;
+    }
+    
+    showNotification(message, 'info');
+}
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(${window.innerHeight + 50}px) rotate(720deg);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes timeExplosion {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(calc(-50% + var(--deltaX)), calc(-50% + var(--deltaY))) scale(0);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

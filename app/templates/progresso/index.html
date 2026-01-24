@@ -1,0 +1,1582 @@
+{% extends "layout.html" %}
+
+{% block title %}Meu Progresso - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .progresso-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1.125rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Tracking Info Alert */
+    .tracking-alert {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 3rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .tracking-alert-icon {
+        font-size: 2rem;
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+
+    .tracking-alert-content h5 {
+        color: var(--text);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tracking-alert-content p {
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .summary-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .summary-card:nth-child(1) { 
+        animation-delay: 0.2s;
+        border-left: 4px solid var(--warning);
+    }
+    .summary-card:nth-child(2) { 
+        animation-delay: 0.3s;
+        border-left: 4px solid var(--primary);
+    }
+    .summary-card:nth-child(3) { 
+        animation-delay: 0.4s;
+        border-left: 4px solid var(--success);
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: inherit;
+        opacity: 0.8;
+    }
+
+    .summary-card:nth-child(1)::before { background: linear-gradient(90deg, var(--warning), #d97706); }
+    .summary-card:nth-child(2)::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+    .summary-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), #059669); }
+
+    .summary-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .summary-card-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .summary-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .summary-card:hover .summary-icon {
+        transform: scale(1.1);
+    }
+
+    .summary-card:nth-child(1) .summary-icon {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+    }
+    .summary-card:nth-child(2) .summary-icon {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--primary);
+    }
+    .summary-card:nth-child(3) .summary-icon {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+    }
+
+    .summary-info {
+        flex: 1;
+    }
+
+    .summary-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        line-height: 1;
+    }
+
+    .summary-title {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    /* Section Header */
+    .section-header {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-icon {
+        color: var(--accent);
+        font-size: 2rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stats-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .stats-card:nth-child(1) { 
+        animation-delay: 0.6s;
+        background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, var(--surface) 100%);
+    }
+    .stats-card:nth-child(2) { 
+        animation-delay: 0.7s;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--surface) 100%);
+    }
+    .stats-card:nth-child(3) { 
+        animation-delay: 0.8s;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, var(--surface) 100%);
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .stats-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+    .stats-card:nth-child(2)::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+    .stats-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), #059669); }
+
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .stats-value {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        line-height: 1;
+        transition: transform 0.3s ease;
+    }
+
+    .stats-card:nth-child(1) .stats-value { color: var(--accent); }
+    .stats-card:nth-child(2) .stats-value { color: var(--primary); }
+    .stats-card:nth-child(3) .stats-value { color: var(--success); }
+
+    .stats-card:hover .stats-value {
+        transform: scale(1.05);
+    }
+
+    .stats-label {
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    /* Migration Alert */
+    .migration-alert {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-left: 4px solid var(--primary);
+        border-radius: var(--radius);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.9s both;
+    }
+
+    .migration-alert h6 {
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .migration-alert p {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    /* Charts Grid - 2x2 Layout */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out both;
+        transition: all 0.4s ease;
+    }
+
+    .chart-card:nth-child(1) { animation-delay: 1s; }
+    .chart-card:nth-child(2) { animation-delay: 1.1s; }
+    .chart-card:nth-child(3) { animation-delay: 1.2s; }
+    .chart-card:nth-child(4) { animation-delay: 1.3s; }
+
+    .chart-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .chart-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .chart-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .chart-card:nth-child(1) .chart-header::before { 
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+    .chart-card:nth-child(2) .chart-header::before { 
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+    .chart-card:nth-child(3) .chart-header::before { 
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+    .chart-card:nth-child(4) .chart-header::before { 
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    }
+
+    .chart-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.125rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-header i {
+        font-size: 1.25rem;
+    }
+
+    .chart-card:nth-child(1) .chart-header i { color: var(--warning); }
+    .chart-card:nth-child(2) .chart-header i { color: var(--primary); }
+    .chart-card:nth-child(3) .chart-header i { color: var(--success); }
+    .chart-card:nth-child(4) .chart-header i { color: var(--accent); }
+
+    .chart-body {
+        padding: 2rem;
+        height: 300px;
+        position: relative;
+    }
+
+    /* Progress Cards Grid */
+    .progress-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .progress-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        transition: all 0.4s ease;
+        animation: fadeInUp 0.6s ease-out both;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--warning), #d97706);
+        opacity: 0.8;
+    }
+
+    .progress-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .progress-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-item {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-label {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .progress-stats {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .progress-bar-custom {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        border-radius: 4px;
+        transition: width 1s ease-out;
+    }
+
+    .progress-percentage {
+        text-align: right;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Table */
+    .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 1.4s both;
+    }
+
+    .table-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .table-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .table-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .table-header i {
+        color: var(--success);
+    }
+
+    .table-responsive {
+        padding: 0;
+    }
+
+    .table {
+        margin: 0;
+        color: var(--text);
+    }
+
+    .table thead th {
+        background: var(--surface-light);
+        border: none;
+        color: var(--text);
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .table tbody td {
+        border: none;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+
+
+    .table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    .btn-outline-info {
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+    }
+
+    .btn-outline-info:hover {
+        background: var(--accent);
+        color: var(--surface);
+    }
+
+    .btn-info {
+        background: var(--accent);
+        color: var(--surface);
+    }
+
+    .btn-info:hover {
+        background: var(--accent-light);
+        color: var(--surface);
+    }
+
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 4rem 2rem;
+        text-align: center;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .empty-state::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        opacity: 0.8;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--accent);
+        margin-bottom: 1.5rem;
+        animation: bounce 2s infinite;
+    }
+
+    .empty-state-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-text {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    .empty-state-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Floating Action Button */
+    .fab-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+    }
+
+    .fab {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6);
+    }
+
+    .dropdown-menu {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-80%);
+    }
+
+    .dropdown-item {
+        color: var(--text);
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background: var(--surface-light);
+        color: var(--text);
+    }
+
+    .dropdown-header {
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .dropdown-divider {
+        border-color: var(--border);
+    }
+
+    /* Toast */
+    .toast-custom {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 9999;
+        min-width: 300px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+    }
+
+    .toast-success {
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--success);
+    }
+
+    .toast-error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--danger);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .progresso-container {
+            padding: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .progress-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-body {
+            height: 250px;
+            padding: 1rem;
+        }
+
+        .empty-state-actions {
+            flex-direction: column;
+        }
+
+        .fab-container {
+            bottom: 1rem;
+            right: 1rem;
+        }
+
+        .tracking-alert {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-card,
+        .stats-card,
+        .progress-card {
+            padding: 1.5rem;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table tbody tr {
+            display: block;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            display: block;
+            border: none;
+            padding: 0.5rem 0;
+            text-align: left !important;
+        }
+
+        .table tbody td::before {
+            content: attr(data-label) ": ";
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
+<div class="progresso-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>Meu Progresso</h1>
+        <p class="page-subtitle">
+            Acompanhe sua evolução automática na plataforma. Seu tempo de estudo é registrado automaticamente enquanto você usa o sistema.
+        </p>
+    </div>
+
+    <!-- Tracking Info Alert -->
+    <div class="tracking-alert">
+        <div class="tracking-alert-icon">
+            <i class="bi bi-robot"></i>
+        </div>
+        <div class="tracking-alert-content">
+            <h5>
+                <i class="bi bi-check-circle-fill"></i>
+                Tracking Automático Ativo
+            </h5>
+            <p>
+                Seu tempo de estudo é registrado automaticamente quando você está ativo em simulados, redações, exercícios e help zone. Não é necessário iniciar cronômetros!
+            </p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <div class="summary-icon">
+                    <i class="bi bi-hexagon-fill"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value">{{ xp_total }}</div>
+                    <div class="summary-title">XP Acumulado</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <div class="summary-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value">{{ total_simulados }}</div>
+                    <div class="summary-title">Simulados Feitos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <div class="summary-icon">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="summary-info">
+                    <div class="summary-value">{{ redacoes_enviadas }}</div>
+                    <div class="summary-title">Redações Enviadas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Time Section -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-clock-history section-icon"></i>
+            Tempo de Estudo
+        </h2>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-value">{{ tempos_formatados.hoje }}</div>
+            <div class="stats-label">Hoje</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-value">{{ tempos_formatados.semana }}</div>
+            <div class="stats-label">Esta Semana</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-value">{{ tempos_formatados.mes }}</div>
+            <div class="stats-label">Este Mês</div>
+        </div>
+    </div>
+
+    <!-- Migration Alert -->
+    {% if tem_atividades and estatisticas_tempo.hoje == 0 and estatisticas_tempo.semana == 0 %}
+    <div class="migration-alert">
+        <h6>
+            <i class="bi bi-info-circle"></i>
+            Dados Históricos
+        </h6>
+        <p>Detectamos que você já realizou atividades, mas não temos registros de tempo de estudo. Quer calcular o tempo estimado das suas atividades passadas?</p>
+        <button id="migrar-dados" class="btn btn-info">
+            <i class="bi bi-clock-history"></i>
+            Calcular Tempo das Atividades Passadas
+        </button>
+    </div>
+    {% endif %}
+
+    {% if not tem_atividades %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-bar-chart"></i>
+            </div>
+            <h3 class="empty-state-title">Comece sua jornada de estudos</h3>
+            <p class="empty-state-text">
+                Realize atividades na plataforma para ver seu progresso aqui. Seu tempo será registrado automaticamente enquanto você estuda!
+            </p>
+            <div class="empty-state-actions">
+                <a href="{{ url_for('simulados.index') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-journals"></i>
+                    Fazer um Simulado
+                </a>
+                <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-file-text"></i>
+                    Escrever Redação
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Evolution Charts - 4 Gráficos em Grid 2x2 -->
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-graph-up section-icon"></i>
+                Evolução Semanal
+            </h2>
+        </div>
+
+        <div class="charts-grid">
+            <!-- Gráfico 1: XP Ganho -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="bi bi-hexagon-fill"></i>
+                        XP Ganho (últimos 7 dias)
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="graficoXP"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Notas Simulados -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="bi bi-award"></i>
+                        Notas Simulados (0-1000)
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="graficoSimulados"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 3: Notas Redações -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="bi bi-pencil-square"></i>
+                        Notas Redações (0-1000)
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="graficoRedacoes"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 4: Tempo de Estudo -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="bi bi-clock-history"></i>
+                        Tempo de Estudo (minutos)
+                    </h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="graficoTempo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress by Area -->
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-pie-chart section-icon"></i>
+                Progresso por Área
+            </h2>
+        </div>
+
+        <div class="progress-grid">
+            {% for area, dados in progresso_areas.items() %}
+            <div class="progress-card">
+                <h4 class="progress-card-title">{{ area }}</h4>
+                <div class="progress-item">
+                    <div class="progress-info">
+                        <span class="progress-label">Questões respondidas</span>
+                        <span class="progress-stats">{{ dados.total }} questões</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: {{ dados.percentual }}%;" data-percentage="{{ dados.percentual }}"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span class="progress-stats">{{ dados.acertos }} acertos</span>
+                        <span class="progress-percentage">{{ dados.percentual|round|int }}% de aproveitamento</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+
+        <!-- Recent Simulados -->
+        {% if simulados_recentes %}
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-journal-check section-icon"></i>
+                Últimos Simulados
+            </h2>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h3>
+                    <i class="bi bi-table"></i>
+                    Histórico de Simulados
+                </h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Simulado</th>
+                            <th>Data</th>
+                            <th>Tempo</th>
+                            <th>Nota TRI</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for simulado in simulados_recentes %}
+                        <tr>
+                            <td data-label="Simulado">{{ simulado.titulo }}</td>
+                            <td data-label="Data">{{ simulado.data_realizado.strftime('%d/%m/%Y') }}</td>
+                            <td data-label="Tempo">{{ simulado.tempo_realizado or '—' }}</td>
+                            <td data-label="Nota TRI">
+                                <span class="badge badge-primary">{{ simulado.nota_tri|int }}</span>
+                            </td>
+                            <td data-label="Ações">
+                                <a href="{{ url_for('simulados.resultado', simulado_id=simulado.id) }}" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                    Ver Resultado
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <div class="dropdown dropup">
+            <button class="fab" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <h6 class="dropdown-header">Iniciar Atividade</h6>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('simulados.index') }}">
+                        <i class="bi bi-journals"></i>
+                        Fazer Simulado
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('redacao.nova_redacao') }}">
+                        <i class="bi bi-file-text"></i>
+                        Escrever Redação
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('progresso.atividades') }}">
+                        <i class="bi bi-clock-history"></i>
+                        Ver Histórico
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if tem_atividades %}
+    // Configurações comuns dos gráficos
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    font: { size: 12, weight: '500' }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                titleColor: '#ffffff',
+                bodyColor: '#ffffff',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                cornerRadius: 8,
+                padding: 12
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: { size: 11 }
+                }
+            },
+            x: {
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: { size: 11 }
+                }
+            }
+        }
+    };
+
+    // Gráfico 1: XP Ganho
+    const ctxXP = document.getElementById('graficoXP').getContext('2d');
+    new Chart(ctxXP, {
+        type: 'line',
+        data: {
+            labels: {{ grafico_xp.datas|tojson }},
+            datasets: [{
+                label: 'XP Ganho',
+                data: {{ grafico_xp.valores|tojson }},
+                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                borderColor: '#f59e0b',
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: true
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Gráfico 2: Notas Simulados (3 linhas: média, melhor, última)
+    const ctxSimulados = document.getElementById('graficoSimulados').getContext('2d');
+    new Chart(ctxSimulados, {
+        type: 'line',
+        data: {
+            labels: {{ grafico_simulados.datas|tojson }},
+            datasets: [{
+                label: 'Média',
+                data: {{ grafico_simulados.media|tojson }},
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: '#3b82f6',
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false
+            }, {
+                label: 'Melhor',
+                data: {{ grafico_simulados.melhor|tojson }},
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: false
+            }, {
+                label: 'Última',
+                data: {{ grafico_simulados.ultima|tojson }},
+                backgroundColor: 'rgba(161, 161, 170, 0.2)',
+                borderColor: '#a1a1aa',
+                borderWidth: 2,
+                borderDash: [2, 2],
+                tension: 0.4,
+                pointBackgroundColor: '#a1a1aa',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: false
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                y: {
+                    ...commonOptions.scales.y,
+                    min: 0,
+                    max: 1000
+                }
+            }
+        }
+    });
+
+    // Gráfico 3: Notas Redações (3 linhas: média, melhor, última)
+    const ctxRedacoes = document.getElementById('graficoRedacoes').getContext('2d');
+    new Chart(ctxRedacoes, {
+        type: 'line',
+        data: {
+            labels: {{ grafico_redacoes.datas|tojson }},
+            datasets: [{
+                label: 'Média',
+                data: {{ grafico_redacoes.media|tojson }},
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderColor: '#10b981',
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: false
+            }, {
+                label: 'Melhor',
+                data: {{ grafico_redacoes.melhor|tojson }},
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: '#3b82f6',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: false
+            }, {
+                label: 'Última',
+                data: {{ grafico_redacoes.ultima|tojson }},
+                backgroundColor: 'rgba(161, 161, 170, 0.2)',
+                borderColor: '#a1a1aa',
+                borderWidth: 2,
+                borderDash: [2, 2],
+                tension: 0.4,
+                pointBackgroundColor: '#a1a1aa',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: false
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                y: {
+                    ...commonOptions.scales.y,
+                    min: 0,
+                    max: 1000
+                }
+            }
+        }
+    });
+
+    // Gráfico 4: Tempo de Estudo (minutos)
+    const ctxTempo = document.getElementById('graficoTempo').getContext('2d');
+    new Chart(ctxTempo, {
+        type: 'bar',
+        data: {
+            labels: {{ grafico_tempo.datas|tojson }},
+            datasets: [{
+                label: 'Minutos de Estudo',
+                data: {{ grafico_tempo.minutos|tojson }},
+                backgroundColor: 'rgba(0, 217, 255, 0.6)',
+                borderColor: '#00d9ff',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                ...commonOptions.plugins,
+                tooltip: {
+                    ...commonOptions.plugins.tooltip,
+                    callbacks: {
+                        label: function(context) {
+                            const minutos = context.parsed.y;
+                            const horas = Math.floor(minutos / 60);
+                            const mins = minutos % 60;
+                            if (horas > 0) {
+                                return `${horas}h${mins.toString().padStart(2, '0')}`;
+                            } else {
+                                return `${minutos} min`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('.progress-fill');
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const progressBar = entry.target;
+                const percentage = progressBar.dataset.percentage;
+                progressBar.style.width = '0%';
+                
+                setTimeout(() => {
+                    progressBar.style.width = percentage + '%';
+                }, 100);
+                
+                observer.unobserve(progressBar);
+            }
+        });
+    }, observerOptions);
+
+    progressBars.forEach(bar => {
+        observer.observe(bar);
+    });
+
+    // Animate stat counters
+    const statValues = document.querySelectorAll('.stats-value, .summary-value');
+    setTimeout(() => {
+        statValues.forEach(stat => {
+            const finalValue = stat.textContent;
+            const numericValue = parseInt(finalValue.replace(/\D/g, ''));
+            
+            if (numericValue > 0) {
+                stat.textContent = '0';
+                
+                const increment = numericValue / 30;
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= numericValue) {
+                        stat.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.floor(current) + finalValue.replace(/\d/g, '').replace(/^[0-9]*/, '');
+                    }
+                }, 50);
+            }
+        });
+    }, 500);
+
+    // Migration handler
+    const migrarBtn = document.getElementById('migrar-dados');
+    if (migrarBtn) {
+        migrarBtn.addEventListener('click', function() {
+            migrarDadosTempo();
+        });
+    }
+
+    // Smooth scroll animations
+    const animatedElements = document.querySelectorAll('.summary-card, .stats-card, .progress-card, .chart-card, .table-card');
+    const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    animatedElements.forEach(el => {
+        scrollObserver.observe(el);
+    });
+});
+
+function migrarDadosTempo() {
+    const btn = document.getElementById('migrar-dados');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processando...';
+    
+    fetch('/progresso/migrar-dados-tempo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            mostrarToast(data.mensagem, 'success');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            mostrarToast(data.mensagem, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-clock-history"></i> Calcular Tempo das Atividades Passadas';
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao migrar dados:', error);
+        mostrarToast('Erro ao processar dados', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-clock-history"></i> Calcular Tempo das Atividades Passadas';
+    });
+}
+
+function mostrarToast(mensagem, tipo) {
+    const toast = document.createElement('div');
+    toast.className = `toast-custom toast-${tipo}`;
+    toast.innerHTML = `
+        <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>${mensagem}</span>
+            <button type="button" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 1rem;" onclick="this.parentElement.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

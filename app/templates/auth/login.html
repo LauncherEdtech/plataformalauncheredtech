@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Plataforma Launcher</title>
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+  <!-- Fonte & Ícones -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    :root{
+      /* Cores da identidade visual */
+      --bg: #000000;
+      --bg-gradient: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+      --surface: #111111;
+      --surface-light: #1a1a1a;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #00d9ff;
+      --accent-secondary: #0ea5e9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --text-secondary: #9fb1d1;
+      --border: #262626;
+      --border-light: #404040;
+      --focus: rgba(59, 130, 246, 0.3);
+      --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+      --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+      --radius: 16px;
+      --radius-lg: 24px;
+    }
+
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body { 
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      color: var(--text);
+      background: var(--bg-gradient);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Efeitos de fundo animados */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(600px 300px at 20% 30%, rgba(59, 130, 246, 0.12), transparent 50%),
+        radial-gradient(800px 400px at 80% 70%, rgba(0, 217, 255, 0.08), transparent 50%),
+        radial-gradient(400px 200px at 40% 80%, rgba(16, 185, 129, 0.06), transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: floatingBg 20s ease-in-out infinite;
+    }
+
+    @keyframes floatingBg {
+      0%, 100% { opacity: 0.8; transform: translateY(0px) rotate(0deg); }
+      50% { opacity: 1; transform: translateY(-20px) rotate(1deg); }
+    }
+
+    a { 
+      color: var(--accent); 
+      text-decoration: none; 
+      transition: all 0.3s ease;
+    }
+    a:hover { 
+      color: var(--accent-secondary);
+      text-decoration: underline; 
+    }
+
+    .wrap {
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    .auth {
+      width: 100%; 
+      max-width: 1100px; 
+      display: grid; 
+      grid-template-columns: 1.1fr 0.9fr; 
+      gap: 0;
+      border: 1px solid var(--border); 
+      border-radius: var(--radius-lg); 
+      overflow: hidden;
+      background: rgba(17, 17, 17, 0.8);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Lado esquerdo (valor) */
+    .promo {
+      padding: 3rem 2.5rem; 
+      border-right: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(0, 217, 255, 0.03) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promo::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .pill {
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px; 
+      padding: 10px 16px;
+      border-radius: 50px; 
+      font-weight: 600; 
+      font-size: 0.9rem;
+      color: var(--text); 
+      background: rgba(59, 130, 246, 0.15); 
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    }
+
+    .headline { 
+      margin: 0 0 1rem; 
+      font-size: clamp(28px, 4vw, 36px); 
+      font-weight: 800; 
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--text), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .sub { 
+      color: var(--text-secondary); 
+      margin: 0 0 2rem; 
+      line-height: 1.7; 
+      font-size: 1.1rem;
+      max-width: 45ch;
+    }
+
+    .features-list { 
+      list-style: none; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    .features-list li { 
+      display: flex; 
+      gap: 12px; 
+      align-items: flex-start; 
+      padding: 12px 0; 
+      color: var(--text);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .features-list li:hover {
+      transform: translateX(5px);
+      color: var(--accent);
+    }
+
+    .features-list i { 
+      color: var(--success); 
+      margin-top: 2px;
+      font-size: 1.1rem;
+    }
+
+    /* Formulário */
+    .form-side {
+      padding: 3rem 2.5rem; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center;
+      background: #000000;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+      width: 100%;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px; 
+      display: grid;
+      place-items: center; 
+      font-weight: 800;
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-img {
+      width: 200px;
+      height: auto;
+      max-width: 100%;
+      border-radius: 12px;
+      object-fit: contain;
+      box-shadow: none;
+    }
+
+    .logo::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: rotate(45deg);
+      animation: shine 3s ease-in-out infinite;
+    }
+
+    @keyframes shine {
+      0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .logo-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .title { 
+      margin: 0 0 8px; 
+      font-size: clamp(24px, 3vw, 30px); 
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .hint { 
+      color: var(--text-muted); 
+      margin: 0 0 2rem;
+      font-size: 1.05rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .label { 
+      display: block; 
+      color: var(--text-secondary); 
+      font-size: 0.95rem; 
+      font-weight: 500;
+      margin: 0 0 8px;
+    }
+
+    .input {
+      width: 100%; 
+      padding: 16px 18px; 
+      border-radius: var(--radius); 
+      color: var(--text);
+      border: 2px solid var(--border); 
+      background: var(--surface-light); 
+      outline: none; 
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .input:focus { 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 4px var(--focus);
+      background: rgba(26, 26, 26, 0.8);
+    }
+
+    .input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .row-opts { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: 12px; 
+      margin: 1rem 0 0;
+    }
+
+    .remember { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .remember input { 
+      width: 18px; 
+      height: 18px; 
+      accent-color: var(--primary); 
+      cursor: pointer;
+    }
+
+    /* ================================
+       🔐 NOVO: Link "Esqueci minha senha"
+       ================================ */
+    .forgot-password-link {
+      font-size: 0.9rem;
+      color: var(--accent);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .forgot-password-link:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+    }
+
+    .forgot-password-link i {
+      font-size: 0.85rem;
+    }
+
+    .btn {
+      width: 100%; 
+      padding: 16px 20px; 
+      border: 0; 
+      border-radius: var(--radius); 
+      cursor: pointer;
+      color: white; 
+      font-weight: 700; 
+      letter-spacing: 0.5px; 
+      font-size: 1rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+      margin-top: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:active { 
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .footer-text { 
+      text-align: center; 
+      margin-top: 1.5rem; 
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Alertas melhorados */
+    .alert {
+      margin: 0 0 1.5rem; 
+      padding: 16px 20px; 
+      border-radius: var(--radius); 
+      font-weight: 500; 
+      font-size: 0.95rem; 
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-danger {
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.1); 
+      color: #ffd5d5;
+    }
+
+    .alert-warning {
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.1);
+      color: #fde68a;
+    }
+
+    .alert-success {
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.1);
+      color: #d1fae5;
+    }
+
+    .alert-info {
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      background: rgba(59, 130, 246, 0.1);
+      color: #a5d8ff;
+    }
+
+    .alert i {
+      margin-top: 2px;
+      font-size: 1.1rem;
+    }
+
+    .alert-danger i { color: var(--danger); }
+    .alert-warning i { color: var(--warning); }
+    .alert-success i { color: var(--success); }
+    .alert-info i { color: var(--primary); }
+
+    /* Loading state */
+    .loading {
+      pointer-events: none;
+    }
+
+    .loading .btn {
+      opacity: 0.8;
+    }
+
+    .loading .btn i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsividade */
+    @media (max-width: 1000px) {
+      .auth { 
+        grid-template-columns: 1fr; 
+        max-width: 500px;
+      }
+      .promo { 
+        border-right: 0; 
+        border-bottom: 1px solid var(--border);
+        padding: 2rem 1.5rem;
+      }
+      .form-side {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .wrap {
+        padding: 1rem 0.5rem;
+      }
+      .promo, .form-side {
+        padding: 1.5rem 1rem;
+      }
+      .headline {
+        font-size: 24px;
+      }
+      .title {
+        font-size: 22px;
+      }
+      .row-opts {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="auth">
+
+      <!-- Valor (lado esquerdo) -->
+      <aside class="promo">
+        <div class="pill">
+          <i class="bi bi-stars"></i> 
+          <span>Estude & Ganhe</span>
+        </div>
+        <h1 class="headline">Seu estudo vale aqui.</h1>
+        <p class="sub">Cada atividade rende <strong>XP</strong> e <strong>Launcher Coins</strong> para trocar por prêmios reais. Direção, progresso e motivação contínua.</p>
+        
+        <ul class="features-list">
+          <li>
+            <i class="bi bi-robot"></i>
+            <span>Correção de redação com IA (5 competências)</span>
+          </li>
+          <li>
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Dashboard de desempenho em tempo real</span>
+          </li>
+          <li>
+            <i class="bi bi-trophy"></i>
+            <span>Rankings e badges para manter o ritmo</span>
+          </li>
+          <li>
+            <i class="bi bi-gem"></i>
+            <span>Sistema de recompensas e gamificação</span>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Formulário -->
+      <section class="form-side">
+        <div class="logo-container">
+          <img src="{{ url_for('static', filename='images/logoemail.png') }}" 
+               alt="Logo Launcher" 
+               class="logo-img">
+        </div>        
+        <h2 class="title">Entrar na Plataforma</h2>
+        <p class="hint">Vamos começar sua sessão de estudos.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                {% if category == 'danger' %}
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                {% elif category == 'warning' %}
+                  <i class="bi bi-exclamation-triangle"></i>
+                {% elif category == 'success' %}
+                  <i class="bi bi-check-circle-fill"></i>
+                {% else %}
+                  <i class="bi bi-info-circle"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+
+        <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+          <div class="form-group">
+            <label class="label" for="email">E-mail ou CPF</label>
+            <input 
+              class="input" 
+              type="text" 
+              id="email" 
+              name="email" 
+              autocomplete="email" 
+              required 
+              autofocus 
+              placeholder="seu@email.com ou CPF"
+              value="{{ request.form.get('email', '') }}"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="password">Senha</label>
+            <input 
+              class="input" 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Digite sua senha" 
+              required
+            >
+          </div>
+
+          <div class="row-opts">
+            <label class="remember">
+              <input 
+                type="checkbox" 
+                id="remember" 
+                name="remember"
+                {{ 'checked' if request.form.get('remember') }}
+              > 
+              <span>Lembrar de mim</span>
+            </label>
+            
+            <!-- ================================
+                 🔐 NOVO: Link "Esqueci minha senha"
+                 ================================ -->
+            <a href="{{ url_for('auth.recuperar_senha') }}" class="forgot-password-link">
+              <i class="bi bi-key"></i>
+              <span>Esqueci minha senha</span>
+            </a>
+          </div>
+
+          <button class="btn" type="submit" id="loginBtn">
+            <i class="bi bi-box-arrow-in-right" id="loginIcon"></i>
+            <span id="loginText">Entrar</span>
+          </button>
+        </form>
+
+        <p class="footer-text">
+          Não tem uma conta? 
+          <a href="{{ url_for('auth.registro') }}">Cadastre-se aqui</a>
+        </p>
+        
+        <!-- Informações de sistema -->
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+          <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+            <i class="bi bi-shield-check"></i>
+            Sistema com proteção contra erros de conexão
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // Melhorar UX do formulário de login
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('loginForm');
+      const btn = document.getElementById('loginBtn');
+      const icon = document.getElementById('loginIcon');
+      const text = document.getElementById('loginText');
+      
+      // Loading state no submit
+      form.addEventListener('submit', function(e) {
+        // Validação básica
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        if (!email || !password) {
+          e.preventDefault();
+          showAlert('Por favor, preencha email/CPF e senha.', 'warning');
+          return;
+        }
+        
+        // Estado de loading
+        btn.disabled = true;
+        icon.className = 'bi bi-arrow-clockwise';
+        text.textContent = 'Entrando...';
+        document.body.classList.add('loading');
+        
+        // Timeout de segurança (caso a resposta demore muito)
+        setTimeout(() => {
+          if (btn.disabled) {
+            btn.disabled = false;
+            icon.className = 'bi bi-box-arrow-in-right';
+            text.textContent = 'Entrar';
+            document.body.classList.remove('loading');
+            showAlert('A conexão está demorando. Tente novamente.', 'warning');
+          }
+        }, 30000); // 30 segundos
+      });
+      
+      // Função para mostrar alertas dinâmicos
+      function showAlert(message, type = 'danger') {
+        // Remover alertas existentes
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Criar novo alerta
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        
+        let iconClass = 'bi bi-info-circle';
+        if (type === 'danger') iconClass = 'bi bi-exclamation-triangle-fill';
+        else if (type === 'warning') iconClass = 'bi bi-exclamation-triangle';
+        else if (type === 'success') iconClass = 'bi bi-check-circle-fill';
+        
+        alertDiv.innerHTML = `
+          <i class="${iconClass}"></i>
+          <span>${message}</span>
+        `;
+        
+        // Inserir antes do formulário
+        const form = document.getElementById('loginForm');
+        form.parentNode.insertBefore(alertDiv, form);
+        
+        // Auto-remover após 5 segundos
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.remove();
+          }
+        }, 5000);
+      }
+      
+      // Melhorar feedback visual nos inputs
+      const inputs = document.querySelectorAll('.input');
+      inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+          if (this.value.trim() === '') {
+            this.style.borderColor = 'var(--warning)';
+          } else {
+            this.style.borderColor = 'var(--success)';
+          }
+        });
+        
+        input.addEventListener('focus', function() {
+          this.style.borderColor = 'var(--primary)';
+        });
+      });
+      
+      // Validação flexível (email OU CPF)
+      const emailInput = document.getElementById('email');
+      emailInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cpfRegex = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/;
+        
+        if (value && !emailRegex.test(value) && !cpfRegex.test(value) && !/^\d+$/.test(value)) {
+          this.style.borderColor = 'var(--warning)';
+        } else if (value) {
+          this.style.borderColor = 'var(--success)';
+        }
+      });
+      
+      // Verificar se há mensagens de erro de conexão específicas
+      const alerts = document.querySelectorAll('.alert-danger');
+      alerts.forEach(alert => {
+        const message = alert.textContent.toLowerCase();
+        if (message.includes('ssl') || message.includes('conexão') || message.includes('banco')) {
+          // Adicionar dica específica para problemas de conexão
+          const tip = document.createElement('div');
+          tip.style.cssText = 'margin-top: 8px; font-size: 0.85rem; opacity: 0.8;';
+          tip.innerHTML = '<i class="bi bi-lightbulb"></i> Aguarde alguns instantes e tente novamente.';
+          alert.appendChild(tip);
+        }
+      });
+      
+      // Auto-retry em caso de erro de conexão
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      if (window.location.search.includes('retry')) {
+        retryCount = parseInt(new URLSearchParams(window.location.search).get('retry')) || 0;
+        
+        if (retryCount < maxRetries) {
+          setTimeout(() => {
+            showAlert(`Tentativa ${retryCount + 1} de ${maxRetries}. Tentando conectar automaticamente...`, 'warning');
+          }, 1000);
+        }
+      }
+    });
+    
+    // Detectar problemas de conectividade
+    window.addEventListener('online', function() {
+      showAlert('Conexão restaurada!', 'success');
+    });
+    
+    window.addEventListener('offline', function() {
+      showAlert('Sem conexão com a internet. Verifique sua rede.', 'danger');
+    });
+  </script>
+</body>
+</html>

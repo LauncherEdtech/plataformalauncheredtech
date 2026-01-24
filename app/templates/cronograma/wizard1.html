@@ -1,0 +1,1017 @@
+{% extends "layout.html" %}
+
+{% block title %}Criar Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        min-height: 100vh;
+    }
+
+    .wizard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .wizard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+.wizard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #667eea;
+    text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    margin-bottom: 1rem;
+}
+    .wizard-subtitle {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+
+    .progress-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 0;
+    }
+
+    .progress-step.active:not(:last-child)::after {
+        background: linear-gradient(to right, #667eea, rgba(255, 255, 255, 0.1));
+    }
+
+    .progress-step.completed:not(:last-child)::after {
+        background: #667eea;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        position: relative;
+        z-index: 1;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active .step-number {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: #667eea;
+        transform: scale(1.1);
+    }
+
+    .progress-step.completed .step-number {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .step-label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .progress-step.active .step-label {
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Wizard Content */
+    .wizard-content {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 25px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step-container {
+        display: none;
+    }
+
+    .step-container.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .step-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 2rem;
+    }
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color-scheme: dark; /* ✅ Força tema escuro */
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.form-select option {
+    background-color: #1a1a2e;
+    color: white;
+    padding: 0.5rem;
+}
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:checked {
+    background: #667eea;
+    color: white;
+}
+
+    /* Days Grid */
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .day-checkbox input {
+        display: none;
+    }
+
+    .day-label {
+        display: block;
+        padding: 1rem;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .day-checkbox input:checked + .day-label {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        border-color: #667eea;
+    }
+
+    .day-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .day-full {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Materias Grid */
+    .materias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .materia-checkbox input {
+        display: none;
+    }
+
+    .materia-label {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .materia-checkbox input:checked + .materia-label {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        border-color: #667eea;
+    }
+
+    .materia-icon {
+        font-size: 2rem;
+    }
+
+    .materia-info {
+        flex: 1;
+    }
+
+    .materia-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .materia-sections {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Preference Options */
+    .preference-option {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        margin-bottom: 1rem;
+    }
+
+    .preference-icon {
+        font-size: 2rem;
+        width: 50px;
+        text-align: center;
+    }
+
+    .preference-content {
+        flex: 1;
+    }
+
+    .preference-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .preference-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: 0.4s;
+        border-radius: 30px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+
+    /* Navigation */
+    .wizard-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-nav {
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-prev {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-prev:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-next, .btn-create {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-next:hover, .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    @media (max-width: 768px) {
+        .wizard-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .wizard-content {
+            padding: 1.5rem;
+        }
+
+        .days-grid {
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        }
+
+        .materias-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wizard-nav {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <!-- Header -->
+    <div class="wizard-header">
+        <h1 class="wizard-title">🎯 Criar Seu Cronograma</h1>
+        <p class="wizard-subtitle">Vamos personalizar seus estudos em alguns passos</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Objetivo</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Disponibilidade</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Matérias</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Preferências</div>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Extras</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wizard Content -->
+    <div class="wizard-content">
+        <!-- STEP 1: Objetivo -->
+        <div class="step-container active" data-step="1">
+            <h2 class="step-title">🎯 Qual é o seu objetivo?</h2>
+            <p class="step-subtitle">Defina sua meta de estudos</p>
+
+            <div class="form-group">
+                <label for="objetivo" class="form-label">Objetivo Principal</label>
+                <input type="text" 
+                       id="objetivo" 
+                       class="form-input" 
+                       placeholder="Ex: Passar no ENEM 2025" 
+                       value="Estudar para o ENEM">
+            </div>
+
+            <div class="form-group">
+                <label for="data_inicio" class="form-label">Data de Início</label>
+                <input type="date" 
+                       id="data_inicio" 
+                       class="form-input" 
+                       value="{{ today }}">
+            </div>
+
+            <div class="form-group">
+                <label for="data_prova" class="form-label">Data da Prova (Opcional)</label>
+                <input type="date" 
+                       id="data_prova" 
+                       class="form-input">
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span> <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Disponibilidade -->
+        <div class="step-container" data-step="2">
+            <h2 class="step-title">📅 Quando você pode estudar?</h2>
+            <p class="step-subtitle">Defina sua disponibilidade semanal</p>
+            
+            <div class="form-group">
+                <label class="form-label">Dias de Estudo (para aulas)</label>
+                <div class="days-grid">
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_seg" name="dias_estudo" value="seg" checked>
+                        <label for="dia_seg" class="day-label">
+                            <div class="day-name">SEG</div>
+                            <div class="day-full">Segunda</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_ter" name="dias_estudo" value="ter" checked>
+                        <label for="dia_ter" class="day-label">
+                            <div class="day-name">TER</div>
+                            <div class="day-full">Terça</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_qua" name="dias_estudo" value="qua" checked>
+                        <label for="dia_qua" class="day-label">
+                            <div class="day-name">QUA</div>
+                            <div class="day-full">Quarta</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_qui" name="dias_estudo" value="qui" checked>
+                        <label for="dia_qui" class="day-label">
+                            <div class="day-name">QUI</div>
+                            <div class="day-full">Quinta</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_sex" name="dias_estudo" value="sex" checked>
+                        <label for="dia_sex" class="day-label">
+                            <div class="day-name">SEX</div>
+                            <div class="day-full">Sexta</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_sab" name="dias_estudo" value="sab">
+                        <label for="dia_sab" class="day-label">
+                            <div class="day-name">SÁB</div>
+                            <div class="day-full">Sábado</div>
+                        </label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="dia_dom" name="dias_estudo" value="dom">
+                        <label for="dia_dom" class="day-label">
+                            <div class="day-name">DOM</div>
+                            <div class="day-full">Domingo</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+                <label class="form-label">Horas por dia</label>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 1rem;">
+                    Quantas horas você pode estudar em cada dia?
+                </p>
+                
+                <div id="horasPorDiaContainer">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span> <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span> <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Matérias (✅ AGRUPADAS POR NOME) -->
+        <div class="step-container" data-step="3">
+            <h2 class="step-title">📚 Quais matérias você quer estudar?</h2>
+            <p class="step-subtitle">Ao marcar uma matéria, todas as aulas dela (de todas as seções) serão incluídas</p>
+            
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <label class="form-label" style="margin-bottom: 0;">Matérias Disponíveis ({{ materias|length }})</label>
+                    <button type="button" class="btn-secondary" onclick="selectAllMaterias()">
+                        Selecionar Todas
+                    </button>
+                </div>
+                
+                {% if materias %}
+                <div class="materias-grid">
+                    {% for materia in materias %}
+                    <div class="materia-checkbox">
+                        <input type="checkbox" 
+                               id="materia_{{ loop.index }}" 
+                               name="materias" 
+                               data-ids="{{ materia.ids|join(',') }}"
+                               checked>
+                        <label for="materia_{{ loop.index }}" class="materia-label">
+                            <div class="materia-icon">{{ materia.icone }}</div>
+                            <div class="materia-info">
+                                <div class="materia-name">{{ materia.nome }}</div>
+                                {% if materia.secoes %}
+                                <div class="materia-sections">
+                                    {{ materia.secoes|unique|join(', ') }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 3rem; color: rgba(255,255,255,0.6);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                    <p>Nenhuma matéria disponível ainda.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span> <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span> <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Preferências -->
+        <div class="step-container" data-step="4">
+            <h2 class="step-title">⚙️ Preferências de Estudo</h2>
+            <p class="step-subtitle">Personalize como as aulas serão organizadas</p>
+
+            <div class="form-group">
+                <label class="form-label">Período de Preferência</label>
+                <select id="periodo" class="form-input">
+                    <option value="manha">Manhã (6h - 12h)</option>
+                    <option value="tarde">Tarde (12h - 18h)</option>
+                    <option value="noite">Noite (18h - 23h)</option>
+                    <option value="flexivel" selected>Flexível</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Nível Atual</label>
+                <select id="nivel" class="form-input">
+                    <option value="iniciante">Iniciante</option>
+                    <option value="intermediario" selected>Intermediário</option>
+                    <option value="avancado">Avançado</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <div class="preference-option">
+                    <div class="preference-icon">📊</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Priorizar Dificuldade</div>
+                        <div class="preference-description">Começar pelas aulas mais fáceis e progredir gradualmente</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="priorizar_dificuldade" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="preference-option">
+                    <div class="preference-icon">🔄</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Incluir Revisões</div>
+                        <div class="preference-description">Adicionar dias de revisão das matérias estudadas</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="incluir_revisoes" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span> <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span> <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Simulados e Redações -->
+        <div class="step-container" data-step="5">
+            <h2 class="step-title">📝 Simulados e Redações</h2>
+            <p class="step-subtitle">Configure suas práticas semanais</p>
+            
+            <div class="form-group">
+                <div class="preference-option">
+                    <div class="preference-icon">📝</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Incluir Simulados</div>
+                        <div class="preference-description">Adiciona simulados completos periodicamente</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="incluir_simulados" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="simuladosConfig" style="margin-top: 1rem; padding-left: 3rem;">
+                    <label class="form-label">Dia da semana para simulados:</label>
+                    <select id="dia_simulados" class="form-input">
+                        <option value="sab">Sábado</option>
+                        <option value="dom">Domingo</option>
+                        <option value="seg">Segunda-feira</option>
+                        <option value="ter">Terça-feira</option>
+                        <option value="qua">Quarta-feira</option>
+                        <option value="qui">Quinta-feira</option>
+                        <option value="sex">Sexta-feira</option>
+                    </select>
+                    
+                    <label class="form-label" style="margin-top: 1rem;">Frequência:</label>
+                    <select id="frequencia_simulados" class="form-input">
+                        <option value="1">Toda semana</option>
+                        <option value="2" selected>A cada 2 semanas</option>
+                        <option value="3">A cada 3 semanas</option>
+                        <option value="4">Mensal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+                <div class="preference-option">
+                    <div class="preference-icon">✍️</div>
+                    <div class="preference-content">
+                        <div class="preference-title">Incluir Redações</div>
+                        <div class="preference-description">Adiciona redações para praticar escrita</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="incluir_redacoes" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="redacoesConfig" style="margin-top: 1rem; padding-left: 3rem;">
+                    <label class="form-label">Dia da semana para redações:</label>
+                    <select id="dia_redacoes" class="form-input">
+                        <option value="dom">Domingo</option>
+                        <option value="sab">Sábado</option>
+                        <option value="seg">Segunda-feira</option>
+                        <option value="ter">Terça-feira</option>
+                        <option value="qua">Quarta-feira</option>
+                        <option value="qui">Quinta-feira</option>
+                        <option value="sex">Sexta-feira</option>
+                    </select>
+                    
+                    <label class="form-label" style="margin-top: 1rem;">Frequência:</label>
+                    <select id="frequencia_redacoes" class="form-input">
+                        <option value="1" selected>Toda semana</option>
+                        <option value="2">A cada 2 semanas</option>
+                        <option value="3">A cada 3 semanas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span> <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-create" id="btnCriar" onclick="criarCronograma()">
+                    <span>🎯</span> <span>Criar Meu Cronograma</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Estado do wizard
+let currentStep = 1;
+const totalSteps = 5;
+
+// Navegação
+function nextStep() {
+    if (currentStep < totalSteps) {
+        updateStep(currentStep + 1);
+    }
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        updateStep(currentStep - 1);
+    }
+}
+
+function updateStep(step) {
+    document.querySelector(`.step-container[data-step="${currentStep}"]`).classList.remove('active');
+    
+    document.querySelectorAll('.progress-step').forEach(el => {
+        const stepNum = parseInt(el.dataset.step);
+        el.classList.remove('active');
+        if (stepNum < step) {
+            el.classList.add('completed');
+        } else {
+            el.classList.remove('completed');
+        }
+    });
+    
+    currentStep = step;
+    document.querySelector(`.step-container[data-step="${currentStep}"]`).classList.add('active');
+    document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Selecionar todas matérias
+function selectAllMaterias() {
+    const checkboxes = document.querySelectorAll('input[name="materias"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+}
+
+// Atualizar horas por dia
+function atualizarHorasPorDia() {
+    const container = document.getElementById('horasPorDiaContainer');
+    const diasSelecionados = Array.from(document.querySelectorAll('input[name="dias_estudo"]:checked')).map(cb => cb.value);
+    
+    const diasNomes = {
+        'seg': 'Segunda',
+        'ter': 'Terça',
+        'qua': 'Quarta',
+        'qui': 'Quinta',
+        'sex': 'Sexta',
+        'sab': 'Sábado',
+        'dom': 'Domingo'
+    };
+
+    
+    container.innerHTML = diasSelecionados.map(dia => `
+        <div style="margin-bottom: 1rem;">
+            <label for="horas_${dia}" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">${diasNomes[dia]}</label>
+            <input type="number" 
+                   id="horas_${dia}" 
+                   min="0.5" 
+                   max="12" 
+                   step="0.5" 
+                   value="2" 
+                   class="form-input"
+                   style="max-width: 200px;">
+        </div>
+    `).join('');
+}
+
+// ✅ CORRIGIDO: Criar cronograma pegando TODOS os IDs das matérias selecionadas
+async function criarCronograma() {
+    const btnCriar = document.getElementById('btnCriar');
+    btnCriar.disabled = true;
+    btnCriar.innerHTML = '<span>⏳</span> <span>Criando...</span>';
+    
+    try {
+        // Coletar dias selecionados
+        const diasSelecionados = [];
+        document.querySelectorAll('input[name="dias_estudo"]:checked').forEach(input => {
+            diasSelecionados.push(input.value);
+        });
+        
+        console.log('📅 Dias selecionados:', diasSelecionados);
+        
+        // Coletar horas por dia
+        const horasPorDia = {};
+        diasSelecionados.forEach(dia => {
+            const horasInput = document.getElementById(`horas_${dia}`);
+            if (horasInput) {
+                horasPorDia[dia] = parseFloat(horasInput.value) || 2;
+            }
+        });
+        
+        console.log('⏰ Horas por dia:', horasPorDia);
+        
+        // ✅ CORRIGIDO: Coletar TODOS os IDs das matérias marcadas
+        const materiasSelecionadas = [];
+        document.querySelectorAll('input[name="materias"]:checked').forEach(input => {
+            const ids = input.dataset.ids.split(',').map(id => parseInt(id));
+            materiasSelecionadas.push(...ids);
+        });
+        
+        console.log('📚 IDs das matérias selecionadas:', materiasSelecionadas);
+        
+        // Configurações de simulados e redações
+        const incluirSimulados = document.getElementById('incluir_simulados').checked;
+        const incluirRedacoes = document.getElementById('incluir_redacoes').checked;
+        
+        const data = {
+            objetivo: document.getElementById('objetivo').value || 'Estudar para o ENEM',
+            data_inicio: document.getElementById('data_inicio').value,
+            data_prova: document.getElementById('data_prova').value || null,
+            dias_estudo: diasSelecionados,
+            horas_por_dia: horasPorDia,
+            materias: materiasSelecionadas,
+            periodo: document.getElementById('periodo').value,
+            nivel: document.getElementById('nivel').value,
+            priorizar_dificuldade: document.getElementById('priorizar_dificuldade').checked,
+            incluir_revisoes: document.getElementById('incluir_revisoes').checked,
+            incluir_simulados: incluirSimulados,
+            incluir_redacoes: incluirRedacoes,
+            dia_simulados: incluirSimulados ? document.getElementById('dia_simulados').value : 'sab',
+            frequencia_simulados: incluirSimulados ? parseInt(document.getElementById('frequencia_simulados').value) : 2,
+            dia_redacoes: incluirRedacoes ? document.getElementById('dia_redacoes').value : 'dom',
+            frequencia_redacoes: incluirRedacoes ? parseInt(document.getElementById('frequencia_redacoes').value) : 1,
+        };
+        
+        console.log('📤 Enviando dados:', data);
+        
+        const response = await fetch('/cronograma/criar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('✅ ' + result.message, 'success');
+            setTimeout(() => {
+                window.location.href = '/cronograma/';
+            }, 1500);
+        } else {
+            showNotification('❌ ' + (result.error || 'Erro ao criar cronograma'), 'error');
+            btnCriar.disabled = false;
+            btnCriar.innerHTML = '<span>🎯</span> <span>Criar Meu Cronograma</span>';
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        showNotification('❌ Erro ao criar cronograma', 'error');
+        btnCriar.disabled = false;
+        btnCriar.innerHTML = '<span>🎯</span> <span>Criar Meu Cronograma</span>';
+    }
+}
+
+// Notificações
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #11998e, #38ef7d)' : 'linear-gradient(135deg, #dc3545, #c82333)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 99999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    atualizarHorasPorDia();
+    
+    document.querySelectorAll('input[name="dias_estudo"]').forEach(checkbox => {
+        checkbox.addEventListener('change', atualizarHorasPorDia);
+    });
+    
+    const incluirSimulados = document.getElementById('incluir_simulados');
+    if (incluirSimulados) {
+        incluirSimulados.addEventListener('change', function(e) {
+            document.getElementById('simuladosConfig').style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+    
+    const incluirRedacoes = document.getElementById('incluir_redacoes');
+    if (incluirRedacoes) {
+        incluirRedacoes.addEventListener('change', function(e) {
+            document.getElementById('redacoesConfig').style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+});
+
+// CSS para animações
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

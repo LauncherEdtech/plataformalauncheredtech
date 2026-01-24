@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  /* Estilos para a página de feedback */
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background-color: #2d3748;
+  color: #a0aec0;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.essay-container {
+  background-color: #121826;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.essay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #2d3748;
+  background-color: #1a2235;
+}
+
+.essay-title-section h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #e2e8f0;
+}
+
+.essay-date {
+  display: block;
+  font-size: 0.875rem;
+  color: #a0aec0;
+  margin-top: 0.25rem;
+}
+
+.essay-score-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.score-high {
+  background-color: #10b981;
+}
+
+.score-medium {
+  background-color: #f59e0b;
+}
+
+.score-low {
+  background-color: #ef4444;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .feedback-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background-color: #121826;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  padding: 1rem;
+  background-color: #1a2235;
+  border-bottom: 1px solid #2d3748;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+}
+
+.card-header h3 i {
+  margin-right: 0.5rem;
+  color: #6366f1;
+}
+
+/* Ajuste do card-content para dar mais espaço ao conteúdo */
+.card-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.essay-content {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-line;
+  color: #cbd5e0;
+}
+
+.text-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.essay-text {
+  flex-grow: 1;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #1a2235;
+}
+
+.essay-text::-webkit-scrollbar {
+  width: 8px;
+}
+
+.essay-text::-webkit-scrollbar-track {
+  background: #1a2235;
+}
+
+.essay-text::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 4px;
+}
+
+.summary-card {
+  margin-top: auto;
+}
+
+/* Apenas as alterações necessárias para o gráfico de radar */
+.radar-chart-container {
+  height: 400px;
+  width: 100%;
+  position: relative;
+  margin-bottom: 2rem;
+  background-color: transparent !important; /* Remove qualquer fundo */
+}
+
+/* Garante que o container do Plotly não tenha fundo branco */
+.radar-chart-container > div {
+  background-color: transparent !important;
+}
+
+/* Ajusta as cores do polígono do gráfico */
+.radar-chart-container .radarChart path.radar-chart-polygon {
+  fill: rgba(93, 130, 212, 0.5) !important;
+  stroke: rgba(63, 103, 193, 0.9) !important;
+}
+
+/* Linhas de eixo */
+.radar-chart-container .radarChart path.radar-chart-axis {
+  stroke: rgba(160, 174, 192, 0.7) !important;
+}
+
+/* Textos legíveis no modo escuro */
+.radar-chart-container .radarChart text {
+  fill: #cbd5e0 !important;
+}
+
+/* Remove qualquer background branco */
+.radar-chart-container svg,
+.radar-chart-container svg rect[fill="#fff"],
+.radar-chart-container svg rect[fill="white"],
+.radar-chart-container .main-svg,
+.radar-chart-container .bg {
+  background: transparent !important;
+  fill: transparent !important;
+}
+
+/* Remove background branco do papel do plotly */
+.radar-chart-container .plotly .main-svg .polyfill {
+  fill: transparent !important;
+}
+
+/* Se estiver usando Plotly, este também é necessário */
+.js-plotly-plot .plotly .main-svg,
+.js-plotly-plot .plotly .plot-container .svg-container {
+  background: transparent !important;
+}
+
+
+
+
+
+
+/* Melhorar a visualização das legendas do gráfico de radar */
+.radar-chart-container .radarChart text,
+.radar-chart-container text.ytitle,
+.radar-chart-container text.xtitle,
+.radar-chart-container .labels text {
+  fill: #e2e8f0 !important; /* Cor mais clara para melhor contraste */
+  font-weight: 500 !important; /* Deixar fonte um pouco mais grossa */
+  text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.8) !important; /* Sombra para ajudar na legibilidade */
+}
+
+/* Ajustar específicamente o texto de legendas "Competência X" */
+.radar-chart-container text.annotation,
+.radar-chart-container g.annotation text,
+.radar-chart-container .axis-title text {
+  fill: #90cdf4 !important; /* Azul claro para as competências */
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* Para qualquer escala numérica no gráfico */
+.radar-chart-container .xtick text,
+.radar-chart-container .ytick text,
+.radar-chart-container g.xtick text,
+.radar-chart-container g.ytick text {
+  fill: #a0aec0 !important; /* Cinza claro para os números */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Garantir que o score-summary fique bem posicionado abaixo do gráfico */
+.score-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  position: relative;
+  z-index: 2;
+}
+/* Aumentar o tamanho dos indicadores de pontuação para melhor visualização */
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem;
+}
+.score-label {
+  font-size: 0.8rem;
+  color: #a0aec0;
+  margin-bottom: 0.25rem;
+}
+
+.score-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.total-score .score-value {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.25rem;
+}
+
+.competence-tabs {
+  background-color: #121826;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  background-color: #1a2235;
+  border-bottom: 1px solid #2d3748;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  color: #a0aec0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: #e2e8f0;
+  background-color: #2d3748;
+}
+
+.tab-btn.active {
+  color: #90cdf4;
+  border-bottom-color: #3182ce;
+}
+
+.tabs-content {
+  padding: 1.5rem;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.competence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.competence-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #e2e8f0;
+}
+
+.comp-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+
+.feedback-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #1a2235;
+}
+
+.feedback-section h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #e2e8f0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.feedback-section h4 i {
+  margin-right: 0.5rem;
+}
+
+.feedback-section p, 
+.feedback-section ul {
+  margin: 0;
+  color: #cbd5e0;
+}
+
+.feedback-section ul {
+  padding-left: 1.5rem;
+}
+
+.feedback-section li {
+  margin-bottom: 0.375rem;
+}
+
+.feedback-section li:last-child {
+  margin-bottom: 0;
+}
+
+.feedback-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .feedback-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.positive h4 i {
+  color: #10b981;
+}
+
+.negative h4 i {
+  color: #ef4444;
+}
+
+.suggestions h4 i {
+  color: #f59e0b;
+}
+
+.positive {
+  border-left: 4px solid #10b981;
+}
+
+.negative {
+  border-left: 4px solid #ef4444;
+}
+
+.suggestions {
+  border-left: 4px solid #f59e0b;
+}
+</style>
+<div class="feedback-header">
+  <h1 class="page-title">Feedback da Redação</h1>
+  <a href="{{ url_for('dashboard') }}" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+  </a>
+</div>
+
+<div class="essay-container">
+  <div class="essay-header">
+    <div class="essay-title-section">
+      <h2>{{ essay.title }}</h2>
+      <span class="essay-date">{{ essay.created_at.strftime('%d/%m/%Y') if essay.created_at else "N/A" }}</span>
+    </div>
+    <div class="essay-score-badge {% if essay.score_total >= 700 %}score-high{% elif essay.score_total >= 500 %}score-medium{% else %}score-low{% endif %}">
+      {{ essay.score_total }}
+    </div>
+  </div>
+
+  <div class="feedback-grid">
+    <div class="text-column">
+      <div class="card essay-text">
+        <div class="card-header">
+          <h3><i class="fas fa-file-alt"></i> Texto Original</h3>
+        </div>
+        <div class="card-content">
+          <p class="essay-content">{{ essay.text }}</p>
+        </div>
+      </div>
+      
+      <div class="card summary-card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-bar"></i> Resumo da Avaliação</h3>
+        </div>
+        <div class="card-content">
+          <!-- Container do gráfico modificado para corrigir a sobreposição -->
+          <div class="radar-chart-container">
+            {{ radar_div|safe }}
+          </div>
+          <div class="score-summary">
+            <div class="score-item total-score">
+              <span class="score-label">Nota Total</span>
+              <span class="score-value {% if essay.score_total >= 700 %}score-high{% elif essay.score_total >= 500 %}score-medium{% else %}score-low{% endif %}">{{ essay.score_total }}</span>
+            </div>
+            {% for cf in competence_feedbacks %}
+            <div class="score-item">
+              <span class="score-label">Comp. {{ cf.numero }}</span>
+              <span class="score-value {% if cf.nota >= 160 %}score-high{% elif cf.nota >= 100 %}score-medium{% else %}score-low{% endif %}">{{ cf.nota }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="feedback-column">
+      <div class="competence-tabs">
+        <div class="tabs-header">
+          {% for cf in competence_feedbacks %}
+          <button class="tab-btn {% if loop.first %}active{% endif %}" data-tab="tab-{{ cf.numero }}">
+            Comp. {{ cf.numero }}
+          </button>
+          {% endfor %}
+        </div>
+        
+        <div class="tabs-content">
+          {% for cf in competence_feedbacks %}
+          <div class="tab-content {% if loop.first %}active{% endif %}" id="tab-{{ cf.numero }}">
+            <div class="competence-header">
+              <h3>Competência {{ cf.numero }} - {{ cf.nome }}</h3>
+              <div class="comp-score {% if cf.nota >= 160 %}score-high{% elif cf.nota >= 100 %}score-medium{% else %}score-low{% endif %}">
+                {{ cf.nota }}
+              </div>
+            </div>
+            
+            <div class="feedback-section">
+              <h4><i class="fas fa-comment"></i> Justificativa</h4>
+              <p>{{ cf.justificativa }}</p>
+            </div>
+            
+            <!-- Pontos Fortes -->
+            <div class="feedback-section positive">
+              <h4><i class="fas fa-plus-circle"></i> Pontos Fortes</h4>
+              <ul>
+                {% if cf.pontos_fortes %}
+                  {% for ponto in cf.pontos_fortes.replace('"', '').replace("'", "").replace("{", "").replace("}", "").split(',') %}
+                    {% if ponto.strip() %}
+                      <li>{{ ponto.strip() }}</li>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <li>Nenhum ponto forte destacado</li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <!-- Pontos Fracos -->
+            <div class="feedback-section negative">
+              <h4><i class="fas fa-minus-circle"></i> Pontos Fracos</h4>
+              <ul>
+                {% if cf.pontos_fracos %}
+                  {% for ponto in cf.pontos_fracos.replace('"', '').replace("'", "").replace("{", "").replace("}", "").split(',') %}
+                    {% if ponto.strip() %}
+                      <li>{{ ponto.strip() }}</li>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <li>Nenhum ponto fraco destacado</li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <!-- Sugestões -->
+            <div class="feedback-section suggestions">
+              <h4><i class="fas fa-lightbulb"></i> Sugestões</h4>
+              <ul>
+                {% if cf.sugestoes %}
+                  {% for sugestao in cf.sugestoes.replace('"', '').replace("'", "").replace("{", "").replace("}", "").split(',') %}
+                    {% if sugestao.strip() %}
+                      <li>{{ sugestao.strip() }}</li>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <li>Nenhuma sugestão específica</li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Controle das abas
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove a classe ativa de todos os botões e conteúdos
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        // Adiciona a classe ativa ao botão clicado
+        button.classList.add('active');
+        
+        // Ativa o conteúdo correspondente
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+  });
+</script>
+{% endblock %}

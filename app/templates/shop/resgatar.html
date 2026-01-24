@@ -1,0 +1,971 @@
+<!-- app/templates/shop/resgatar.html -->
+{% extends "layout.html" %}
+
+{% block title %}Resgatar {{ produto.nome }} - Shop - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .resgate-produto {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Navigation */
+    .nav-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .breadcrumb-nav {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.5rem;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        margin: 0;
+        padding: 0;
+        background: none;
+    }
+
+    .breadcrumb-item {
+        color: var(--text-muted);
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '>';
+        color: var(--border-light);
+        margin: 0 0.5rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--accent);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .back-button {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-button:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-1px);
+    }
+
+    /* Checkout Header */
+    .checkout-header {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .checkout-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .checkout-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .checkout-title i {
+        color: var(--primary);
+    }
+
+    .checkout-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Layout Grid */
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    /* Form Sections */
+    .form-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .form-section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section-title i {
+        color: var(--primary);
+        font-size: 1.25rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        background: #0a0a0a;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: #0a0a0a;
+        color: var(--text);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Support Info */
+    .support-info {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .support-info h5 {
+        color: var(--text);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .support-info h5 i {
+        color: var(--accent);
+    }
+
+    .support-info p {
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .support-info p:last-child {
+        margin-bottom: 0;
+    }
+
+    .support-number {
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    /* Terms Checkbox */
+    .terms-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0;
+        accent-color: var(--primary);
+    }
+
+    .form-check-label {
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .form-check-label a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .form-check-label a:hover {
+        color: var(--accent-light);
+        text-decoration: underline;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Sidebar */
+    .checkout-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Product Preview */
+    .product-preview {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-preview::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .product-image-container {
+        height: 200px;
+        background: #0a0a0a;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .product-image {
+        max-height: 180px;
+        max-width: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .product-preview:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .product-preview-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .product-preview-desc {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .product-preview-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .xp-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .quantity-info {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    /* Summary Card */
+    .summary-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--warning), #d97706);
+        opacity: 0.8;
+    }
+
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: var(--text-muted);
+    }
+
+    .summary-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .summary-item.total {
+        padding-top: 1rem;
+        margin-top: 1rem;
+        border-top: 1px solid var(--border);
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: var(--text);
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .summary-value.negative {
+        color: var(--danger);
+    }
+
+    .summary-value.positive {
+        color: var(--success);
+    }
+
+    /* Progress Section */
+    .progress-section {
+        margin-top: 2rem;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-label {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .progress-percentage {
+        color: var(--success);
+        font-weight: 700;
+    }
+
+    .progress-bar-custom {
+        width: 100%;
+        height: 12px;
+        background: var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success), #059669);
+        border-radius: 6px;
+        transition: width 1.5s ease-out;
+    }
+
+    .progress-message {
+        text-align: center;
+        color: var(--success);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* Modals */
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .modal-title {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .confirmation-icon {
+        font-size: 4rem;
+        color: var(--warning);
+        margin-bottom: 1.5rem;
+    }
+
+    .modal h4 {
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .modal p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .modal h5 {
+        color: var(--text);
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .resgate-produto {
+            padding: 1rem;
+        }
+
+        .nav-section {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .breadcrumb-nav {
+            order: 2;
+        }
+
+        .checkout-title {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkout-layout {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .checkout-sidebar {
+            order: -1;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .product-preview,
+        .summary-card,
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .checkout-title {
+            font-size: 1.75rem;
+        }
+
+        .checkout-header {
+            padding: 2rem;
+        }
+
+        .form-section,
+        .product-preview,
+        .summary-card {
+            padding: 1rem;
+        }
+
+        .product-image-container {
+            height: 150px;
+        }
+
+        .product-image {
+            max-height: 130px;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+
+<div class="resgate-produto">
+    <!-- Navigation -->
+    <div class="nav-section">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">Shop</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('shop.produto', produto_id=produto.id) }}">{{ produto.nome }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Resgatar</li>
+            </ol>
+        </nav>
+        
+        <a href="{{ url_for('shop.produto', produto_id=produto.id) }}" class="back-button">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para o produto
+        </a>
+    </div>
+    
+    <!-- Checkout Header -->
+    <div class="checkout-header">
+        <h1 class="checkout-title">
+            <i class="bi bi-basket"></i>
+            Resgatar Produto
+        </h1>
+        <p class="checkout-subtitle">Forneça suas informações de contato para finalizar seu resgate.</p>
+    </div>
+    
+    <!-- Checkout Layout -->
+    <div class="checkout-layout">
+        <!-- Main Form -->
+        <div class="checkout-main">
+            <form action="{{ url_for('shop.resgatar', produto_id=produto.id) }}" method="POST" id="resgate-form">
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="bi bi-person-fill"></i>
+                        Informações de Contato
+                    </h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   value="{{ current_user.nome_completo }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="form-label">E-mail para Contato</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ current_user.email }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone" class="form-label">WhatsApp para Contato</label>
+                            <input type="tel" class="form-control" id="telefone" name="telefone" 
+                                   placeholder="(00) 00000-0000" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Support Info -->
+                <div class="support-info">
+                    <h5><i class="bi bi-info-circle-fill"></i>Informações Importantes</h5>
+                    <p>Após confirmar o resgate, nossa equipe de suporte entrará em contato com você através do WhatsApp ou e-mail fornecido para confirmar os dados de envio do produto.</p>
+                    <p>Caso não receba contato em até 3 dias úteis, por favor, envie uma mensagem para nosso número de suporte: <span class="support-number">(62) 99559-4055</span>.</p>
+                </div>
+                
+                <!-- Terms and Conditions -->
+                <div class="terms-section">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="termos" name="termos" required>
+                        <label class="form-check-label" for="termos">
+                            Concordo com os <a href="#" data-bs-toggle="modal" data-bs-target="#termosModal">Termos e Condições</a>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('shop.produto', produto_id=produto.id) }}" class="btn btn-outline">
+                        <i class="bi bi-arrow-left"></i>Voltar
+                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                        <i class="bi bi-check-circle"></i>Confirmar Resgate
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="checkout-sidebar">
+            <!-- Product Preview -->
+            <div class="product-preview">
+                <div class="product-image-container">
+                    <img src="{{ url_for('static', filename='images/produtos/' ~ produto.imagem) }}" 
+                         alt="{{ produto.nome }}" class="product-image">
+                </div>
+                <h4 class="product-preview-title">{{ produto.nome }}</h4>
+                <p class="product-preview-desc">{{ produto.descricao|truncate(100) }}</p>
+                <div class="product-preview-footer">
+                    <div class="xp-badge">
+                        <i class="bi bi-coin"></i>
+                        {{ produto.preco_xp }} XP
+                    </div>
+                    <div class="quantity-info">
+                        Quantidade: 1
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h4 class="summary-title">Resumo de Pontos</h4>
+                
+                <div class="summary-item">
+                    <span>XP disponível:</span>
+                    <span class="summary-value">{{ current_user.xp_total }} XP</span>
+                </div>
+                <div class="summary-item">
+                    <span>Custo do produto:</span>
+                    <span class="summary-value negative">- {{ produto.preco_xp }} XP</span>
+                </div>
+                <div class="summary-item total">
+                    <span>Saldo após o resgate:</span>
+                    <span class="summary-value positive">{{ current_user.xp_total - produto.preco_xp }} XP</span>
+                </div>
+                
+                <!-- Progress Section -->
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">Progresso</span>
+                        <span class="progress-percentage">100%</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                    <div class="progress-message">
+                        Você já tem XP suficiente para este produto!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Resgate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="confirmation-icon">
+                    <i class="bi bi-question-circle"></i>
+                </div>
+                <h4>Tem certeza?</h4>
+                <p>Você está prestes a resgatar <strong>{{ produto.nome }}</strong> por <strong>{{ produto.preco_xp }} XP</strong>.</p>
+                <p>Esta ação não poderá ser desfeita e os pontos serão descontados do seu saldo.</p>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="submitResgate">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Termos e Condições</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Termos Gerais</h5>
+                <p>Os termos e condições a seguir aplicam-se a todos os resgates de produtos da Plataforma Launcher.</p>
+                
+                <h5>2. Elegibilidade</h5>
+                <p>Apenas usuários registrados na Plataforma Launcher podem resgatar produtos utilizando seus pontos XP acumulados.</p>
+                
+                <h5>3. Pontos XP</h5>
+                <p>3.1. Os pontos XP são acumulados através da utilização da plataforma, participação em simulados, resolução de questões e outras atividades disponibilizadas.</p>
+                <p>3.2. Os pontos XP não possuem valor monetário e não podem ser transferidos para outros usuários.</p>
+                <p>3.3. Uma vez utilizados para resgatar um produto, os pontos XP não podem ser reembolsados.</p>
+                
+                <h5>4. Produtos</h5>
+                <p>4.1. A disponibilidade dos produtos está sujeita ao estoque existente.</p>
+                <p>4.2. As imagens dos produtos são meramente ilustrativas e podem não representar exatamente o produto a ser entregue.</p>
+                <p>4.3. A Plataforma Launcher reserva-se o direito de alterar a disponibilidade e o custo em pontos XP dos produtos a qualquer momento.</p>
+                <p>4.4. Um usuário não pode ter mais de um resgate ativo do mesmo produto ao mesmo tempo.</p>
+                
+                <h5>5. Entrega</h5>
+                <p>5.1. Após o resgate, nossa equipe de suporte entrará em contato através do WhatsApp ou e-mail fornecido para obter os dados completos para envio.</p>
+                <p>5.2. O prazo de entrega estimado é de 7 a 10 dias úteis após a confirmação dos dados, podendo variar de acordo com a localidade.</p>
+                <p>5.3. A Plataforma Launcher não se responsabiliza por atrasos ou falhas na entrega causados por informações incorretas fornecidas pelo usuário.</p>
+                
+                <h5>6. Trocas e Devoluções</h5>
+                <p>6.1. Caso o produto apresente defeitos ou avarias, o usuário deverá entrar em contato com o suporte em até 7 dias após o recebimento.</p>
+                <p>6.2. Produtos resgatados não podem ser trocados por outros ou devolvidos em troca de pontos XP.</p>
+                
+                <h5>7. Alterações nos Termos</h5>
+                <p>A Plataforma Launcher reserva-se o direito de alterar estes termos e condições a qualquer momento, sem aviso prévio.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Phone mask
+        const telefoneInput = document.getElementById('telefone');
+        
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.substring(0, 11);
+                
+                if (value.length > 10) {
+                    value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+                } else if (value.length > 6) {
+                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+                } else if (value.length > 2) {
+                    value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+                }
+                
+                e.target.value = value;
+            });
+        }
+        
+        // Submit form on confirmation
+        const submitResgateBtn = document.getElementById('submitResgate');
+        const resgateForm = document.getElementById('resgate-form');
+        
+        if (submitResgateBtn && resgateForm) {
+            submitResgateBtn.addEventListener('click', function() {
+                resgateForm.submit();
+            });
+        }
+
+        // Animate progress bar
+        setTimeout(() => {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 800);
+    });
+</script>
+{% endblock %}

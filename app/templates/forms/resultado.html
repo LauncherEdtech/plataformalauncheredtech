@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resultado do Quiz - Plataforma Launcher</title>
+  
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    :root{
+      --bg: #000000;
+      --bg-gradient: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+      --surface: #111111;
+      --surface-light: #1a1a1a;
+      --primary: #3b82f6;
+      --accent: #00d9ff;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --border: #262626;
+      --radius: 16px;
+      --radius-lg: 24px;
+    }
+
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(600px 300px at 20% 30%, rgba(59, 130, 246, 0.12), transparent 50%),
+        radial-gradient(800px 400px at 80% 70%, rgba(0, 217, 255, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: slideInDown 0.6s ease-out;
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .logo { 
+      width: 64px;
+      height: 64px;
+      border-radius: 16px; 
+      display: grid;
+      place-items: center; 
+      font-weight: 800;
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    .logo-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 36px);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .score-card {
+      background: rgba(17, 17, 17, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+      animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .score-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+    }
+
+    .score-number {
+      font-size: 4rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 0.5rem;
+    }
+
+    .sorte-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0, 217, 255, 0.05));
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .sorte-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .sorte-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--success);
+    }
+
+    .sorte-numero {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: var(--text);
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .sorte-info {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+    }
+
+    .questoes-container {
+      margin-bottom: 2rem;
+    }
+
+    .questao-item {
+      background: rgba(17, 17, 17, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.5s ease-out backwards;
+    }
+
+    .questao-item:nth-child(1) { animation-delay: 0.1s; }
+    .questao-item:nth-child(2) { animation-delay: 0.2s; }
+    .questao-item:nth-child(3) { animation-delay: 0.3s; }
+    .questao-item:nth-child(4) { animation-delay: 0.4s; }
+    .questao-item:nth-child(5) { animation-delay: 0.5s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .questao-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 1rem;
+    }
+
+    .status-icon {
+      font-size: 2rem;
+    }
+
+    .status-icon.correct {
+      color: var(--success);
+    }
+
+    .status-icon.wrong {
+      color: var(--danger);
+    }
+
+    .questao-titulo {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .questao-texto {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .resposta-box {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .sua-resposta {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ffd5d5;
+    }
+
+    .resposta-correta {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #b7f5d3;
+    }
+
+    .resposta-acertou {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #b7f5d3;
+    }
+
+    .explicacao {
+      background: rgba(59, 130, 246, 0.05);
+      border-left: 3px solid var(--primary);
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .btn-cadastro {
+      width: 100%;
+      max-width: 400px;
+      padding: 18px 24px;
+      border: 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 2rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-cadastro:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+
+      .score-card {
+        padding: 1.5rem;
+      }
+
+      .score-circle {
+        width: 150px;
+        height: 150px;
+      }
+
+      .score-number {
+        font-size: 3rem;
+      }
+
+      .sorte-numero {
+        font-size: 2rem;
+        letter-spacing: 5px;
+      }
+
+      .questao-item {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo">L</div>
+        <span class="logo-text">Launcher</span>
+      </div>
+      <h1>🎉 Parabéns! Quiz Finalizado</h1>
+    </div>
+
+    <div class="score-card">
+      <div class="score-circle">
+        <div class="score-number">{{ acertos }}</div>
+        <div class="score-label">de {{ total }}</div>
+      </div>
+      
+      {% if acertos == total %}
+        <h2 style="color: var(--success); margin-bottom: 0.5rem;">Perfeito! 🏆</h2>
+        <p style="color: var(--text-muted);">Você acertou todas as questões!</p>
+      {% elif acertos >= 3 %}
+        <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Muito Bem! 👏</h2>
+        <p style="color: var(--text-muted);">Você teve um ótimo desempenho!</p>
+      {% else %}
+        <h2 style="color: var(--accent); margin-bottom: 0.5rem;">Parabéns! ⭐</h2>
+        <p style="color: var(--text-muted);">Você completou o quiz!</p>
+      {% endif %}
+    </div>
+
+    <div class="sorte-card">
+      <div class="sorte-icon">🎫</div>
+      <div class="sorte-title">Seu Número da Sorte</div>
+      <div class="sorte-numero">{{ numero_ofuscado }}</div>
+      <div class="sorte-info">
+        <i class="bi bi-info-circle"></i>
+        Complete o cadastro para ver o número completo e concorrer aos prêmios!
+      </div>
+    </div>
+
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center;">
+      Confira suas respostas:
+    </h2>
+
+    <div class="questoes-container">
+      {% for item in questoes %}
+        <div class="questao-item">
+          <div class="questao-header">
+            <div class="status-icon {% if item.acertou %}correct{% else %}wrong{% endif %}">
+              {% if item.acertou %}
+                <i class="bi bi-check-circle-fill"></i>
+              {% else %}
+                <i class="bi bi-x-circle-fill"></i>
+              {% endif %}
+            </div>
+            <div>
+              <div class="questao-titulo">QUESTÃO {{ loop.index }}</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">
+                {% if item.acertou %}Resposta Correta{% else %}Resposta Incorreta{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="questao-texto">
+            {{ item.questao.texto|safe }}
+          </div>
+
+          {% if item.acertou %}
+            <div class="resposta-acertou">
+              <strong>✓ Sua resposta:</strong> {{ item.resposta_usuario }}) 
+              {% for alt in item.questao.alternativas %}
+                {% if alt.letra == item.resposta_usuario %}{{ alt.texto }}{% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            {% if item.resposta_usuario %}
+              <div class="sua-resposta">
+                <strong>✗ Sua resposta:</strong> {{ item.resposta_usuario }}) 
+                {% for alt in item.questao.alternativas %}
+                  {% if alt.letra == item.resposta_usuario %}{{ alt.texto }}{% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            
+            <div class="resposta-correta">
+              <strong>✓ Resposta correta:</strong> {{ item.questao.resposta_correta }}) 
+              {% for alt in item.questao.alternativas %}
+                {% if alt.letra == item.questao.resposta_correta %}{{ alt.texto }}{% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="explicacao">
+            <strong>💡 Explicação:</strong><br>
+            {{ item.questao.explicacao }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="text-align: center;">
+      <a href="{{ url_for('forms.cadastro') }}" class="btn-cadastro">
+        <i class="bi bi-gift"></i>
+        Completar Cadastro e Ver Número Completo
+      </a>
+    </div>
+  </div>
+</body>
+</html>

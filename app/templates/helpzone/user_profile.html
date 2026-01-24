@@ -1,0 +1,1578 @@
+<!-- app/templates/helpzone/user_profile.html -->
+<!-- Autor: Desenvolvimento Plataforma Launcher -->
+
+{% extends "layout.html" %}
+
+{% block title %}Perfil de {{ user.username }} - Help Zone - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #800000;
+        --secondary-color: #500000;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --hover-color: #a00000;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), #a00000);
+        --gradient-success: linear-gradient(135deg, #28a745, #20c997);
+        --gradient-warning: linear-gradient(135deg, #ffc107, #fd7e14);
+        --gradient-card: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+    }
+    
+    .helpzone-profile {
+        max-width: 1200px;
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    body {
+        background: linear-gradient(to bottom, #800000 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+    }
+    
+    /* Header Section */
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding: 2rem 0;
+        border-bottom: 2px solid rgba(128, 0, 0, 0.3);
+        animation: slideInDown 0.6s ease-out;
+        position: relative;
+    }
+    
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+    
+    .profile-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .profile-header h1 i {
+        color: var(--warning-color);
+        animation: pulse 2s infinite;
+    }
+    
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        padding: 0.875rem 1.75rem;
+        border-radius: 15px;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .back-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+    
+    .back-btn:hover::before {
+        left: 100%;
+    }
+    
+    .back-btn:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateX(-6px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    /* Profile Card */
+    .profile-card {
+        background: var(--gradient-card);
+        border: 2px solid rgba(128, 0, 0, 0.3);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 2rem;
+    }
+    
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .profile-card .card-body {
+        padding: 3rem 2.5rem;
+        text-align: center;
+        position: relative;
+    }
+    
+    /* Avatar */
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+    
+    .user-avatar {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        border: 5px solid transparent;
+        background: var(--gradient-primary);
+        padding: 3px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        object-fit: cover;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .user-avatar:hover {
+        transform: scale(1.08) rotate(3deg);
+        box-shadow: 0 0 30px rgba(128, 0, 0, 0.5);
+    }
+    
+    .avatar-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(128, 0, 0, 0.2), transparent);
+        animation: breathe 3s ease-in-out infinite;
+        z-index: 1;
+    }
+    
+    .status-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--success-color);
+        border: 3px solid var(--card-bg);
+        animation: pulse 2s infinite;
+        z-index: 3;
+    }
+    
+    /* User Info */
+    .user-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .user-subtitle {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2rem;
+    }
+    
+    /* Reputation Badge */
+    .reputation-badge {
+        background: var(--gradient-primary);
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+
+    .reputation-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shine 3s infinite;
+    }
+    
+    /* Stats Grid */
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 3rem;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-item:hover {
+        background: rgba(128, 0, 0, 0.1);
+        transform: translateY(-8px) scale(1.02);
+        border-color: var(--primary-color);
+        box-shadow: 0 15px 35px rgba(128, 0, 0, 0.3);
+    }
+    
+    .stat-item:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--warning-color);
+        display: block;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+    }
+    
+    .stat-label {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+    
+    /* Badges Section */
+    .badges-section {
+        margin-bottom: 2.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .badges-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .badge-item {
+        position: relative;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+    }
+    
+    .badge-item:hover {
+        background: rgba(128, 0, 0, 0.2);
+        border-color: var(--primary-color);
+        transform: translateY(-5px) scale(1.05);
+    }
+    
+    .badge-icon {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .badge-item:hover .badge-icon {
+        transform: rotate(10deg) scale(1.1);
+    }
+    
+    .show-more-badge {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .show-more-badge:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    /* Specialty Section */
+    .specialty-section {
+        margin-bottom: 2rem;
+    }
+    
+    .specialty-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    
+    .specialty-tag {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .specialty-tag::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s;
+    }
+    
+    .specialty-tag:hover::before {
+        left: 100%;
+    }
+    
+    .specialty-tag:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    .member-since {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+    }
+    
+    /* Content Section */
+    .content-section {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    /* Navigation Tabs */
+    .nav-tabs {
+        border: none;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 0.5rem;
+        backdrop-filter: blur(10px);
+        margin-bottom: 2rem;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-tabs .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: white;
+    }
+    
+    .nav-tabs .nav-link:hover::before {
+        opacity: 0.8;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 4px 15px rgba(128, 0, 0, 0.3);
+    }
+    
+    /* Content Cards */
+    .content-card {
+        background: var(--gradient-card);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .content-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .content-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .content-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .solution-card {
+        border-color: var(--success-color);
+        background: linear-gradient(145deg, rgba(40, 167, 69, 0.1), rgba(30, 30, 30, 0.95));
+    }
+    
+    .solution-card::before {
+        background: var(--gradient-success);
+    }
+    
+    .solution-header {
+        background: var(--gradient-success);
+        color: white;
+        padding: 1rem 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .content-card .card-body {
+        padding: 2rem;
+    }
+    
+    .content-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .content-title a {
+        color: var(--text-color);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .content-title a:hover {
+        color: var(--warning-color);
+        text-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+    }
+    
+    .content-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .area-badge {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .date-info {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-badge-card {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-resolved {
+        background: var(--gradient-success);
+        color: white;
+    }
+    
+    .status-open {
+        background: var(--gradient-warning);
+        color: #000;
+    }
+    
+    .content-text {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        font-size: 1.05rem;
+    }
+    
+    .content-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .view-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+
+    .view-btn:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+        color: white;
+    }
+    
+    .content-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stat-inline {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .stat-inline i {
+        color: var(--primary-color);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        text-align: center;
+        border: 2px dashed rgba(128, 0, 0, 0.3);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: rgba(128, 0, 0, 0.5);
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .empty-state h4 {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+    }
+    
+    /* Modal Styles */
+    .modal-content {
+        background: var(--gradient-card);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(128, 0, 0, 0.3);
+        padding: 2rem;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(128, 0, 0, 0.3);
+        padding: 2rem;
+    }
+    
+    .modal-badge-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-badge-item:hover {
+        background: rgba(128, 0, 0, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .modal-badge-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-badge-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-badge-desc {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+    
+    .modal-badge-date {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+    
+    /* Animations */
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+    
+    @keyframes breathe {
+        0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.2;
+        }
+        50% {
+            transform: translate(-50%, -50%) scale(1.1);
+            opacity: 0.1;
+        }
+    }
+    
+    @keyframes shine {
+        0% { left: -100%; }
+        50% { left: 100%; }
+        100% { left: 100%; }
+    }
+    
+    /* Responsiveness */
+    @media (max-width: 768px) {
+        .helpzone-profile {
+            padding: 0 0.5rem;
+        }
+        
+        .profile-header {
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+        
+        .profile-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .profile-card .card-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .user-avatar {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .user-title {
+            font-size: 1.8rem;
+        }
+        
+        .stats-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            padding: 1.25rem 1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+        }
+        
+        .badges-grid {
+            gap: 0.5rem;
+        }
+        
+        .badge-item {
+            padding: 0.75rem;
+            min-width: 70px;
+        }
+        
+        .badge-icon {
+            font-size: 1.8rem;
+        }
+        
+        .specialty-tags {
+            gap: 0.5rem;
+        }
+        
+        .specialty-tag {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .nav-tabs .nav-link {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .content-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .content-title {
+            font-size: 1.1rem;
+        }
+        
+        .content-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        
+        .content-actions {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+        
+        .view-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .content-stats {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .profile-header h1 {
+            font-size: 1.6rem;
+        }
+        
+        .profile-card .card-body {
+            padding: 1.5rem 1rem;
+        }
+        
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .user-title {
+            font-size: 1.6rem;
+        }
+        
+        .reputation-badge {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.6rem;
+        }
+        
+        .badges-grid {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+        }
+        
+        .modal-badge-item {
+            padding: 1rem;
+        }
+        
+        .modal-badge-icon {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<div class="helpzone-profile">
+    <!-- Header -->
+    <div class="profile-header">
+        <h1>
+            <i class="bi bi-person-badge"></i>
+            Perfil de Ajudante
+        </h1>
+        <a href="{{ url_for('helpzone.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para o Help Zone
+        </a>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-md-4 mb-4">
+            <div class="profile-card card">
+                <div class="card-body">
+                    <!-- Avatar Section -->
+                    <div class="avatar-container">
+                        <div class="avatar-glow"></div>
+                        <img src="{{ url_for('static', filename='images/avatars/' ~ user.id ~ '.jpg', _external=True) }}" 
+                             class="user-avatar" alt="Avatar de {{ user.username }}"
+                             onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                        <div class="status-badge" title="Online"></div>
+                    </div>
+                    
+                    <!-- User Info -->
+                    <h2 class="user-title">{{ user.username }}</h2>
+                    <p class="user-subtitle">{{ user.nome_completo or 'Membro da Comunidade' }}</p>
+                    
+                    <!-- Reputation Badge -->
+                    <div class="reputation-badge">
+                        <i class="bi bi-trophy"></i>
+                        <span>{{ reputation }} pontos de reputação</span>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <span class="stat-value" data-count="{{ questions|length }}">{{ questions|length }}</span>
+                            <div class="stat-label">Dúvidas</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" data-count="{{ answers|length }}">{{ answers|length }}</span>
+                            <div class="stat-label">Respostas</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" data-count="{{ accepted_solutions }}">{{ accepted_solutions }}</span>
+                            <div class="stat-label">Soluções</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges Section -->
+                    <div class="badges-section">
+                        <h4 class="section-title">
+                            <i class="bi bi-award"></i>
+                            Badges conquistadas
+                        </h4>
+                        
+                        {% set user_badges = UserBadge.query.filter_by(user_id=user.id).order_by(UserBadge.data_conquista.desc()).all() %}
+                        
+                        {% if user_badges %}
+                            <div class="badges-grid">
+                                {% for ub in user_badges[:5] %}
+                                    <div class="badge-item" 
+                                         data-bs-toggle="tooltip" 
+                                         data-bs-placement="top" 
+                                         title="{{ ub.badge.nome_completo }}: {{ ub.badge.descricao }}">
+                                        <div class="badge-icon text-{{ ub.badge.cor }}">
+                                            <i class="{{ ub.badge.icon }}"></i>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                
+                                {% if user_badges|length > 5 %}
+                                    <button class="show-more-badge" data-bs-toggle="modal" data-bs-target="#badgesModal">
+                                        <i class="bi bi-plus-circle"></i>
+                                        Ver todas ({{ user_badges|length }})
+                                    </button>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Este usuário ainda não conquistou nenhuma badge</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Specialty Areas -->
+                    <div class="specialty-section">
+                        <h4 class="section-title">Áreas de especialidade</h4>
+                        {% if top_areas %}
+                            <div class="specialty-tags">
+                                {% for area, count in top_areas %}
+                                    <span class="specialty-tag">{{ area }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhuma área de especialidade ainda</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Member Since -->
+                    <div class="member-since">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        Membro desde {{ user.data_registro.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Section -->
+        <div class="col-md-8">
+            <div class="content-section">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs" id="profileTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" 
+                                data-bs-target="#questions" type="button" role="tab" 
+                                aria-controls="questions" aria-selected="true">
+                            <i class="bi bi-question-circle me-2"></i>
+                            Dúvidas ({{ questions|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="answers-tab" data-bs-toggle="tab" 
+                                data-bs-target="#answers" type="button" role="tab" 
+                                aria-controls="answers" aria-selected="false">
+                            <i class="bi bi-chat-square-text me-2"></i>
+                            Respostas ({{ answers|length }})
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="profileTabContent">
+                    <!-- Questions Tab -->
+                    <div class="tab-pane fade show active" id="questions" role="tabpanel" aria-labelledby="questions-tab">
+                        {% if questions %}
+                            {% for duvida in questions %}
+                                <div class="content-card card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h4 class="content-title">
+                                                <a href="{{ url_for('helpzone.duvida', duvida_id=duvida.id) }}">
+                                                    {{ duvida.titulo }}
+                                                </a>
+                                            </h4>
+                                            <span class="status-badge-card {{ 'status-resolved' if duvida.resolvida else 'status-open' }}">
+                                                <i class="bi bi-{{ 'check-circle-fill' if duvida.resolvida else 'clock-fill' }} me-1"></i>
+                                                {{ 'Resolvida' if duvida.resolvida else 'Aberta' }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="content-meta">
+                                            <span class="area-badge">{{ duvida.area }}</span>
+                                            <div class="date-info">
+                                                <i class="bi bi-calendar3"></i>
+                                                {{ duvida.data_criacao.strftime('%d/%m/%Y') }}
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="content-text">{{ duvida.conteudo|truncate(150) }}</p>
+                                        
+                                        <div class="content-actions">
+                                            <a href="{{ url_for('helpzone.duvida', duvida_id=duvida.id) }}" class="view-btn">
+                                                <i class="bi bi-eye"></i>
+                                                Ver Dúvida
+                                            </a>
+                                            <div class="content-stats">
+                                                <div class="stat-inline">
+                                                    <i class="bi bi-chat-dots"></i>
+                                                    <span>{{ duvida.respostas.count() }}</span>
+                                                </div>
+                                                <div class="stat-inline">
+                                                    <i class="bi bi-heart"></i>
+                                                    <span>{{ duvida.total_votos() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-question-circle"></i>
+                                <h4>Nenhuma dúvida ainda</h4>
+                                <p>Este usuário ainda não fez nenhuma pergunta.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Answers Tab -->
+                    <div class="tab-pane fade" id="answers" role="tabpanel" aria-labelledby="answers-tab">
+                        {% if answers %}
+                            {% for resposta in answers %}
+                                <div class="content-card card {{ 'solution-card' if resposta.solucao }}">
+                                    {% if resposta.solucao %}
+                                    <div class="solution-header">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Marcada como solução</span>
+                                        <div class="ms-auto">
+                                            <i class="bi bi-star-fill"></i>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="card-body">
+                                        <h4 class="content-title">
+                                            <a href="{{ url_for('helpzone.duvida', duvida_id=resposta.duvida_id) }}">
+                                                {{ resposta.duvida.titulo }}
+                                            </a>
+                                        </h4>
+                                        
+                                        <div class="content-meta">
+                                            <span class="area-badge">{{ resposta.duvida.area }}</span>
+                                            <div class="date-info">
+                                                <i class="bi bi-calendar3"></i>
+                                                {{ resposta.data_criacao.strftime('%d/%m/%Y') }}
+                                            </div>
+                                            {% if resposta.solucao %}
+                                            <span class="status-badge-card status-resolved">
+                                                <i class="bi bi-star-fill me-1"></i>
+                                                Melhor Resposta
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <p class="content-text">{{ resposta.conteudo|truncate(150) }}</p>
+                                        
+                                        <div class="content-actions">
+                                            <a href="{{ url_for('helpzone.duvida', duvida_id=resposta.duvida_id) }}" class="view-btn">
+                                                <i class="bi bi-eye"></i>
+                                                Ver pergunta completa
+                                            </a>
+                                            <div class="content-stats">
+                                                <div class="stat-inline">
+                                                    <i class="bi bi-heart"></i>
+                                                    <span>{{ resposta.total_votos() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-chat-square-text"></i>
+                                <h4>Nenhuma resposta ainda</h4>
+                                <p>Este usuário ainda não respondeu nenhuma pergunta.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Badges Modal -->
+    {% if user_badges and user_badges|length > 5 %}
+        <div class="modal fade" id="badgesModal" tabindex="-1" aria-labelledby="badgesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="badgesModalLabel">
+                            <i class="bi bi-award me-2"></i>
+                            Badges de {{ user.username }}
+                        </h3>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            {% for ub in user_badges %}
+                                <div class="col-6 mb-4">
+                                    <div class="modal-badge-item">
+                                        <div class="modal-badge-icon text-{{ ub.badge.cor }}">
+                                            <i class="{{ ub.badge.icon }}"></i>
+                                        </div>
+                                        <div class="modal-badge-name">{{ ub.badge.nome_completo }}</div>
+                                        <p class="modal-badge-desc">{{ ub.badge.descricao }}</p>
+                                        <div class="modal-badge-date">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            Conquistada em {{ ub.data_conquista.strftime('%d/%m/%Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <a href="{{ url_for('helpzone.badges') }}" class="btn btn-primary">Ver Todas as Badges</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    initializeTooltips();
+    
+    // Configurar animações de contadores
+    setupCounterAnimations();
+    
+    // Configurar efeitos de cards
+    setupCardEffects();
+    
+    // Configurar badges interativas
+    setupBadgeEffects();
+    
+    // Easter egg no avatar
+    setupAvatarEasterEgg();
+    
+    function initializeTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                delay: { show: 500, hide: 100 },
+                placement: 'top'
+            });
+        });
+    }
+    
+    function setupCounterAnimations() {
+        const counters = document.querySelectorAll('.stat-value[data-count]');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.dataset.count);
+                    
+                    animateValue(counter, 0, target, 1500);
+                    observer.unobserve(counter);
+                }
+            });
+        });
+        
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    }
+    
+    function setupCardEffects() {
+        // Efeito parallax sutil nos cards
+        document.querySelectorAll('.content-card').forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 50;
+                const rotateY = (centerX - x) / 50;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+            });
+        });
+    }
+    
+    function setupBadgeEffects() {
+        // Efeito de brilho nas badges
+        document.querySelectorAll('.badge-item').forEach(badge => {
+            badge.addEventListener('mouseenter', function() {
+                const icon = this.querySelector('.badge-icon');
+                if (icon) {
+                    icon.style.animation = 'pulse 0.6s ease-in-out';
+                }
+            });
+            
+            badge.addEventListener('mouseleave', function() {
+                const icon = this.querySelector('.badge-icon');
+                if (icon) {
+                    icon.style.animation = 'none';
+                }
+            });
+        });
+        
+        // Efeito especial para badges no modal
+        document.querySelectorAll('.modal-badge-item').forEach(badge => {
+            badge.addEventListener('click', function() {
+                createSparkles(this);
+            });
+        });
+    }
+    
+    function setupAvatarEasterEgg() {
+        let avatarClicks = 0;
+        const avatar = document.querySelector('.user-avatar');
+        
+        if (avatar) {
+            avatar.addEventListener('click', function() {
+                avatarClicks++;
+                
+                // Efeito visual imediato
+                this.style.animation = 'none';
+                this.style.transform = 'scale(1.1) rotate(15deg)';
+                
+                setTimeout(() => {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                }, 200);
+                
+                if (avatarClicks === 3) {
+                    createConfetti();
+                    avatarClicks = 0;
+                    
+                    // Mostrar mensagem divertida
+                    showNotification('🎉 Você descobriu o easter egg!', 'success');
+                }
+            });
+        }
+    }
+    
+    function animateValue(element, start, end, duration) {
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function updateValue(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function para suavizar a animação
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            
+            const current = Math.floor(start + (range * easeOutQuart));
+            element.textContent = current;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateValue);
+            } else {
+                element.textContent = end;
+            }
+        }
+        
+        requestAnimationFrame(updateValue);
+    }
+    
+    function createSparkles(element) {
+        const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+        
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const sparkle = document.createElement('div');
+                sparkle.style.position = 'absolute';
+                sparkle.style.left = Math.random() * element.offsetWidth + 'px';
+                sparkle.style.top = Math.random() * element.offsetHeight + 'px';
+                sparkle.style.width = '6px';
+                sparkle.style.height = '6px';
+                sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.borderRadius = '50%';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '9999';
+                sparkle.style.animation = `sparkleFade ${Math.random() * 1 + 1}s ease-out forwards`;
+                
+                element.style.position = 'relative';
+                element.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 2000);
+            }, i * 50);
+        }
+    }
+    
+    function createConfetti() {
+        const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+        
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }, i * 100);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
+    
+    // Animação de entrada para cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                entry.target.style.opacity = '1';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.content-card').forEach(card => {
+        card.style.opacity = '0';
+        observer.observe(card);
+    });
+});
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(${window.innerHeight + 50}px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes sparkleFade {
+        0% {
+            opacity: 1;
+            transform: scale(0) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1) rotate(180deg);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0) rotate(360deg);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .content-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .user-avatar {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .badge-icon {
+        transition: all 0.3s ease;
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Script adicional específico para este template
+</script>
+{% endblock %}

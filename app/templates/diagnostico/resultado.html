@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado - Diagnóstico ENEM</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-color: #0062cc;
+      --secondary-color: #e6f7ff;
+      --dark-bg: #1a1a1a;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --white: #ffffff;
+      --border-color: #e9ecef;
+      --danger: #dc3545;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    .main-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 15px;
+    }
+
+    .result-card {
+      background: var(--white);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .header-section {
+      text-align: center;
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 25px;
+      margin-bottom: 30px;
+    }
+
+    .header-section h1 {
+      font-weight: 900;
+      color: var(--primary-color);
+      font-size: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    .user-info-badge {
+      display: inline-block;
+      background: var(--secondary-color);
+      color: var(--primary-color);
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      border: 1px solid #b3e0ff;
+    }
+
+    .impact-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--dark-bg);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .impact-subtext {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      font-size: 1.05rem;
+    }
+
+    .summary-box {
+      background: #fff3f3;
+      border-left: 5px solid var(--danger);
+      padding: 22px;
+      border-radius: 10px;
+      margin-bottom: 35px;
+    }
+
+    .summary-title {
+      color: var(--danger);
+      font-weight: 900;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .summary-content {
+      font-size: 1.1rem;
+      color: #5a1e1e;
+      font-weight: 700;
+    }
+
+    .analysis-section h3 {
+      text-align: center;
+      font-weight: 900;
+      color: var(--dark-bg);
+      margin-bottom: 28px;
+      font-size: 1.5rem;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin-bottom: 35px;
+    }
+
+    .analysis-item {
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      padding: 22px;
+      border-radius: 12px;
+      text-align: center;
+      transition: transform 0.25s, border-color 0.25s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+
+    .analysis-item:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary-color);
+    }
+
+    .analysis-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 14px;
+    }
+
+    .analysis-title {
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--dark-bg);
+    }
+
+    .analysis-stat {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--primary-color);
+      font-weight: 900;
+      background: var(--secondary-color);
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .observation-box {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      padding: 18px;
+      border-radius: 10px;
+      margin-bottom: 35px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .observation-box strong { color: var(--dark-bg); }
+
+    .critical-point-section {
+      background: var(--dark-bg);
+      color: var(--white);
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 35px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .critical-point-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 120px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06));
+      pointer-events: none;
+    }
+
+    .critical-title {
+      color: #7db7ff;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 1.05rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .next-step-section { text-align: center; }
+
+    .next-step-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 18px;
+      color: var(--dark-bg);
+    }
+
+    .next-step-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 25px;
+      display: inline-block;
+      text-align: left;
+    }
+
+    .next-step-list li { margin-bottom: 8px; font-size: 1.05rem; }
+    .next-step-list i { color: var(--primary-color); margin-right: 10px; }
+
+    /* CTA Azul (coerente com o link) */
+    .btn-cta {
+      background: linear-gradient(to right, #3399ff, #0062cc);
+      color: white;
+      font-weight: 900;
+      font-size: 1.15rem;
+      padding: 18px 40px;
+      border-radius: 50px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      transition: transform 0.25s, box-shadow 0.25s;
+      box-shadow: 0 12px 28px rgba(0, 98, 204, 0.25);
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      color: white;
+      box-shadow: 0 16px 34px rgba(0, 98, 204, 0.32);
+    }
+
+    @media (max-width: 768px) {
+      .result-card { padding: 25px 20px; }
+      .header-section h1 { font-size: 1.5rem; }
+      .impact-text { font-size: 1.1rem; }
+      .btn-cta { width: 100%; justify-content: center; font-size: 1rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div class="result-card">
+
+      <div class="header-section">
+        <h1>Resultado do Diagnóstico Enem</h1>
+        <div class="user-info-badge">
+          <i class="fas fa-user"></i> {{ nome }} &nbsp;|&nbsp;
+          <i class="fas fa-graduation-cap"></i> {{ curso }}
+        </div>
+      </div>
+
+      <p class="impact-text">
+        Hoje, você não estuda com o direcionamento que o ENEM exige.
+      </p>
+      <p class="impact-subtext">
+        Com base nos erros identificados neste diagnóstico, fica claro que você estuda, mas sem clareza sobre o que corrigir primeiro.
+      </p>
+
+      <div class="summary-box">
+        <span class="summary-title"><i class="fas fa-exclamation-triangle"></i> Descrição Resumida</span>
+        <p class="summary-content mb-2">
+          Se o ENEM fosse amanhã, você provavelmente não atingiria a nota de corte.
+        </p>
+        <p class="mb-0 text-muted" style="font-size: 0.95rem;">
+          Não por falta de esforço, mas pela forma como seu estudo está organizado hoje.
+        </p>
+      </div>
+
+      <div class="analysis-section">
+        <h3>ANÁLISE DETALHADA <br><small style="font-size: 0.9rem; font-weight: normal; color: #6c757d;">O QUE SEUS ERROS REVELAM</small></h3>
+
+        <div class="analysis-grid">
+          <div class="analysis-item">
+            <i class="fas fa-sort-amount-down analysis-icon"></i>
+            <h4 class="analysis-title">Prioridade Errada</h4>
+            <p class="small text-muted">Você estuda conteúdos importantes, mas não na ordem certa.</p>
+            <span class="analysis-stat">70% dos erros</span>
+            <p class="small text-muted mt-2">acontecem quando não se prioriza o que mais impacta a prova.</p>
+          </div>
+
+          <div class="analysis-item">
+            <i class="fas fa-search analysis-icon"></i>
+            <h4 class="analysis-title">Falta de Clareza</h4>
+            <p class="small text-muted">Após errar uma questão, você não tem clareza sobre o que corrigir.</p>
+            <span class="analysis-stat">65% dos estudantes</span>
+            <p class="small text-muted mt-2">sofrem disso quando estudam sem direcionamento.</p>
+          </div>
+
+          <div class="analysis-item">
+            <i class="fas fa-chart-line analysis-icon"></i>
+            <h4 class="analysis-title">Quebra de Constância</h4>
+            <p class="small text-muted">Quando não há progresso visível, a constância se perde.</p>
+            <span class="analysis-stat">Mais de 80% desistem</span>
+            <p class="small text-muted mt-2">do ritmo de estudo quando não enxergam evolução.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="observation-box">
+        <strong>OBSERVAÇÃO:</strong>
+        Isso não significa falta de capacidade nem falta de dedicação da sua parte. Significa que você está estudando sem um sistema claro de direcionamento.
+        Sem direcionamento, você tende a repetir esforço sem gerar evolução consistente ao longo do tempo.
+      </div>
+
+      <div class="critical-point-section">
+        <div class="critical-title">
+          <i class="fas fa-bolt"></i> O PONTO MAIS CRÍTICO
+        </div>
+        <p>
+          Quando você não sabe exatamente o que estudar, manter constância se torna difícil. É natural perder ritmo quando não existe feedback claro nem sensação de avanço.
+        </p>
+        <p class="mb-0">
+          <strong>No ENEM, você não é aprovado por estudar muito em um único dia, mas por conseguir manter constância com direção ao longo do tempo.</strong>
+        </p>
+      </div>
+
+      <div class="next-step-section">
+        <h4 class="next-step-title">O PRÓXIMO PASSO</h4>
+        <p>Agora que você já sabe:</p>
+
+        <ul class="next-step-list">
+          <li><i class="fas fa-check"></i> onde está errando</li>
+          <li><i class="fas fa-check"></i> por que estudar sem direção atrasa</li>
+          <li><i class="fas fa-check"></i> e por que a constância é decisiva</li>
+        </ul>
+
+        <p class="mb-4">O próximo passo é ver como transformar isso em evolução real até o ENEM.</p>
+
+        <a
+          href="https://plataformalauncheredu.com.br/"
+          class="btn-cta"
+          target="_blank"
+          rel="noopener"
+          id="btnCTA"
+          data-diagnostico-id="{{ diagnostico_id }}"
+        >
+          <i class="fas fa-rocket"></i> Ver como aplicar isso na prática
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Tracking robusto: sendBeacon -> fetch keepalive
+    function registrarCliqueCTA(diagnosticoId) {
+      const url = `/diagnostico-enem/registrar-clique/${diagnosticoId}`;
+
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([], { type: 'application/octet-stream' });
+          navigator.sendBeacon(url, blob);
+          return;
+        }
+      } catch (e) {}
+
+      fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
+    }
+
+    const btnCTA = document.getElementById('btnCTA');
+    if (btnCTA) {
+      btnCTA.addEventListener('click', function() {
+        const diagnosticoId = this.getAttribute('data-diagnostico-id');
+        if (diagnosticoId) registrarCliqueCTA(diagnosticoId);
+      });
+    }
+  </script>
+</body>
+</html>

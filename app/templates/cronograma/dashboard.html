@@ -1,0 +1,862 @@
+{% extends "layout.html" %}
+
+{% block title %}Meu Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    /* --- Design System da Intro --- */
+    :root {
+        --primary: #667eea;
+        --secondary: #764ba2;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --bg-card: rgba(255, 255, 255, 0.02);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --card-hover: rgba(255, 255, 255, 0.04);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 40%, #000 100%);
+        color: var(--text-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
+
+    /* --- Header Card --- */
+    .header-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .header-info h1 {
+        font-size: clamp(1.75rem, 3vw, 2.25rem);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-white {
+        background: white;
+        color: #000;
+    }
+
+    .btn-white:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+        color: #000;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        color: var(--text-main);
+        text-decoration: none;
+    }
+
+    /* --- Progress Bar Grande --- */
+    .progress-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .progress-label {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .progress-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .progress-bar-container {
+        height: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* --- Stats Grid --- */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: var(--card-hover);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* --- Main Grid --- */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    /* --- Section Cards --- */
+    .section-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: white;
+    }
+
+    /* --- Aulas List --- */
+    .aulas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .aula-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .aula-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(5px);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .aula-item.atrasada {
+        border-color: rgba(220, 53, 69, 0.4);
+        background: rgba(220, 53, 69, 0.05);
+    }
+
+    .aula-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .aula-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .aula-type-badge.aula {
+        background: rgba(0, 180, 216, 0.15);
+        color: #00b4d8;
+    }
+
+    .aula-type-badge.simulado {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+    }
+
+    .aula-type-badge.redacao {
+        background: rgba(220, 53, 69, 0.15);
+        color: #ff6b6b;
+    }
+
+    .aula-type-badge.revisao {
+        background: rgba(102, 126, 234, 0.15);
+        color: var(--primary);
+    }
+
+    .aula-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .aula-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .aula-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-subtle);
+        background: rgba(255, 255, 255, 0.03);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .btn-icon:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: scale(1.1);
+    }
+
+    .btn-check {
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-check:hover {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-play {
+        color: var(--primary);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-play:hover {
+        background: rgba(102, 126, 234, 0.1);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+
+    /* --- Empty State --- */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    /* --- Quick Stats (Sidebar) --- */
+    .quick-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .quick-stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+    }
+
+    .quick-stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .quick-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    /* --- Mini Calendar --- */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+    }
+
+    .calendar-day-label {
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 0.5rem 0;
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        position: relative;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .calendar-day:not(.empty):hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .calendar-day.today {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        font-weight: 700;
+    }
+
+    .calendar-day.has-aulas {
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .calendar-day.completed {
+        border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .calendar-day-dot {
+        position: absolute;
+        bottom: 2px;
+        width: 4px;
+        height: 4px;
+        background: var(--primary);
+        border-radius: 50%;
+    }
+
+    /* --- Mobile --- */
+    @media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 2rem 1rem;
+        }
+
+        .header-card {
+            padding: 1.5rem;
+        }
+
+        .section-card {
+            padding: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .aula-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .aula-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    
+    <!-- Header -->
+    <div class="header-card">
+        <div class="header-top">
+            <div class="header-info">
+                <h1>{{ cronograma.objetivo }}</h1>
+                <div class="header-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>Início: {{ cronograma.data_inicio.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                    {% if cronograma.data_prova %}
+                    <div class="meta-item">
+                        <span>🎯</span>
+                        <span>Prova: {{ cronograma.data_prova.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="meta-item">
+                        <span>📚</span>
+                        <span>{{ cronograma.itens.count() }} aulas</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <a href="{{ url_for('cronograma.calendario') }}" class="btn btn-secondary">
+                    <span>📅</span>
+                    <span>Calendário</span>
+                </a>
+                <a href="{{ url_for('cronograma.ajustar') }}" class="btn btn-white">
+                    <span>⚙️</span>
+                    <span>Ajustar</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-label">Progresso Geral</span>
+                <span class="progress-value">{{ "%.0f"|format(cronograma.progresso_geral) }}%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ cronograma.progresso_geral }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">✅</span>
+            <div class="stat-value">{{ cronograma.itens.filter_by(concluido=True).count() }}</div>
+            <div class="stat-label">Aulas Concluídas</div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">📖</span>
+            <div class="stat-value">{{ cronograma.itens.filter_by(concluido=False).count() }}</div>
+            <div class="stat-label">Aulas Restantes</div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">🔥</span>
+            <div class="stat-value">{{ dias_consecutivos or 0 }}</div>
+            <div class="stat-label">Dias Consecutivos</div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">⏱️</span>
+            <div class="stat-value">{{ horas_estudadas or 0 }}h</div>
+            <div class="stat-label">Horas Estudadas</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-grid">
+        
+        <!-- Aulas de Hoje -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <span>📖</span>
+                <span>Aulas de Hoje</span>
+            </h2>
+
+            {% if aulas_hoje %}
+            <div class="aulas-list">
+                {% for item in aulas_hoje %}
+                <div class="aula-item {{ 'atrasada' if item.esta_atrasado else '' }}">
+                    <div class="aula-info">
+                        <div>
+                            <span class="aula-type-badge {{ item.tipo_item }}">
+                                {% if item.tipo_item == 'simulado' %}📝 Simulado
+                                {% elif item.tipo_item == 'redacao' %}✍️ Redação
+                                {% elif item.tipo_item == 'revisao' %}🔄 Revisão
+                                {% else %}📖 Aula
+                                {% endif %}
+                            </span>
+                        </div>
+
+
+                        <div class="aula-title">
+                            {% if item.aula %}
+                                {{ item.aula.titulo }}
+                            {% else %}
+                                {{ item.observacoes }}
+                            {% endif %}
+                        </div>
+                        <div class="aula-meta">
+                            {% if item.aula %}
+                            <span>📚 {{ item.aula.modulo.materia.nome }}</span>
+                            {% endif %}
+                            <span>⏱️ {{ item.tempo_previsto }} min</span>
+                            {% if item.esta_atrasado %}
+                            <span style="color: #dc3545;">⚠️ Atrasada</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="aula-actions">
+                        {% if not item.concluido %}
+                        <button class="btn-icon btn-check" 
+                                onclick="marcarConcluido({{ item.id }})"
+                                title="Marcar como concluída">
+                            ✓
+                        </button>
+                        {% endif %}
+                        
+                        {% if item.tipo_item == 'aula' and item.aula %}
+                        <a href="{{ url_for('estudo.aula', aula_id=item.aula.id) }}" 
+                           class="btn-icon btn-play"
+                           title="Iniciar aula">
+                            ▶
+                        </a>
+                        {% elif item.tipo_item == 'simulado' %}
+                        <a href="{{ url_for('simulados.index') }}" 
+                           class="btn-icon btn-play"
+                           title="Fazer simulado">
+                            ▶
+                        </a>
+                        {% elif item.tipo_item == 'redacao' %}
+                        <a href="{{ url_for('redacao.index') }}" 
+                           class="btn-icon btn-play"
+                           title="Escrever redação">
+                            ▶
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <h3>Nenhuma aula para hoje!</h3>
+                <p>Aproveite seu dia de descanso ou adiante seus estudos.</p>
+            </div>
+            {% endif %}
+
+            <!-- Próxima Aula -->
+            {% if proxima_aula and proxima_aula.data_prevista != datetime.now().date() %}
+            <div style="margin-top: 2.5rem;">
+                <h3 class="section-title" style="font-size: 1.1rem;">
+                    <span>⏭️</span>
+                    <span>Próxima Aula</span>
+                </h3>
+                
+                <div class="aula-item">
+                    <div class="aula-info">
+                        <div>
+                            <span class="aula-type-badge {{ proxima_aula.tipo_item }}">
+                                {% if proxima_aula.tipo_item == 'simulado' %}📝 Simulado
+                                {% elif proxima_aula.tipo_item == 'redacao' %}✍️ Redação
+                                {% else %}📖 Aula
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="aula-title">
+                            {% if proxima_aula.aula %}
+                                {{ proxima_aula.aula.titulo }}
+                            {% else %}
+                                {{ proxima_aula.observacoes }}
+                            {% endif %}
+                        </div>
+                        <div class="aula-meta">
+                            <span>📅 {{ proxima_aula.data_prevista.strftime('%d/%m/%Y') }}</span>
+                            {% if proxima_aula.aula %}
+                            <span>📚 {{ proxima_aula.aula.modulo.materia.nome }}</span>
+                            {% endif %}
+                            <span>⏱️ {{ proxima_aula.tempo_previsto }} min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Quick Stats -->
+            <div class="section-card" style="margin-bottom: 1.5rem;">
+                <h3 class="section-title" style="font-size: 1.1rem;">
+                    <span>📊</span>
+                    <span>Resumo</span>
+                </h3>
+                
+                <div class="quick-stats">
+                    <div class="quick-stat-item">
+                        <div class="quick-stat-label">Total</div>
+                        <div class="quick-stat-value">{{ cronograma.itens.count() }}</div>
+                    </div>
+                    
+                    <div class="quick-stat-item">
+                        <div class="quick-stat-label">Concluídas</div>
+                        <div class="quick-stat-value" style="color: #10b981;">
+                            {{ cronograma.itens.filter_by(concluido=True).count() }}
+                        </div>
+                    </div>
+                    
+                    <div class="quick-stat-item">
+                        <div class="quick-stat-label">Restantes</div>
+                        <div class="quick-stat-value" style="color: #00b4d8;">
+                            {{ cronograma.itens.filter_by(concluido=False).count() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Calendar -->
+            <div class="section-card">
+                <h3 class="section-title" style="font-size: 1.1rem;">
+                    <span>📅</span>
+                    <span>{{ mes_atual }}</span>
+                </h3>
+                
+                <div class="mini-calendar">
+                    <div class="calendar-grid">
+                        <!-- Day Labels -->
+                        <div class="calendar-day-label">S</div>
+                        <div class="calendar-day-label">T</div>
+                        <div class="calendar-day-label">Q</div>
+                        <div class="calendar-day-label">Q</div>
+                        <div class="calendar-day-label">S</div>
+                        <div class="calendar-day-label">S</div>
+                        <div class="calendar-day-label">D</div>
+                        
+                        <!-- Days -->
+                        {% for week in calendario %}
+                            {% for day in week %}
+                                {% if day == 0 %}
+                                <div class="calendar-day empty"></div>
+                                {% else %}
+                                <div class="calendar-day 
+                                    {{ 'today' if day == datetime.now().day else '' }}
+                                    {{ 'has-aulas' if day in dias_com_aulas else '' }}
+                                    {{ 'completed' if day in dias_com_aulas and dias_com_aulas[day].total == dias_com_aulas[day].concluidas else '' }}">
+                                    {{ day }}
+                                    {% if day in dias_com_aulas %}
+                                    <span class="calendar-day-dot"></span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('cronograma.calendario') }}" 
+                       class="btn btn-secondary" 
+                       style="width: 100%; justify-content: center;">
+                        Ver Calendário Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function marcarConcluido(itemId) {
+    if (!confirm('Marcar esta aula como concluída?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/cronograma/api/marcar_concluido/${itemId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('✅ Aula concluída! Parabéns pelo progresso!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('❌ Erro ao marcar como concluída', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showNotification('❌ Erro ao marcar como concluída', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #38ef7d)' : 'linear-gradient(135deg, #dc3545, #c82333)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Adicionar CSS para animações
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+
+document.head.appendChild(style);
+</script>
+{% endblock %}

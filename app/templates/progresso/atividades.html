@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block title %}Histórico de Atividades - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    .activity-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0.85rem;
+        width: 2px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 0.25rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background-color: #343a40;
+        border: 2px solid #007bff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: white;
+    }
+    
+    .timeline-content {
+        background-color: rgba(30, 30, 30, 0.7);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    
+    .timeline-date {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-body {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+    }
+    
+    .xp-gain {
+        display: inline-flex;
+        align-items: center;
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .xp-gain i {
+        margin-right: 0.3rem;
+    }
+    
+    .activity-icon {
+        margin-right: 0.5rem;
+    }
+    
+    .empty-state {
+        background-color: rgba(30, 30, 30, 0.7);
+        border-radius: 8px;
+        padding: 3rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-text {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="atividades">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Histórico de Atividades</h1>
+        <a href="{{ url_for('progresso.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Voltar para Progresso
+        </a>
+    </div>
+    
+    <p class="lead mb-5">Acompanhe todas as suas atividades e conquistas na plataforma.</p>
+    
+    {% if not tem_atividades %}
+        <!-- Estado vazio para novos usuários -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h3 class="empty-state-title">Sem histórico de atividades</h3>
+            <p class="empty-state-text">Você ainda não realizou nenhuma atividade na plataforma. Complete simulados, exercícios e redações para ver seu histórico aqui.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('simulados.index') }}" class="btn btn-primary">
+                    <i class="bi bi-journals me-2"></i>Fazer um Simulado
+                </a>
+                <a href="{{ url_for('helpzone.index') }}" class="btn btn-outline-light">
+                    <i class="bi bi-people me-2"></i>Visitar Help Zone
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Timeline de Atividades -->
+        <div class="activity-timeline">
+            {% for registro in registros.items %}
+                <div class="timeline-item">
+                    <div class="timeline-marker">
+                        {% if 'simulado' in registro.origem.lower() %}
+                            <i class="bi bi-journals"></i>
+                        {% elif 'exercicio' in registro.origem.lower() %}
+                            <i class="bi bi-pencil-square"></i>
+                        {% elif 'redacao' in registro.origem.lower() %}
+                            <i class="bi bi-file-text"></i>
+                        {% elif 'helpzone' in registro.origem.lower() %}
+                            <i class="bi bi-people"></i>
+                        {% elif 'tempo' in registro.origem.lower() %}
+                            <i class="bi bi-clock"></i>
+                        {% else %}
+                            <i class="bi bi-star"></i>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            {{ registro.data.strftime('%d/%m/%Y às %H:%M') }}
+                        </div>
+                        <h4 class="timeline-title">
+                            {% if 'simulado' in registro.origem.lower() %}
+                                <i class="bi bi-journals activity-icon text-primary"></i>
+                            {% elif 'exercicio' in registro.origem.lower() %}
+                                <i class="bi bi-pencil-square activity-icon text-success"></i>
+                            {% elif 'redacao' in registro.origem.lower() %}
+                                <i class="bi bi-file-text activity-icon text-info"></i>
+                            {% elif 'helpzone' in registro.origem.lower() %}
+                                <i class="bi bi-people activity-icon text-warning"></i>
+                            {% elif 'tempo' in registro.origem.lower() %}
+                                <i class="bi bi-clock activity-icon text-danger"></i>
+                            {% else %}
+                                <i class="bi bi-star activity-icon text-primary"></i>
+                            {% endif %}
+                            {{ registro.origem }}
+                        </h4>
+                        <div class="timeline-body d-flex align-items-center justify-content-between">
+                            <div>
+                                {% if 'simulado' in registro.origem.lower() %}
+                                    Você completou um simulado com sucesso.
+                                {% elif 'exercicio' in registro.origem.lower() %}
+                                    Você acertou um exercício.
+                                {% elif 'redacao' in registro.origem.lower() %}
+                                    Você enviou uma redação para correção.
+                                {% elif 'helpzone' in registro.origem.lower() %}
+                                    Você ajudou outros estudantes no Help Zone.
+                                {% elif 'tempo' in registro.origem.lower() %}
+                                    Você estudou por um período.
+                                {% else %}
+                                    Você realizou uma atividade na plataforma.
+                                {% endif %}
+                            </div>
+                            <div class="xp-gain">
+                                <i class="bi bi-coin"></i> +{{ registro.quantidade }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if registros.pages > 1 %}
+            <nav aria-label="Navegação de atividades" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ 'disabled' if registros.page == 1 else '' }}">
+                        <a class="page-link" href="{{ url_for('progresso.atividades', page=registros.prev_num) if registros.has_prev else '#' }}">Anterior</a>
+                    </li>
+                    
+                    {% for page_num in registros.iter_pages(left_edge=2, right_edge=2, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {{ 'active' if page_num == registros.page else '' }}">
+                                <a class="page-link" href="{{ url_for('progresso.atividades', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {{ 'disabled' if registros.page == registros.pages else '' }}">
+                        <a class="page-link" href="{{ url_for('progresso.atividades', page=registros.next_num) if registros.has_next else '#' }}">Próxima</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

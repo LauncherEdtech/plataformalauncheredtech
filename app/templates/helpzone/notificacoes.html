@@ -1,0 +1,577 @@
+{% extends "layout.html" %}
+
+{% block title %}Notificações - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ================================================
+   VARIÁVEIS E RESET
+   ================================================ */
+:root {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --card-bg: #141414;
+    --accent-purple: #8b5cf6;
+    --accent-purple-hover: #7c3aed;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #666666;
+    --border-color: #262626;
+    --border-subtle: #1a1a1a;
+    --unread-bg: rgba(139, 92, 246, 0.08);
+    --like-color: #ef4444;
+    --comment-color: #10b981;
+}
+
+html, body, .bg-dark {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+main, .content-wrapper, .wrapper {
+    background: transparent !important;
+}
+
+/* ================================================
+   CONTAINER
+   ================================================ */
+.notif-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px 80px 20px;
+    min-height: 90vh;
+}
+
+/* ================================================
+   HEADER
+   ================================================ */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #1a1a1a;
+    color: var(--accent-purple);
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-mark-all {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-mark-all:hover {
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+}
+
+/* ================================================
+   FILTROS
+   ================================================ */
+.notif-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.notif-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+}
+
+.filter-btn.active {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    color: white;
+}
+
+/* ================================================
+   LISTA DE NOTIFICAÇÕES
+   ================================================ */
+.notif-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.notif-item:hover {
+    background: #181818;
+    border-color: var(--border-color);
+}
+
+.notif-item.unread {
+    background: var(--unread-bg);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.notif-item.unread::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: var(--accent-purple);
+    border-radius: 50%;
+}
+
+/* AVATAR */
+.notif-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.notif-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    overflow: hidden;
+}
+
+.notif-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.notif-type-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    border: 2px solid var(--card-bg);
+    background: var(--like-color);
+    color: white;
+}
+
+.notif-type-icon.type-follow {
+    background: var(--accent-purple);
+}
+
+.notif-type-icon.type-comment {
+    background: var(--comment-color);
+}
+
+.notif-type-icon.type-like {
+    background: var(--like-color);
+}
+
+/* CONTEÚDO */
+.notif-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notif-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.notif-text strong {
+    font-weight: 700;
+}
+
+.notif-text .preview-text {
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 4px;
+    font-size: 0.9rem;
+}
+
+.notif-time {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+/* POST THUMBNAIL */
+.notif-thumbnail {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-primary);
+}
+
+/* ================================================
+   EMPTY STATE
+   ================================================ */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    border: 3px solid var(--text-tertiary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+}
+
+/* ================================================
+   PAGINAÇÃO
+   ================================================ */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.page-link {
+    padding: 10px 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-link:hover {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+}
+
+/* ================================================
+   RESPONSIVIDADE
+   ================================================ */
+@media (max-width: 768px) {
+    .notif-container {
+        padding: 24px 16px 60px 16px;
+    }
+
+    .page-header {
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-mark-all {
+        display: none;
+    }
+
+    .notif-item {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .notif-item:last-child {
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="notif-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <div class="header-left">
+            <a href="{{ url_for('helpzone.feed') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Notificações</h1>
+        </div>
+        <button class="btn-mark-all" onclick="markAllAsRead()">
+            <i class="fas fa-check-double"></i>
+            Marcar todas como lidas
+        </button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="notif-filters">
+        <button class="filter-btn active">
+            <i class="fas fa-inbox"></i>
+            Todas
+        </button>
+        <button class="filter-btn">
+            <i class="fas fa-heart"></i>
+            Curtidas
+        </button>
+        <button class="filter-btn">
+            <i class="fas fa-comment"></i>
+            Comentários
+        </button>
+        <button class="filter-btn">
+            <i class="fas fa-user-plus"></i>
+            Seguindo
+        </button>
+    </div>
+
+    <!-- LISTA DE NOTIFICAÇÕES -->
+    <div class="notif-list">
+        {% if notificacoes and notificacoes.items %}
+            {% for notif in notificacoes.items %}
+            <div class="notif-item {% if not notif.lida %}unread{% endif %}"
+                 onclick="markAsRead({{ notif.id }})">
+                
+                <!-- AVATAR COM ÍCONE DE TIPO -->
+                <div class="notif-avatar-wrapper">
+                    <div class="notif-avatar">
+                        {% if notif.origem_user and notif.origem_user.perfil_social and notif.origem_user.perfil_social.foto_perfil %}
+                            <img src="{{ notif.origem_user.perfil_social.foto_perfil }}" alt="{{ notif.origem_user.nome_completo }}">
+                        {% elif notif.origem_user %}
+                            {{ notif.origem_user.nome_completo[0].upper() }}
+                        {% else %}
+                            <i class="fas fa-bell"></i>
+                        {% endif %}
+                    </div>
+                    <div class="notif-type-icon type-{{ notif.tipo }}">
+                        {% if notif.tipo == 'like' %}
+                            <i class="fas fa-heart"></i>
+                        {% elif notif.tipo == 'follow' %}
+                            <i class="fas fa-user-plus"></i>
+                        {% elif notif.tipo == 'comentario' %}
+                            <i class="fas fa-comment"></i>
+                        {% else %}
+                            <i class="fas fa-bell"></i>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- CONTEÚDO -->
+                <div class="notif-content">
+                    <div class="notif-text">
+                        <strong>{{ notif.origem_user.nome_completo if notif.origem_user else 'Alguém' }}</strong>
+                        
+                        {% if notif.tipo == 'like' %}
+                            curtiu sua publicação.
+                        {% elif notif.tipo == 'follow' %}
+                            começou a seguir você.
+                        {% elif notif.tipo == 'comentario' %}
+                            comentou:
+                            <span class="preview-text">"{{ notif.mensagem.split(':')[-1].strip()[:50] if ':' in notif.mensagem else notif.mensagem[:50] }}..."</span>
+                        {% else %}
+                            interagiu com você.
+                        {% endif %}
+                    </div>
+                    
+                    <div class="notif-time">
+                        <i class="far fa-clock"></i>
+                        {{ notif.data_criacao.strftime('%d/%m às %H:%M') }}
+                    </div>
+                </div>
+
+                <!-- THUMBNAIL (se aplicável) -->
+                {% if notif.post and notif.post.midia and notif.post.midia.url %}
+                <img src="{{ notif.post.midia.url }}" class="notif-thumbnail" alt="Post">
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <!-- PAGINAÇÃO -->
+            {% if notificacoes.has_prev or notificacoes.has_next %}
+            <div class="pagination">
+                {% if notificacoes.has_prev %}
+                <a href="{{ url_for('helpzone.notificacoes', page=notificacoes.prev_num) }}" class="page-link">
+                    <i class="fas fa-chevron-left"></i>
+                    Anterior
+                </a>
+                {% endif %}
+                
+                {% if notificacoes.has_next %}
+                <a href="{{ url_for('helpzone.notificacoes', page=notificacoes.next_num) }}" class="page-link">
+                    Próximo
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- EMPTY STATE -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="far fa-bell"></i>
+                </div>
+                <h3>Nenhuma notificação</h3>
+                <p>Quando alguém curtir, comentar ou seguir você, aparecerá aqui.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ================================================
+// MARCAR COMO LIDA
+// ================================================
+async function markAsRead(notifId) {
+    try {
+        await fetch(`/helpzone/api/notificacao/${notifId}/ler`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+// ================================================
+// MARCAR TODAS COMO LIDAS
+// ================================================
+async function markAllAsRead() {
+    try {
+        const response = await fetch('/helpzone/api/notificacoes/marcar-todas-lidas', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+// ================================================
+// FILTROS
+// ================================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        // Implementar filtro via URL params ou AJAX
+    });
+});
+
+// ================================================
+// REMOVER INDICADOR DE NÃO LIDA AO CLICAR
+// ================================================
+document.querySelectorAll('.notif-item').forEach(item => {
+    item.addEventListener('click', function() {
+        this.classList.remove('unread');
+    });
+});
+
+// Inicialização
+console.log('✅ Notificações carregadas!');
+</script>
+{% endblock %}

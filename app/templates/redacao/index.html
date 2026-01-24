@@ -1,0 +1,1255 @@
+<!-- app/templates/redacao/index.html -->
+{% extends "layout.html" %}
+
+{% block title %}Redações - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .redacao-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .header-content h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .welcome-message {
+        color: var(--text-muted);
+        font-size: 1.125rem;
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    .btn-success {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        color: white;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    /* Stats Container */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: var(--shadow);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        opacity: 0.8;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .stat-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .chart-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .chart-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.6;
+    }
+
+    .chart-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-header h3 i {
+        color: var(--accent);
+        font-size: 1.25rem;
+    }
+
+    .chart-body {
+        padding: 2rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .competencies-chart {
+        height: 400px;
+    }
+
+    .improvement-tip {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid var(--warning);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .improvement-tip h4 {
+        margin: 0 0 0.75rem 0;
+        color: var(--warning);
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .improvement-tip p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    /* Quick Links Card */
+    .quick-links-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .quick-links-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .quick-links-card .card-title {
+        margin-bottom: 1.5rem;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .quick-links-card .card-title i {
+        color: var(--success);
+        font-size: 1.5rem;
+    }
+
+    .quick-links-grid {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Section Header */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out 0.7s both;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-header h2 i {
+        color: var(--accent);
+    }
+
+    /* Essays Grid */
+    .essays-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .essay-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .essay-card:nth-child(odd) { animation-delay: 0.1s; }
+    .essay-card:nth-child(even) { animation-delay: 0.2s; }
+
+    .essay-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .essay-card:hover .nota-display {
+        transform: scale(1.1);
+    }
+
+    /* Status Badge */
+    .status-badge {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .essay-card:hover .status-badge {
+        transform: translateY(-2px);
+    }
+
+    .badge-avaliada {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-analise {
+        background: rgba(0, 217, 255, 0.2);
+        color: var(--accent);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    .badge-erro {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-enviada {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Essay Header */
+    .essay-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        margin-right: 8rem;
+        gap: 1.5rem;
+    }
+
+    .nota-display-wrapper {
+        flex-shrink: 0;
+    }
+
+    .nota-display {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: white;
+        position: relative;
+        transition: transform 0.3s ease;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nota-alta {
+        background: linear-gradient(135deg, var(--success), #059669);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .nota-media {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .nota-baixa {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .nota-pendente {
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        font-size: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    .essay-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .essay-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text);
+        line-height: 1.3;
+    }
+
+    .essay-meta {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .essay-meta i {
+        color: var(--accent);
+    }
+
+    .essay-tema {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .essay-tema i {
+        color: var(--primary);
+    }
+
+    .essay-tema strong {
+        color: var(--text);
+    }
+
+    .essay-content {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: var(--text-muted);
+    }
+
+    .essay-actions {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .empty-state::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        opacity: 0.8;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--accent);
+        margin-bottom: 1.5rem;
+        animation: bounce 2s infinite;
+    }
+
+    .empty-state h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .redacao-container {
+            padding: 1rem;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+        }
+
+        .stats-container {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .essays-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .essay-header {
+            flex-direction: column;
+            margin-right: 0;
+            text-align: center;
+        }
+
+        .nota-display-wrapper {
+            align-self: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            position: static;
+            align-self: center;
+            margin-bottom: 1rem;
+        }
+
+        .essay-actions {
+            flex-direction: column;
+        }
+
+        .quick-links-grid {
+            flex-direction: column;
+        }
+
+        .chart-body {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stat-card {
+            padding: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+        }
+
+        .essay-card {
+            padding: 1.5rem;
+        }
+
+        .quick-links-card {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
+<div class="redacao-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1>Suas Redações</h1>
+            <p class="welcome-message">Acompanhe seu progresso e evolução na escrita</p>
+        </div>
+        <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nova Redação
+        </a>
+    </div>
+
+    <!-- Stats Container -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ total_redacoes }}</span>
+                <span class="stat-label">Total de redações</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ "%.0f"|format(media_notas) }}</span>
+                <span class="stat-label">Média de notas</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-award"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ melhor_nota|int }}</span>
+                <span class="stat-label">Melhor nota</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-bullseye"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ current_user.xp_total or 0 }}</span>
+                <span class="stat-label">XP Total</span>
+            </div>
+        </div>
+    </div>
+
+    {% if redacoes %}
+    <!-- Dashboard com gráficos de evolução -->
+    <div class="dashboard-grid">
+        <!-- Gráfico de Evolução das Notas -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="bi bi-graph-up"></i> Evolução das Notas</h3>
+            </div>
+            <div class="chart-body">
+                <div class="chart-container">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise de Competências -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="bi bi-bar-chart"></i> Competências Médias</h3>
+            </div>
+            <div class="chart-body">
+                <div class="chart-container competencies-chart">
+                    <canvas id="competenciesChart"></canvas>
+                </div>
+                
+                <!-- Dica de melhoria baseada na competência mais fraca -->
+                {% if redacoes_avaliadas %}
+                <div class="improvement-tip">
+                    <h4><i class="bi bi-lightbulb"></i> Dica de Melhoria</h4>
+                    <p id="improvementTip">Foque em melhorar sua competência mais fraca para aumentar sua nota geral!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Progresso Detalhado -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><i class="bi bi-speedometer2"></i> Progresso por Competência</h3>
+        </div>
+        <div class="chart-body">
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="quick-links-card">
+        <h5 class="card-title"><i class="bi bi-lightning-fill"></i>Links Rápidos</h5>
+        <div class="quick-links-grid">
+            <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary btn-small">
+                <i class="bi bi-pencil-square"></i> Escrever Nova Redação
+            </a>
+            <a href="{{ url_for('redacao.temas_sugeridos') }}" class="btn btn-outline-primary btn-small">
+                <i class="bi bi-list-ul"></i> Temas Sugeridos
+            </a>
+            <a href="{{ url_for('redacao.dicas') }}" class="btn btn-outline-primary btn-small">
+                <i class="bi bi-lightbulb"></i> Dicas de Redação
+            </a>
+        </div>
+    </div>
+
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2><i class="bi bi-clock-history"></i> Histórico de Redações</h2>
+    </div>
+
+    {% if redacoes %}
+        <div class="essays-grid">
+            {% for redacao in redacoes %}
+            <div class="essay-card">
+                <!-- Status Badge -->
+                {% if redacao.status == "Avaliada" %}
+                    <span class="status-badge badge-avaliada">
+                        <i class="bi bi-check-circle-fill"></i> Avaliada
+                    </span>
+                {% elif redacao.status == "Em análise" %}
+                    <span class="status-badge badge-analise">
+                        <i class="bi bi-hourglass-split"></i> Em análise
+                    </span>
+                {% elif redacao.status == "Erro" %}
+                    <span class="status-badge badge-erro">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Erro
+                    </span>
+                {% else %}
+                    <span class="status-badge badge-enviada">
+                        <i class="bi bi-send-fill"></i> Enviada
+                    </span>
+                {% endif %}
+                
+                <div class="essay-header">
+                    <div class="nota-display-wrapper">
+                        {% if redacao.nota_final is not none %}
+                            {% if redacao.nota_final >= 700 %}
+                                <div class="nota-display nota-alta" title="Nota: {{ redacao.nota_final|int }}">
+                                    {{ redacao.nota_final|int }}
+                                </div>
+                            {% elif redacao.nota_final >= 500 %}
+                                <div class="nota-display nota-media" title="Nota: {{ redacao.nota_final|int }}">
+                                    {{ redacao.nota_final|int }}
+                                </div>
+                            {% else %}
+                                <div class="nota-display nota-baixa" title="Nota: {{ redacao.nota_final|int }}">
+                                    {{ redacao.nota_final|int }}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="nota-display nota-pendente" title="Aguardando avaliação">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="essay-info">
+                        <h5 class="essay-title">{{ redacao.titulo or "Redação sem título" }}</h5>
+                        <p class="essay-meta">
+                            <i class="bi bi-calendar-event"></i>
+                            {{ redacao.data_envio.strftime('%d/%m/%Y às %H:%M') }}
+                        </p>
+                        {% if redacao.tema %}
+                            <p class="essay-tema">
+                                <i class="bi bi-bookmark-fill"></i>
+                                <strong>Tema:</strong> {{ redacao.tema }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="essay-content">
+                    <p>{{ redacao.conteudo|truncate(180, True) }}</p>
+                </div>
+                
+                <div class="essay-actions">
+                    <!--<a href="{{ url_for('redacao.visualizar', redacao_id=redacao.id) }}" class="btn btn-primary btn-small">
+                        <i class="bi bi-eye"></i> Ver Detalhes
+                    </a>-->
+                    
+                    {% if redacao.status == "Avaliada" %}
+                        <a href="{{ url_for('redacao.visualizar', redacao_id=redacao.id) }}" class="btn btn-primary btn-small">
+                          <!-- <i class="bi bi-bar-chart"></i> Ver Feedback-->
+			       <i class="bi bi-eye"></i> Ver Feedback	 
+                        </a>
+
+
+                    {% endif %}
+                    
+                    {% if redacao.status not in ["Avaliada", "Em análise"] %}
+                        <a href="{{ url_for('redacao.editar', redacao_id=redacao.id) }}" class="btn btn-outline-light btn-small">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-file-earmark-text"></i>
+            <h3>Nenhuma redação por aqui ainda...</h3>
+            <p>Que tal começar a escrever sua primeira redação e trilhar o caminho para a nota máxima no ENEM?</p>
+            <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Escrever Minha Primeira Redação
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if redacoes %}
+    // Dados das redações para os gráficos
+    const redacoes = {{ redacoes_json|safe }};
+    const redacoesAvaliadas = redacoes.filter(r => r.nota_final !== null);
+    
+    // Configuração de cores
+    const colors = {
+        primary: '#3b82f6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+        accent: '#00d9ff',
+        gradient: {
+            primary: 'rgba(59, 130, 246, 0.2)',
+            success: 'rgba(16, 185, 129, 0.2)',
+            warning: 'rgba(245, 158, 11, 0.2)',
+            danger: 'rgba(239, 68, 68, 0.2)',
+            accent: 'rgba(0, 217, 255, 0.2)'
+        }
+    };
+
+    if (redacoesAvaliadas.length > 0) {
+        // 1. Gráfico de Evolução das Notas
+        const evolutionCtx = document.getElementById('evolutionChart');
+        if (evolutionCtx) {
+            new Chart(evolutionCtx, {
+                type: 'line',
+                data: {
+                    labels: redacoesAvaliadas.map((r, index) => `${index + 1}ª`),
+                    datasets: [{
+                        label: 'Nota Final',
+                        data: redacoesAvaliadas.map(r => r.nota_final),
+                        borderColor: colors.primary,
+                        backgroundColor: colors.gradient.primary,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Nota: ${context.parsed.y}/1000`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1000,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                callback: function(value) {
+                                    return value + 'pts';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Gráfico de Competências Médias
+        const competenciesCtx = document.getElementById('competenciesChart');
+        if (competenciesCtx) {
+            // Calcular médias das competências
+            const competenciaMedias = [1, 2, 3, 4, 5].map(comp => {
+                const valores = redacoesAvaliadas
+                    .map(r => r[`competencia${comp}`])
+                    .filter(v => v !== null);
+                return valores.length > 0 ? 
+                    Math.round(valores.reduce((a, b) => a + b, 0) / valores.length) : 0;
+            });
+
+            new Chart(competenciesCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Domínio da\nNorma Culta',
+                        'Compreensão\ndo Tema',
+                        'Organização\nTextual',
+                        'Mecanismos\nLinguísticos',
+                        'Proposta de\nIntervenção'
+                    ],
+                    datasets: [{
+                        label: 'Suas Competências',
+                        data: competenciaMedias,
+                        fill: true,
+                        backgroundColor: colors.gradient.primary,
+                        borderColor: colors.primary,
+                        borderWidth: 2,
+                        pointBackgroundColor: colors.primary,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 200,
+                            stepSize: 40,
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                }
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                backdropColor: 'transparent',
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Identificar competência mais fraca e mostrar dica
+            const competenciaMaisFraca = competenciaMedias.indexOf(Math.min(...competenciaMedias)) + 1;
+            const dicas = {
+                1: "Revise regras de gramática, ortografia e pontuação para melhorar seu domínio da norma culta.",
+                2: "Pratique a interpretação de temas e desenvolva seu repertório sociocultural.",
+                3: "Trabalhe na estruturação de seus textos e na conexão lógica entre ideias.",
+                4: "Estude conectivos e elementos coesivos para melhorar a articulação de suas ideias.",
+                5: "Pratique a elaboração de propostas de intervenção detalhadas e viáveis."
+            };
+            
+            const tipElement = document.getElementById('improvementTip');
+            if (tipElement) {
+                tipElement.textContent = `Competência ${competenciaMaisFraca}: ${dicas[competenciaMaisFraca]}`;
+            }
+        }
+
+        // 3. Gráfico de Progresso por Competência (últimas 5 redações)
+        const progressCtx = document.getElementById('progressChart');
+        if (progressCtx && redacoesAvaliadas.length >= 2) {
+            const ultimasRedacoes = redacoesAvaliadas.slice(-5);
+            
+            const datasets = [1, 2, 3, 4, 5].map((comp, index) => {
+                const compColors = [colors.primary, colors.success, colors.warning, colors.danger, colors.accent];
+                const compGradients = [colors.gradient.primary, colors.gradient.success, colors.gradient.warning, colors.gradient.danger, colors.gradient.accent];
+                
+                return {
+                    label: `Competência ${comp}`,
+                    data: ultimasRedacoes.map(r => r[`competencia${comp}`] || 0),
+                    borderColor: compColors[index],
+                    backgroundColor: compGradients[index],
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: compColors[index],
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                };
+            });
+
+            new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: ultimasRedacoes.map((r, index) => `${redacoesAvaliadas.length - ultimasRedacoes.length + index + 1}ª`),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                font: {
+                                    size: 12
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}/200`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 200,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                callback: function(value) {
+                                    return value + 'pts';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+        }
+    }
+    {% endif %}
+
+    // Smooth scroll animations
+    const cards = document.querySelectorAll('.essay-card, .stat-card, .chart-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    cards.forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

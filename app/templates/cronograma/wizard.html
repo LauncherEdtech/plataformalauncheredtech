@@ -1,0 +1,1125 @@
+{% extends "layout.html" %}
+
+{% block title %}Criar Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    /* --- Design System da Intro --- */
+    :root {
+        --primary: #667eea;
+        --secondary: #764ba2;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --bg-card: rgba(255, 255, 255, 0.02);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --card-hover: rgba(255, 255, 255, 0.04);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 40%, #000 100%);
+        color: var(--text-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+        min-height: 100vh;
+    }
+
+    .wizard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
+
+    /* --- Header Minimalista --- */
+    .wizard-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .pill-status {
+        display: inline-block;
+        padding: 6px 14px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #818cf8;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .wizard-title {
+        font-size: clamp(2rem, 4vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.75rem;
+        line-height: 1.1;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .wizard-subtitle {
+        font-size: 1rem;
+        color: var(--text-muted);
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    /* --- Progress Minimalista --- */
+    .progress-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+    }
+
+    /* Linha conectora */
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 40px;
+        right: 40px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary) 0%, rgba(255,255,255,0.1) 100%);
+        z-index: 0;
+    }
+
+    .progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #050a15;
+        border: 1px solid var(--border-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-muted);
+        font-family: monospace;
+    }
+
+    .progress-step.active .step-number {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-color: transparent;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .progress-step.completed .step-number {
+        background: var(--primary);
+        border-color: transparent;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .progress-step.active .step-label {
+        color: var(--text-main);
+        font-weight: 600;
+    }
+
+    /* --- Wizard Content --- */
+    .wizard-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 2.5rem;
+    }
+
+    .step-container {
+        display: none;
+    }
+
+    .step-container.active {
+        display: block;
+        animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .step-subtitle {
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    /* --- Form Elements --- */
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        color-scheme: dark;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 3rem;
+    }
+
+    /* Estilos para o dropdown do select */
+    .form-select option {
+        background-color: #0f172a;
+        color: white;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .form-select option:hover,
+    .form-select option:focus {
+        background-color: #1e293b;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    }
+
+    .form-select option:checked {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* Forçar fundo escuro no select em diferentes estados */
+    select.form-select,
+    select.form-input {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+    }
+    
+    select.form-select:hover,
+    select.form-input:hover {
+        background-color: rgba(30, 41, 59, 0.8) !important;
+    }
+
+    /* --- Days Grid --- */
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .day-checkbox input {
+        display: none;
+    }
+
+    .day-label {
+        display: block;
+        padding: 1.25rem 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+    }
+
+    .day-label:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .day-checkbox input:checked + .day-label {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+        border-color: var(--primary);
+    }
+
+    .day-name {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .day-full {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    /* --- Materias Grid --- */
+    .materias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .materia-checkbox input {
+        display: none;
+    }
+
+    .materia-label {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .materia-label:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .materia-checkbox input:checked + .materia-label {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+        border-color: var(--primary);
+    }
+
+    .materia-icon {
+        font-size: 1.75rem;
+    }
+
+    .materia-info {
+        flex: 1;
+    }
+
+    .materia-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .materia-count {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+    }
+
+    /* --- Toggle Switch --- */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 26px;
+    }
+
+    .toggle-switch input {
+        display: none;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        transition: 0.3s;
+        border-radius: 26px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 4px;
+        background: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+    }
+
+    /* --- Navigation Buttons --- */
+    .wizard-nav {
+        display: flex;
+        gap: 1rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .btn-nav {
+        flex: 1;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-prev {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border: 1px solid var(--border-subtle);
+    }
+
+    .btn-prev:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .btn-next {
+        background: white;
+        color: #000;
+    }
+
+    .btn-next:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-link {
+        background: none;
+        border: none;
+        color: var(--primary);
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    /* --- Helper Text --- */
+    .helper-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    /* --- Input Number Customization --- */
+    input[type="number"].form-input {
+        -moz-appearance: textfield;
+    }
+
+    input[type="number"].form-input::-webkit-inner-spin-button,
+    input[type="number"].form-input::-webkit-outer-spin-button {
+        opacity: 1;
+        height: 30px;
+        cursor: pointer;
+    }
+
+    /* --- Input Date Customization --- */
+    input[type="date"].form-input {
+        cursor: pointer;
+        position: relative;
+    }
+
+    input[type="date"].form-input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+
+    input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+    }
+
+    /* --- Checkbox Label --- */
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
+    }
+
+    .checkbox-label:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    /* --- Mobile --- */
+    @media (max-width: 768px) {
+        .wizard-container {
+            padding: 2rem 1rem;
+        }
+
+        .wizard-content {
+            padding: 1.5rem;
+        }
+
+        .days-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .materias-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wizard-nav {
+            flex-direction: column;
+        }
+
+        .progress-steps::before {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    
+    <!-- Header -->
+    <div class="wizard-header">
+        <div class="pill-status">Passo a Passo</div>
+        <h1 class="wizard-title">Configure seu Cronograma</h1>
+        <p class="wizard-subtitle">
+            Responda algumas perguntas e deixe a IA organizar seus estudos automaticamente.
+        </p>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-container">
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">01</div>
+                <div class="step-label">Objetivo</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">02</div>
+                <div class="step-label">Horários</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">03</div>
+                <div class="step-label">Matérias</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">04</div>
+                <div class="step-label">Preferências</div>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-number">05</div>
+                <div class="step-label">Extras</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Wizard Content -->
+    <div class="wizard-content">
+        
+        <!-- STEP 1: Objetivo e Datas -->
+        <div class="step-container active" data-step="1">
+            <h2 class="step-title">📅 Qual é seu objetivo?</h2>
+            <p class="step-subtitle">Defina o foco dos seus estudos e as datas importantes.</p>
+
+            <div class="form-group">
+                <label for="objetivo" class="form-label">Objetivo Principal</label>
+                <input type="text" 
+                       id="objetivo" 
+                       class="form-input" 
+                       placeholder="Ex: Estudar para o ENEM 2025"
+                       value="Estudar para o ENEM">
+            </div>
+
+            <div class="form-group">
+                <label for="data_inicio" class="form-label">Data de Início</label>
+                <input type="date" id="data_inicio" class="form-input" required>
+                <p class="helper-text">Quando você quer começar a estudar?</p>
+            </div>
+
+            <div class="form-group">
+                <label for="data_prova" class="form-label">Data da Prova (opcional)</label>
+                <input type="date" id="data_prova" class="form-input">
+                <p class="helper-text">Se souber quando será a prova, informar ajuda a otimizar o cronograma.</p>
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Dias e Horários -->
+        <div class="step-container" data-step="2">
+            <h2 class="step-title">⏰ Quais dias você pode estudar?</h2>
+            <p class="step-subtitle">Marque os dias da semana em que você tem disponibilidade.</p>
+
+            <div class="days-grid">
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="seg" checked>
+                    <div class="day-label">
+                        <div class="day-name">SEG</div>
+                        <div class="day-full">Segunda</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="ter" checked>
+                    <div class="day-label">
+                        <div class="day-name">TER</div>
+                        <div class="day-full">Terça</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="qua" checked>
+                    <div class="day-label">
+                        <div class="day-name">QUA</div>
+                        <div class="day-full">Quarta</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="qui" checked>
+                    <div class="day-label">
+                        <div class="day-name">QUI</div>
+                        <div class="day-full">Quinta</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="sex" checked>
+                    <div class="day-label">
+                        <div class="day-name">SEX</div>
+                        <div class="day-full">Sexta</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="sab">
+                    <div class="day-label">
+                        <div class="day-name">SÁB</div>
+                        <div class="day-full">Sábado</div>
+                    </div>
+                </label>
+                <label class="day-checkbox">
+                    <input type="checkbox" name="dias_estudo" value="dom">
+                    <div class="day-label">
+                        <div class="day-name">DOM</div>
+                        <div class="day-full">Domingo</div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Horas de estudo por dia</label>
+                <div id="horasPorDiaContainer"></div>
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Matérias -->
+        <div class="step-container" data-step="3">
+            <h2 class="step-title">📚 Quais matérias deseja estudar?</h2>
+            <p class="step-subtitle">Ao marcar uma matéria, todas as aulas dela (de todas as seções) serão incluídas.</p>
+
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <label class="form-label" style="margin-bottom: 0;">Matérias Disponíveis ({{ materias|length }})</label>
+                    <button type="button" class="btn-link" onclick="selectAllMaterias()">
+                        Selecionar/Deselecionar Todas
+                    </button>
+                </div>
+
+                {% if materias %}
+                <div class="materias-grid">
+                    {% for materia in materias %}
+                    <label class="materia-checkbox">
+                        <input type="checkbox" 
+                               id="materia_{{ loop.index }}"
+                               name="materias" 
+                               data-ids="{{ materia.ids|join(',') }}"
+                               checked>
+                        <div class="materia-label">
+                            <div class="materia-icon">{{ materia.icone }}</div>
+                            <div class="materia-info">
+                                <div class="materia-name">{{ materia.nome }}</div>
+                                {% if materia.secoes %}
+                                <div class="materia-count">{{ materia.secoes|unique|join(', ') }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                    <p>Nenhuma matéria disponível ainda.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Preferências -->
+        <div class="step-container" data-step="4">
+            <h2 class="step-title">⚙️ Preferências de Estudo</h2>
+            <p class="step-subtitle">Personalize como você quer que o cronograma funcione.</p>
+
+            <div class="form-group">
+                <label for="periodo" class="form-label">Período de Estudo</label>
+                <select id="periodo" class="form-select">
+                    <option value="manha">Manhã</option>
+                    <option value="tarde" selected>Tarde</option>
+                    <option value="noite">Noite</option>
+                    <option value="flexivel">Flexível</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nivel" class="form-label">Nível Atual</label>
+                <select id="nivel" class="form-select">
+                    <option value="iniciante">Iniciante</option>
+                    <option value="intermediario" selected>Intermediário</option>
+                    <option value="avancado">Avançado</option>
+                </select>
+            </div>
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="priorizar_dificuldade" checked>
+                <span>Priorizar matérias com maior dificuldade</span>
+            </label>
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="incluir_revisoes" checked>
+                <span>Incluir ciclos de revisão automáticos</span>
+            </label>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-next" onclick="nextStep()">
+                    <span>Próximo</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Simulados e Redações -->
+        <div class="step-container" data-step="5">
+            <h2 class="step-title">🎯 Simulados e Redações</h2>
+            <p class="step-subtitle">Configure atividades extras no seu cronograma.</p>
+
+            <!-- Simulados -->
+            <div class="toggle-container">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Incluir Simulados</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        Adicionar simulados periódicos ao cronograma
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="incluir_simulados" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div id="simuladosConfig" style="margin-top: 1rem; padding-left: 1rem;">
+                <div class="form-group">
+                    <label for="dia_simulados" class="form-label">Dia da semana:</label>
+                    <select id="dia_simulados" class="form-input">
+                        <option value="sab" selected>Sábado</option>
+                        <option value="dom">Domingo</option>
+                        <option value="seg">Segunda-feira</option>
+                        <option value="ter">Terça-feira</option>
+                        <option value="qua">Quarta-feira</option>
+                        <option value="qui">Quinta-feira</option>
+                        <option value="sex">Sexta-feira</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="frequencia_simulados" class="form-label">Frequência:</label>
+                    <select id="frequencia_simulados" class="form-input">
+                        <option value="1">Toda semana</option>
+                        <option value="2" selected>A cada 2 semanas</option>
+                        <option value="3">A cada 3 semanas</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Redações -->
+            <div class="toggle-container">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Incluir Redações</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        Adicionar redações periódicas ao cronograma
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="incluir_redacoes" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div id="redacoesConfig" style="margin-top: 1rem; padding-left: 1rem;">
+                <div class="form-group">
+                    <label for="dia_redacoes" class="form-label">Dia da semana:</label>
+                    <select id="dia_redacoes" class="form-input">
+                        <option value="dom" selected>Domingo</option>
+                        <option value="sab">Sábado</option>
+                        <option value="seg">Segunda-feira</option>
+                        <option value="ter">Terça-feira</option>
+                        <option value="qua">Quarta-feira</option>
+                        <option value="qui">Quinta-feira</option>
+                        <option value="sex">Sexta-feira</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="frequencia_redacoes" class="form-label">Frequência:</label>
+                    <select id="frequencia_redacoes" class="form-input">
+                        <option value="1" selected>Toda semana</option>
+                        <option value="2">A cada 2 semanas</option>
+                        <option value="3">A cada 3 semanas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="wizard-nav">
+                <button type="button" class="btn-nav btn-prev" onclick="previousStep()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <button type="button" class="btn-nav btn-create" id="btnCriar" onclick="criarCronograma()">
+                    <span>🎯</span>
+                    <span>Criar Meu Cronograma</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Estado do wizard
+let currentStep = 1;
+const totalSteps = 5;
+
+// Navegação
+function nextStep() {
+    if (currentStep < totalSteps) {
+        updateStep(currentStep + 1);
+    }
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        updateStep(currentStep - 1);
+    }
+}
+
+function updateStep(step) {
+    document.querySelector(`.step-container[data-step="${currentStep}"]`).classList.remove('active');
+    
+    document.querySelectorAll('.progress-step').forEach(el => {
+        const stepNum = parseInt(el.dataset.step);
+        el.classList.remove('active');
+        if (stepNum < step) {
+            el.classList.add('completed');
+        } else {
+            el.classList.remove('completed');
+        }
+    });
+
+
+    currentStep = step;
+    document.querySelector(`.step-container[data-step="${currentStep}"]`).classList.add('active');
+    document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Selecionar todas matérias
+function selectAllMaterias() {
+    const checkboxes = document.querySelectorAll('input[name="materias"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+}
+
+// Atualizar horas por dia
+function atualizarHorasPorDia() {
+    const container = document.getElementById('horasPorDiaContainer');
+    const diasSelecionados = Array.from(document.querySelectorAll('input[name="dias_estudo"]:checked')).map(cb => cb.value);
+    
+    const diasNomes = {
+        'seg': 'Segunda',
+        'ter': 'Terça',
+        'qua': 'Quarta',
+        'qui': 'Quinta',
+        'sex': 'Sexta',
+        'sab': 'Sábado',
+        'dom': 'Domingo'
+    };
+    
+    container.innerHTML = diasSelecionados.map(dia => `
+        <div style="margin-bottom: 1rem;">
+            <label for="horas_${dia}" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">
+                ${diasNomes[dia]}
+            </label>
+            <input type="number" 
+                   id="horas_${dia}" 
+                   min="0.5" 
+                   max="12" 
+                   step="0.5" 
+                   value="2" 
+                   class="form-input"
+                   style="max-width: 200px;">
+        </div>
+    `).join('');
+}
+
+// Criar cronograma
+async function criarCronograma() {
+    const btnCriar = document.getElementById('btnCriar');
+    btnCriar.disabled = true;
+    btnCriar.innerHTML = '<span>⏳</span> <span>Criando...</span>';
+    
+    try {
+        const diasSelecionados = [];
+        document.querySelectorAll('input[name="dias_estudo"]:checked').forEach(input => {
+            diasSelecionados.push(input.value);
+        });
+        
+        const horasPorDia = {};
+        diasSelecionados.forEach(dia => {
+            const horasInput = document.getElementById(`horas_${dia}`);
+            if (horasInput) {
+                horasPorDia[dia] = parseFloat(horasInput.value) || 2;
+            }
+        });
+        
+        const materiasSelecionadas = [];
+        document.querySelectorAll('input[name="materias"]:checked').forEach(input => {
+            const ids = input.dataset.ids.split(',').map(id => parseInt(id));
+            materiasSelecionadas.push(...ids);
+        });
+        
+        const incluirSimulados = document.getElementById('incluir_simulados').checked;
+        const incluirRedacoes = document.getElementById('incluir_redacoes').checked;
+        
+        const data = {
+            objetivo: document.getElementById('objetivo').value || 'Estudar para o ENEM',
+            data_inicio: document.getElementById('data_inicio').value,
+            data_prova: document.getElementById('data_prova').value || null,
+            dias_estudo: diasSelecionados,
+            horas_por_dia: horasPorDia,
+            materias: materiasSelecionadas,
+            periodo: document.getElementById('periodo').value,
+            nivel: document.getElementById('nivel').value,
+            priorizar_dificuldade: document.getElementById('priorizar_dificuldade').checked,
+            incluir_revisoes: document.getElementById('incluir_revisoes').checked,
+            incluir_simulados: incluirSimulados,
+            incluir_redacoes: incluirRedacoes,
+            dia_simulados: incluirSimulados ? document.getElementById('dia_simulados').value : 'sab',
+            frequencia_simulados: incluirSimulados ? parseInt(document.getElementById('frequencia_simulados').value) : 2,
+            dia_redacoes: incluirRedacoes ? document.getElementById('dia_redacoes').value : 'dom',
+            frequencia_redacoes: incluirRedacoes ? parseInt(document.getElementById('frequencia_redacoes').value) : 1,
+        };
+        
+        const response = await fetch('/cronograma/criar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('✅ ' + result.message, 'success');
+            setTimeout(() => {
+                window.location.href = '/cronograma/';
+            }, 1500);
+        } else {
+            showNotification('❌ ' + (result.error || 'Erro ao criar cronograma'), 'error');
+            btnCriar.disabled = false;
+            btnCriar.innerHTML = '<span>🎯</span> <span>Criar Meu Cronograma</span>';
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        showNotification('❌ Erro ao criar cronograma', 'error');
+        btnCriar.disabled = false;
+        btnCriar.innerHTML = '<span>🎯</span> <span>Criar Meu Cronograma</span>';
+    }
+}
+
+// Notificações
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #38ef7d)' : 'linear-gradient(135deg, #dc3545, #c82333)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 99999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Definir data de hoje como padrão
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data_inicio').value = hoje;
+    
+    atualizarHorasPorDia();
+    
+    document.querySelectorAll('input[name="dias_estudo"]').forEach(checkbox => {
+        checkbox.addEventListener('change', atualizarHorasPorDia);
+    });
+    
+    const incluirSimulados = document.getElementById('incluir_simulados');
+    if (incluirSimulados) {
+        incluirSimulados.addEventListener('change', function(e) {
+            document.getElementById('simuladosConfig').style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+    
+    const incluirRedacoes = document.getElementById('incluir_redacoes');
+    if (incluirRedacoes) {
+        incluirRedacoes.addEventListener('change', function(e) {
+            document.getElementById('redacoesConfig').style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+});
+
+// CSS para animações
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

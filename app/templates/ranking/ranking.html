@@ -1,0 +1,637 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title }} - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        /* Paleta de Cores Premium Neon */
+        --primary-purple: #8b5cf6;
+        --primary-blue: #3b82f6;
+        --accent-cyan: #06b6d4;
+        --accent-pink: #ec4899;
+        
+        --bg-dark: #09090b; /* Zinco 950 */
+        --bg-card: rgba(24, 24, 27, 0.6); /* Zinco 900 com transparência */
+        --bg-card-hover: rgba(39, 39, 42, 0.8);
+        
+        --text-main: #fafafa;
+        --text-muted: #a1a1aa;
+        
+        /* Cores do Pódio */
+        --gold-grad: linear-gradient(135deg, #fbbf24, #d97706);
+        --silver-grad: linear-gradient(135deg, #e2e8f0, #94a3b8);
+        --bronze-grad: linear-gradient(135deg, #f59e0b, #b45309);
+        
+        --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        --glow-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+    }
+
+    /* Reset e Base */
+    * { box-sizing: border-box; }
+
+    body {
+        background-color: var(--bg-dark);
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .ranking-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        position: relative;
+    }
+
+    /* Utilitários de Animação */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.5); }
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- HEADER --- */
+    .ranking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        border-bottom: var(--glass-border);
+        padding-bottom: 1.5rem;
+    }
+
+    .header-title h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        background: linear-gradient(to right, #fff, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .back-btn {
+        background: rgba(255,255,255,0.05);
+        color: var(--text-muted);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: var(--glass-border);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+        background: rgba(255,255,255,0.1);
+        color: var(--text-main);
+        transform: translateX(-3px);
+    }
+
+    /* --- TABS --- */
+    .ranking-tabs-container {
+        background: var(--bg-card);
+        padding: 0.5rem;
+        border-radius: 16px;
+        display: inline-flex;
+        gap: 0.5rem;
+        margin-bottom: 3rem;
+        border: var(--glass-border);
+        flex-wrap: wrap;
+        backdrop-filter: blur(12px);
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .tab-btn:hover {
+        color: var(--text-main);
+        background: rgba(255,255,255,0.05);
+    }
+
+    .tab-btn.active {
+        background: var(--primary-purple);
+        color: white;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    /* --- STATS GRID --- */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 4rem;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: var(--glass-border);
+        padding: 1.5rem;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 4px;
+        background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: var(--bg-card-hover);
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    /* --- PODIUM (NO IMAGES) --- */
+    .podium-section {
+        margin-bottom: 5rem;
+        padding-top: 2rem;
+    }
+
+    .podium-grid {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 1.5rem;
+        min-height: 380px;
+    }
+
+    .podium-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        border: var(--glass-border);
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        width: 280px;
+        position: relative;
+        transition: transform 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .podium-card:hover {
+        transform: translateY(-10px);
+    }
+
+    /* Alturas do Podio */
+    .podium-card.second, .podium-card.third { height: 320px; z-index: 1; }
+    .podium-card.first { 
+        height: 380px; 
+        z-index: 2; 
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        background: linear-gradient(180deg, rgba(251, 191, 36, 0.05) 0%, var(--bg-card) 100%);
+        box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    /* Avatar Gerado por CSS */
+    .avatar-css {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .avatar-css::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        z-index: -1;
+    }
+
+    /* Cores Específicas do Pódio */
+    .first .avatar-css { background: var(--gold-grad); animation: float 3s ease-in-out infinite; }
+    .first .avatar-css::after { background: var(--gold-grad); opacity: 0.5; filter: blur(8px); }
+    .first .rank-number { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+
+    .second .avatar-css { background: var(--silver-grad); }
+    .second .rank-number { color: #cbd5e1; }
+
+    .third .avatar-css { background: var(--bronze-grad); }
+    .third .rank-number { color: #f59e0b; }
+
+    .rank-number {
+        font-size: 3rem;
+        font-weight: 900;
+        position: absolute;
+        top: -20px;
+        right: 10px;
+        opacity: 0.3;
+        font-style: italic;
+    }
+
+    .user-name-podium {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+    }
+
+    .podium-stat-highlight {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0.5rem 0;
+        background: linear-gradient(to right, #fff, #cbd5e1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* --- TABLE --- */
+    .table-wrapper {
+        background: var(--bg-card);
+        border-radius: 24px;
+        border: var(--glass-border);
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    .ranking-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .ranking-table th {
+        text-align: left;
+        padding: 1.5rem;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: rgba(0,0,0,0.2);
+    }
+
+    .ranking-table td {
+        padding: 1.2rem 1.5rem;
+        color: var(--text-main);
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+        vertical-align: middle;
+    }
+
+    .ranking-table tbody tr {
+        transition: background 0.2s;
+    }
+
+    .ranking-table tbody tr:hover {
+        background: rgba(255,255,255,0.03);
+    }
+
+    /* Linha do Usuário Atual */
+    .ranking-table tr.current-user {
+        background: rgba(139, 92, 246, 0.1);
+        position: relative;
+    }
+    
+    .ranking-table tr.current-user td:first-child {
+        border-left: 3px solid var(--primary-purple);
+    }
+
+    /* Mini Avatar na Tabela */
+    .mini-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: white;
+    }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .position-badge {
+        font-weight: 700;
+        color: var(--text-muted);
+        width: 30px;
+        text-align: center;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .podium-grid {
+            flex-direction: column;
+            align-items: center;
+            height: auto;
+            gap: 2rem;
+        }
+        
+        .podium-card {
+            width: 100%;
+            max-width: 300px;
+            height: auto !important;
+        }
+        
+        .podium-card.first { order: -1; }
+        
+        .ranking-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .hide-mobile { display: none; }
+    }
+</style>
+
+<div class="ranking-container">
+    <!-- Header -->
+    <div class="ranking-header fade-in-up" style="animation-delay: 0.1s;">
+        <div class="header-title">
+            <h1>
+                <i class="bi bi-trophy-fill" style="color: var(--primary-purple);"></i>
+                {{ title }}
+            </h1>
+        </div>
+        <a href="{{ url_for('dashboard.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Voltar ao Dashboard</span>
+        </a>
+    </div>
+
+    <!-- Navegação / Tabs -->
+    <div class="ranking-tabs-container fade-in-up" style="animation-delay: 0.2s;">
+        <a href="{{ url_for('ranking.ranking_geral') }}" 
+           class="tab-btn {{ 'active' if tipo_ranking == 'geral' else '' }}">
+            <i class="bi bi-star-fill"></i> Geral
+        </a>
+        <a href="{{ url_for('ranking.ranking_mensal') }}" 
+           class="tab-btn {{ 'active' if tipo_ranking == 'mensal' else '' }}">
+            <i class="bi bi-calendar-event"></i> Mensal
+        </a>
+      <!--  <a href="{{ url_for('ranking.ranking_tempo') }}" 
+           class="tab-btn {{ 'active' if tipo_ranking == 'tempo_estudo' else '' }}">
+            <i class="bi bi-clock-history"></i> Tempo
+        </a> -->
+        <a href="{{ url_for('ranking.ranking_simulados') }}" 
+           class="tab-btn {{ 'active' if tipo_ranking == 'simulados' else '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i> Simulados
+        </a>
+    </div>
+
+    {% if stats %}
+    <!-- Cards de Estatísticas -->
+    <div class="stats-grid fade-in-up" style="animation-delay: 0.3s;">
+        <div class="stat-card">
+            <div class="stat-label"><i class="bi bi-people"></i> Total de Usuários</div>
+            <div class="stat-value">{{ stats.total_usuarios }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label"><i class="bi bi-lightning-charge"></i> XP Médio</div>
+            <div class="stat-value">{{ stats.media_xp }}</div>
+        </div>
+        <!-- <div class="stat-card">
+            <div class="stat-label"><i class="bi bi-activity"></i> Ativos (Mês)</div>
+            <div class="stat-value">{{ stats.usuarios_ativos_mes }}</div>
+        </div> -->
+    </div>
+    {% endif %}
+
+    {% if ranking_data %}
+        
+        <!-- PODIUM SECTION (Sem Imagens) -->
+        {% if ranking_data|length >= 3 %}
+        <div class="podium-section fade-in-up" style="animation-delay: 0.4s;">
+            <div class="podium-grid">
+                
+                <!-- 2º Lugar -->
+                <div class="podium-card second">
+                    <div class="rank-number">2</div>
+                    <!-- Avatar CSS (Iniciais) -->
+                    <div class="avatar-css">
+                        {{ ranking_data[1].user.nome_completo[:2] | upper }}
+                    </div>
+                    <div class="user-name-podium">{{ ranking_data[1].user.nome_completo }}</div>
+                    
+                    <div class="podium-stat-highlight">
+                        {% if tipo_ranking == 'geral' %}{{ ranking_data[1].xp_total }} XP
+                        {% elif tipo_ranking == 'mensal' %}{{ ranking_data[1].xp_mes }} XP
+                        {% elif tipo_ranking == 'tempo_estudo' %}{{ ranking_data[1].tempo_formatado }}
+                        {% elif tipo_ranking == 'simulados' %}{{ ranking_data[1].media_notas }} TRI
+                        {% endif %}
+                    </div>
+                    <small style="color: var(--text-muted)">@{{ ranking_data[1].user.username }}</small>
+                </div>
+
+                <!-- 1º Lugar -->
+                <div class="podium-card first">
+                    <div class="rank-number">1</div>
+                    <div class="avatar-css">
+                        <i class="bi bi-crown-fill" style="font-size: 1.5rem; margin-right: 5px;"></i>
+                        {{ ranking_data[0].user.nome_completo[:2] | upper }}
+                    </div>
+                    <div class="user-name-podium">{{ ranking_data[0].user.nome_completo }}</div>
+                    
+                    <div class="podium-stat-highlight" style="font-size: 2rem;">
+                        {% if tipo_ranking == 'geral' %}{{ ranking_data[0].xp_total }} XP
+                        {% elif tipo_ranking == 'mensal' %}{{ ranking_data[0].xp_mes }} XP
+                        {% elif tipo_ranking == 'tempo_estudo' %}{{ ranking_data[0].tempo_formatado }}
+                        {% elif tipo_ranking == 'simulados' %}{{ ranking_data[0].media_notas }} TRI
+                        {% endif %}
+                    </div>
+
+
+                    {% if tipo_ranking == 'geral' %}
+                    <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 4px 12px; border-radius: 20px; margin-top: 0.5rem;">
+                        Nível {{ ranking_data[0].nivel }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- 3º Lugar -->
+                <div class="podium-card third">
+                    <div class="rank-number">3</div>
+                    <div class="avatar-css">
+                        {{ ranking_data[2].user.nome_completo[:2] | upper }}
+                    </div>
+                    <div class="user-name-podium">{{ ranking_data[2].user.nome_completo }}</div>
+                    
+                    <div class="podium-stat-highlight">
+                        {% if tipo_ranking == 'geral' %}{{ ranking_data[2].xp_total }} XP
+                        {% elif tipo_ranking == 'mensal' %}{{ ranking_data[2].xp_mes }} XP
+                        {% elif tipo_ranking == 'tempo_estudo' %}{{ ranking_data[2].tempo_formatado }}
+                        {% elif tipo_ranking == 'simulados' %}{{ ranking_data[2].media_notas }} TRI
+                        {% endif %}
+                    </div>
+                    <small style="color: var(--text-muted)">@{{ ranking_data[2].user.username }}</small>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TABLE SECTION -->
+        <div class="table-wrapper fade-in-up" style="animation-delay: 0.5s;">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px">#</th>
+                        <th>Estudante</th>
+                        {% if tipo_ranking == 'geral' %}
+                            <th class="hide-mobile">XP Total</th>
+                            <th class="hide-mobile">Nível</th>
+                        {% elif tipo_ranking == 'mensal' %}
+                            <th>XP (Mês)</th>
+                        {% elif tipo_ranking == 'tempo_estudo' %}
+                            <th>Tempo Total</th>
+                        {% elif tipo_ranking == 'simulados' %}
+                            <th>Média TRI</th>
+                            <th class="hide-mobile">Qtd.</th>
+                        {% endif %}
+                        <th class="hide-mobile">Conquista Recente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in ranking_data %}
+                    <tr class="{{ 'current-user' if data.is_current_user else '' }}">
+                        <td>
+                            <div class="position-badge">{{ data.posicao }}</div>
+                        </td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="mini-avatar" style="background: linear-gradient(135deg, hsl({{ data.posicao * 35 }}, 70%, 50%), hsl({{ data.posicao * 35 + 40 }}, 70%, 40%))">
+                                    {{ data.user.nome_completo[:2] | upper }}
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight: 600;">{{ data.user.nome_completo }}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted)">@{{ data.user.username }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        {% if tipo_ranking == 'geral' %}
+                            <td class="hide-mobile" style="font-weight: 700;">{{ data.xp_total }}</td>
+                            <td class="hide-mobile"><span style="color: var(--accent-cyan)">Lvl {{ data.nivel }}</span></td>
+                        {% elif tipo_ranking == 'mensal' %}
+                            <td style="font-weight: 700; color: var(--accent-pink)">{{ data.xp_mes }}</td>
+                        {% elif tipo_ranking == 'tempo_estudo' %}
+                            <td style="font-family: monospace;">{{ data.tempo_formatado }}</td>
+                        {% elif tipo_ranking == 'simulados' %}
+                            <td style="font-weight: 700;">{{ data.media_notas }}</td>
+                            <td class="hide-mobile">{{ data.total_simulados }}</td>
+                        {% endif %}
+
+                        <td class="hide-mobile">
+                            {% if data.badge_info %}
+                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 12px;">
+                                <i class="bi bi-{{ data.badge_info.icone }}"></i>
+                                {{ data.badge_info.texto }}
+                            </span>
+                            {% else %}
+                            <span style="opacity: 0.3">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if user_position and user_position > 50 %}
+        <div style="text-align: center; margin-top: 2rem; color: var(--text-muted);" class="fade-in-up">
+            Você está na posição <strong style="color: var(--primary-purple)">{{ user_position }}º</strong>. Continue focando! 🚀
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="empty-state fade-in-up" style="text-align: center; padding: 4rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;">
+                <i class="bi bi-cone-striped"></i>
+            </div>
+            <h3>Ranking em Construção</h3>
+            <p style="color: var(--text-muted)">A competição está apenas começando.</p>
+            {% if error %}
+                <p style="color: #ef4444; margin-top: 1rem;">{{ error }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Scroll suave para o usuário atual se ele estiver na tabela
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = document.querySelector('.current-user');
+        if (currentUser) {
+            setTimeout(() => {
+                currentUser.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Efeito de flash para destacar
+                currentUser.style.transition = 'background 0.5s';
+                currentUser.style.background = 'rgba(139, 92, 246, 0.3)';
+                setTimeout(() => {
+                    currentUser.style.background = 'rgba(139, 92, 246, 0.1)';
+                }, 1000);
+            }, 800);
+        }
+    });
+</script>
+{% endblock %}

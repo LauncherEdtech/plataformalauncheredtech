@@ -1,0 +1,644 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ simulado.titulo }} - Plataforma{% endblock %}
+
+{% block styles %}
+<style>
+    /* =========================================
+       0. OVERRIDE CRÍTICO DO LAYOUT (ADICIONAR ISTO NO TOPO)
+       ========================================= */
+    /* Força o fundo branco/cinza claro APENAS nesta página */
+    body.simulado-page,
+    html {
+        background-color: #f4f6f9 !important;
+        color: #333 !important;
+    }
+    
+    /* Remove qualquer fundo escuro dos containers */
+    main.container {
+        background-color: transparent !important;
+    }
+
+    /* =========================================
+       1. OVERRIDES DO LAYOUT (CRÍTICO)
+       ========================================= */
+    /* Remove o fundo escuro/transparente do layout base */
+    .bg-dark {
+        --bs-bg-opacity: 0 !important;
+        background-color: transparent !important;
+    }
+    /* =========================================
+       2. VARIÁVEIS E GERAIS
+       ========================================= */
+    :root {
+        --primary-color: #0084ff;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --border-color: #e0e0e0;
+    }
+
+    /* Remove paddings do container do layout */
+    main.container, .simulado-container .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .content-wrapper {
+        background-color: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    /* =========================================
+       3. MOBILE (TOPO)
+       ========================================= */
+    .mobile-header-wrapper {
+        display: none;
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+        background-color: white !important; /* Força branco */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        width: 100%;
+    }
+
+    .mobile-progress-track {
+        width: 100%;
+        height: 6px; /* Um pouco mais visível */
+        background-color: #e9ecef !important;
+    }
+
+    .mobile-progress-fill {
+        height: 100%;
+        background-color: var(--primary-color) !important;
+        transition: width 0.3s ease;
+    }
+
+    .mobile-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border-color);
+        background-color: white !important;
+    }
+
+    .mobile-timer {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000 !important; /* Força cor preta */
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-mobile-close {
+        width: 36px;
+        height: 36px;
+        background-color: var(--danger-color) !important;
+        color: white !important;
+        border: none;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* =========================================
+       4. LAYOUT DESKTOP
+       ========================================= */
+    .desktop-wrapper {
+        display: flex;
+        /* Altura mínima para preencher a tela se o conteúdo for curto */
+        min-height: calc(100vh - 60px); 
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    /* --- SIDEBAR (ESQUERDA) --- */
+    .sidebar-painel {
+        width: 280px;
+        background-color: white !important; /* Força branco */
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        height: fit-content;
+        /* Se quiser que a sidebar role junto com a tela, remova o sticky abaixo */
+        position: sticky; 
+        top: 20px; 
+    }
+
+    .sidebar-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6c757d !important;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .sidebar-progress-track {
+        height: 8px;
+        background-color: #e9ecef !important;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+
+    .sidebar-progress-fill {
+        height: 100%;
+        background-color: var(--primary-color) !important;
+    }
+
+    .sidebar-progress-text {
+        font-size: 12px;
+        color: #6c757d !important;
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+    .btn-sidebar-finalizar {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: var(--success-color) !important;
+        color: white !important;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        cursor: pointer;
+        margin-bottom: 25px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-sidebar-finalizar:hover {
+        background-color: #218838 !important;
+    }
+
+    .questoes-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        max-height: 50vh;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .q-btn {
+        aspect-ratio: 1;
+        background-color: white !important;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        color: #495057 !important; /* Força cor escura */
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .q-btn:hover {
+        background-color: #e9ecef !important;
+    }
+
+    .q-btn.active {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .q-btn.respondida {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+    }
+
+    /* --- ÁREA PRINCIPAL DA QUESTÃO (DIREITA) --- */
+    .main-content {
+        flex: 1;
+        background-color: white !important; /* Força branco */
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .questao-header {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .questao-titulo {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--primary-color) !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .questao-enunciado {
+        font-size: 18px;
+        line-height: 1.6;
+        color: #212529 !important; /* Força cor escura no texto da questão */
+        margin-bottom: 30px;
+    }
+
+    /* Alternativas */
+    .alternativas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .alternativa-card {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: white !important;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .alternativa-card:hover {
+        background-color: #f8f9ff !important;
+        border-color: var(--primary-color);
+    }
+
+    .alternativa-card.selected {
+        background-color: #e6f3ff !important;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px var(--primary-color);
+    }
+
+    .alternativa-card.descartada {
+        background-color: #f8f9fa !important;
+        opacity: 0.6;
+        text-decoration: line-through;
+    }
+
+    .alternativa-letra {
+        font-weight: 700;
+        color: var(--primary-color) !important; /* Força Azul */
+        margin-right: 10px;
+        min-width: 25px;
+    }
+
+    .alternativa-texto {
+        flex: 1;
+        font-size: 16px;
+        color: #333 !important; /* Força texto escuro */
+    }
+
+    .btn-tesoura {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        background-color: white !important;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .btn-tesoura:hover {
+        background-color: #f8f9fa !important;
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+
+    .alternativa-card.descartada .btn-tesoura {
+        background-color: var(--danger-color) !important;
+        color: white !important;
+        border-color: var(--danger-color);
+    }
+
+    .btn-confirmar-resposta {
+        margin-top: 20px;
+        padding: 12px;
+        background-color: var(--success-color) !important;
+        color: white !important;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        display: none;
+    }
+
+    /* Rodapé Navegação */
+    .nav-footer {
+        margin-top: auto;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .btn-nav {
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .btn-nav-prev {
+        background-color: #e9ecef !important;
+        color: #495057 !important;
+    }
+    
+    .btn-nav-next {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    /* =========================================
+       5. RESPONSIVIDADE (MOBILE)
+       ========================================= */
+    @media (max-width: 992px) {
+        /* Mobile View Ativa */
+        .mobile-header-wrapper { display: block; }
+        
+        /* Desktop View Inativa */
+        .sidebar-painel { display: none !important; }
+        .questao-header { display: none !important; } /* Oculta header interno no mobile */
+
+        /* Ajuste do container principal no mobile */
+        .desktop-wrapper {
+            display: block; /* Remove flex */
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: auto;
+        }
+
+        .main-content {
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+            margin-bottom: 60px; /* Espaço para não colar no fundo */
+        }
+        
+        .btn-confirmar-resposta {
+            position: sticky;
+            bottom: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<script>
+    // Adiciona classe ao body para identificar página de simulado
+    document.body.classList.add('simulado-page');
+</script>
+<div class="simulado-container">
+
+    <!-- HEADER MOBILE -->
+    <div class="mobile-header-wrapper">
+        <div class="mobile-progress-track">
+            <div class="mobile-progress-fill" style="width: {{ progresso }}%;"></div>
+        </div>
+        <div class="mobile-toolbar">
+            <div class="mobile-timer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 3.5a.5.5 0 0 1 .5.5v4l3 1.5a.5.5 0 0 1-.5.866l-3.5-1.75A.5.5 0 0 1 7.5 8V4a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM1.5 8a6.5 6.5 0 1 1 13 0A6.5 6.5 0 0 1 1.5 8z"/>
+                </svg>
+                <span id="timer-mobile">00:00:00</span>
+            </div>
+            <button class="btn-mobile-close" data-bs-toggle="modal" data-bs-target="#modalFinalizar">✕</button>
+        </div>
+    </div>
+
+    <div class="desktop-wrapper">
+        
+        <!-- SIDEBAR (Desktop Only) -->
+        <aside class="sidebar-painel">
+            <div class="sidebar-progress-block">
+                <span class="sidebar-label">Progresso</span>
+                <div class="sidebar-progress-track">
+                    <div class="sidebar-progress-fill" style="width: {{ progresso }}%;"></div>
+                </div>
+                <div class="sidebar-progress-text">{{ progresso|int }}% Concluído</div>
+            </div>
+
+            <button class="btn-sidebar-finalizar" data-bs-toggle="modal" data-bs-target="#modalFinalizar">
+                Finalizar Simulado
+            </button>
+
+            <span class="sidebar-label">Navegação</span>
+            <div class="questoes-grid">
+                {% for q in todas_questoes %}
+                    <a href="{{ url_for('simulados.questao', simulado_id=simulado.id, questao_numero=q.numero) }}" 
+                       class="q-btn {% if q.resposta_usuario %}respondida{% endif %} {% if q.numero == questao.numero %}active{% endif %}">
+                        {{ q.numero }}
+                    </a>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- ÁREA DA QUESTÃO -->
+        <main class="main-content">
+            <div class="questao-header">
+                <div class="questao-titulo">Questão {{ questao.numero }} de {{ todas_questoes|length }}</div>
+                <div class="text-muted small" style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-clock"></i> Tempo restante: <span id="timer-desktop" style="font-weight: bold;">00:00:00</span>
+                </div>
+            </div>
+
+            <div class="questao-enunciado">
+                {{ questao.texto|safe }}
+            </div>
+
+            <form method="POST" id="form-resposta">
+                <input type="hidden" name="timestamp" id="timestamp_input" value="">
+
+                <div class="alternativas-list">
+                    {% for alternativa in questao.alternativas %}
+                    <div class="alternativa-card" id="card-{{ alternativa.letra }}" onclick="selecionarAlternativa('{{ alternativa.letra }}')">
+                        <input type="radio" name="resposta" value="{{ alternativa.letra }}" 
+                               id="radio-{{ alternativa.letra }}" class="alternativa-radio"
+                               {% if questao.resposta_usuario == alternativa.letra %}checked{% endif %}>
+                        
+                        <div class="alternativa-letra">{{ alternativa.letra }})</div>
+                        <div class="alternativa-texto">{{ alternativa.texto }}</div>
+
+                        <button type="button" class="btn-tesoura" onclick="toggleTesoura(event, '{{ alternativa.letra }}')" title="Descartar">✂️</button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" class="btn-confirmar-resposta" id="btn-confirmar">
+                    Confirmar Resposta
+                </button>
+            </form>
+
+
+            <div class="nav-footer">
+                {% set prev = todas_questoes|selectattr('numero', 'equalto', questao.numero - 1)|first %}
+                {% set next = todas_questoes|selectattr('numero', 'equalto', questao.numero + 1)|first %}
+
+                {% if prev %}
+                    <a href="{{ url_for('simulados.questao', simulado_id=simulado.id, questao_numero=prev.numero) }}" class="btn-nav btn-nav-prev">← Anterior</a>
+                {% else %}
+                    <span class="btn-nav btn-nav-prev" style="opacity: 0.5; cursor: not-allowed;">← Anterior</span>
+                {% endif %}
+
+                {% if next %}
+                    <a href="{{ url_for('simulados.questao', simulado_id=simulado.id, questao_numero=next.numero) }}" class="btn-nav btn-nav-next">Próxima →</a>
+                {% else %}
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalFinalizar" class="btn-nav btn-nav-next" style="background-color: var(--success-color) !important;">Finalizar</a>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="modalFinalizar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Finalizar Simulado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja entregar?</p>
+                <p class="text-danger small">Questões não respondidas serão consideradas erradas.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{{ url_for('simulados.finalizar', simulado_id=simulado.id) }}" class="btn btn-success">Finalizar Agora</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Timer
+const duracaoSegundos = {{ simulado.duracao_minutos }} * 60;
+const dataRealizado = "{{ simulado.data_realizado.strftime('%Y-%m-%dT%H:%M:%S') if simulado.data_realizado else '' }}";
+let inicioSimulado = dataRealizado ? new Date(dataRealizado + "Z") : new Date();
+
+if (dataRealizado) {
+    if ((new Date() - inicioSimulado)/1000 > duracaoSegundos) inicioSimulado = new Date();
+}
+
+function atualizarTimer() {
+    const agora = new Date();
+    const decorrido = Math.floor((agora - inicioSimulado) / 1000);
+    let restante = duracaoSegundos - decorrido;
+    if (restante < 0) restante = 0;
+
+    const h = Math.floor(restante / 3600).toString().padStart(2, '0');
+    const m = Math.floor((restante % 3600) / 60).toString().padStart(2, '0');
+    const s = (restante % 60).toString().padStart(2, '0');
+    const txt = `${h}:${m}:${s}`;
+
+    const mob = document.getElementById('timer-mobile');
+    const desk = document.getElementById('timer-desktop');
+    if(mob) mob.textContent = txt;
+    if(desk) desk.textContent = txt;
+
+    if (restante < 300) {
+        if(mob) mob.style.color = '#dc3545';
+        if(desk) desk.style.color = '#dc3545';
+    }
+
+    document.getElementById('timestamp_input').value = Math.floor(Date.now() / 1000);
+
+    if (restante <= 0) {
+        alert("Tempo esgotado!");
+        window.location.href = "{{ url_for('simulados.finalizar', simulado_id=simulado.id) }}";
+    }
+}
+setInterval(atualizarTimer, 1000);
+atualizarTimer();
+
+// Lógica
+function selecionarAlternativa(letra) {
+    const card = document.getElementById(`card-${letra}`);
+    if (card.classList.contains('descartada')) return;
+
+    document.querySelectorAll('.alternativa-card').forEach(el => el.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById(`radio-${letra}`).checked = true;
+    document.getElementById('btn-confirmar').style.display = 'block';
+}
+
+function toggleTesoura(event, letra) {
+    event.stopPropagation();
+    const card = document.getElementById(`card-${letra}`);
+    const key = `descartada_{{ simulado.id }}_{{ questao.numero }}_${letra}`;
+    
+    if (card.classList.contains('descartada')) {
+        card.classList.remove('descartada');
+        localStorage.removeItem(key);
+    } else {
+        card.classList.add('descartada');
+        card.classList.remove('selected');
+        document.getElementById(`radio-${letra}`).checked = false;
+        localStorage.setItem(key, 'true');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Restaurar selecionado
+    const chk = document.querySelector('input[name="resposta"]:checked');
+    if (chk) {
+        document.getElementById(`card-${chk.value}`).classList.add('selected');
+        document.getElementById('btn-confirmar').style.display = 'block';
+    }
+    // Restaurar tesouras
+    document.querySelectorAll('.alternativa-card').forEach(c => {
+        const l = c.id.replace('card-', '');
+        if (localStorage.getItem(`descartada_{{ simulado.id }}_{{ questao.numero }}_${l}`) === 'true') {
+            c.classList.add('descartada');
+        }
+    });
+
+    document.getElementById('btn-confirmar').addEventListener('click', () => {
+        document.getElementById('form-resposta').submit();
+    });
+});
+</script>
+{% endblock %}

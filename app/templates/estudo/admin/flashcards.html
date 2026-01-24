@@ -1,0 +1,377 @@
+<!-- =============================================== -->
+<!-- ARQUIVO: app/templates/estudo/admin/flashcards.html -->
+<!-- =============================================== -->
+
+{% extends "layout.html" %}
+
+{% block title %}Flashcards - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .admin-header {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #45b7d1;
+    }
+
+    .stat-label {
+        margin-top: 10px;
+        opacity: 0.8;
+    }
+
+    .materias-list {
+        margin-top: 40px;
+    }
+
+    .add-button {
+        background: linear-gradient(45deg, #45b7d1, #6bceed);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .add-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(69, 183, 209, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .materia-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .materia-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border-color: rgba(69, 183, 209, 0.5);
+    }
+
+    .materia-header {
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .materia-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .materia-info {
+        flex: 1;
+    }
+
+    .materia-info h3 {
+        margin: 0 0 8px 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .materia-info p {
+        margin: 0 0 12px 0;
+        opacity: 0.8;
+        font-size: 0.95rem;
+    }
+
+    .materia-stats {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .materia-stats span {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .materia-actions {
+        padding: 20px 25px;
+        background: rgba(0, 0, 0, 0.2);
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .btn-edit {
+        background: #28a745;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-edit:hover {
+        background: #218838;
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        opacity: 0.7;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #45b7d1, #6bceed);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(69, 183, 209, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-outline-light:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        color: #45b7d1;
+        border: 2px solid #45b7d1;
+    }
+
+    .btn-outline-primary:hover {
+        background: #45b7d1;
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 10px;
+        }
+
+        .materia-header {
+            padding: 20px;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .materia-actions {
+            padding: 15px 20px;
+            justify-content: center;
+        }
+
+        .admin-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1>🃏 Administração de Flashcards</h1>
+        <p>Gerencie flashcards, módulos e cards da plataforma</p>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ flashcards|length }}</div>
+            <div class="stat-label">Flashcards</div>
+        </div>
+        <div class="stat-card">
+            {% set total_modulos = 0 %}
+            {% for flashcard in flashcards %}
+                {% set total_modulos = total_modulos + (flashcard.total_modulos or 0) %}
+            {% endfor %}
+            <div class="stat-number">{{ total_modulos }}</div>
+            <div class="stat-label">Módulos</div>
+        </div>
+        <div class="stat-card">
+            {% set total_cards = 0 %}
+            {% for flashcard in flashcards %}
+                {% set total_cards = total_cards + (flashcard.total_cards or 0) %}
+            {% endfor %}
+            <div class="stat-number">{{ total_cards }}</div>
+            <div class="stat-label">Cards</div>
+        </div>
+        <div class="stat-card">
+            {% set flashcards_ativos = flashcards|selectattr("ativo")|list|length %}
+            <div class="stat-number">{{ flashcards_ativos }}</div>
+            <div class="stat-label">Ativos</div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="quick-actions">
+        <a href="{{ url_for('estudo.novo_flashcard') }}" class="btn btn-primary">
+            ➕ Novo Flashcard
+        </a>
+        <a href="{{ url_for('estudo.admin') }}" class="btn btn-outline-light">
+            ⬅️ Voltar ao Admin
+        </a>
+    </div>
+
+    <!-- Lista de Flashcards -->
+    <div class="materias-list">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>🃏 Flashcards Cadastrados</h2>
+        </div>
+
+        {% if flashcards %}
+            {% for flashcard in flashcards %}
+            <div class="materia-card">
+                <div class="materia-header">
+                    <div class="materia-icon" style="background: {{ flashcard.cor or '#45b7d1' }};">
+                        {{ flashcard.icone or '🃏' }}
+                    </div>
+                    <div class="materia-info">
+                        <h3>{{ flashcard.titulo }}</h3>
+                        <p>{{ flashcard.descricao or 'Sem descrição' }}</p>
+                        <div class="materia-stats">
+                            <span>📑 {{ flashcard.total_modulos or 0 }} módulos</span>
+                            <span>🃏 {{ flashcard.total_cards or 0 }} cards</span>
+                            <span>🎯 Ordem: {{ flashcard.ordem }}</span>
+                            <span>📅 {{ flashcard.data_criacao.strftime('%d/%m/%Y') if flashcard.data_criacao else 'N/A' }}</span>
+                            <span style="background: {{ '#28a745' if flashcard.ativo else '#dc3545' }};">
+                                {{ '✅ Ativo' if flashcard.ativo else '❌ Inativo' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="materia-actions">
+                    <a href="{{ url_for('estudo.novo_modulo_flashcard', flashcard_id=flashcard.id) }}" class="btn-edit" style="background: #007bff;">
+                        ➕ Novo Módulo
+                    </a>
+                    <a href="{{ url_for('estudo.editar_flashcard', flashcard_id=flashcard.id) }}" class="btn-edit">
+                        ✏️ Editar
+                    </a>
+                    <form method="POST" action="{{ url_for('estudo.excluir_flashcard', flashcard_id=flashcard.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este flashcard? Esta ação é irreversível!')">
+                        <button type="submit" class="btn-delete">🗑️ Excluir</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h3>🃏 Nenhum Flashcard Cadastrado</h3>
+                <p>Comece criando seu primeiro conjunto de flashcards para facilitar a memorização de conteúdos.</p>
+                <a href="{{ url_for('estudo.novo_flashcard') }}" class="btn btn-primary">
+                    ➕ Criar Primeiro Flashcard
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

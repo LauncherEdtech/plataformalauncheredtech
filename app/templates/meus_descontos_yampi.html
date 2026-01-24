@@ -1,0 +1,317 @@
+{% extends "layout.html" %}
+
+{% block title %}Meus Resgates - Launcher Store{% endblock %}
+
+{% block content %}
+<!-- Fontes e Ícones (Mesmos do Shop) -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    /* --- DESIGN SYSTEM CYBER-GRAPHITE (Cópia exata do Shop com !important) --- */
+    :root {
+        --bg-core: #090909;
+        --bg-card: #121212;
+        --bg-elevated: #1a1a1a;
+        --bg-modal: #0f0f0f;
+        
+        /* Cores da Marca */
+        --neon-blue: #2563eb;
+        --neon-cyan: #06b6d4;
+        --neon-glow: rgba(6, 182, 212, 0.4);
+        
+        /* Launcher Coin (Ouro) */
+        --coin-gold: #fbbf24;
+        --coin-glow: rgba(251, 191, 36, 0.3);
+        
+        --text-white: #ffffff;
+        --text-gray: #9ca3af;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-body: 'Outfit', sans-serif;
+        
+        --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 🔥 BACKGROUND IDENTICO AO SHOP (FORÇADO) 🔥 */
+    body, html {
+        background-color: var(--bg-core) !important;
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.15), transparent 35%),
+            radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.1), transparent 35%) !important;
+        background-attachment: fixed !important;
+        background-size: cover !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        font-family: var(--font-body) !important;
+        color: var(--text-white) !important;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+    }
+
+    /* --- HEADER --- */
+    .header-section {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+        border-bottom: 1px solid var(--border-subtle);
+        padding-bottom: 2rem;
+    }
+
+    .header-content h1 {
+        font-family: var(--font-display) !important;
+        font-size: 3rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.5rem;
+        letter-spacing: -2px;
+        background: linear-gradient(to right, #fff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header-content p {
+        color: var(--text-gray) !important;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn-back {
+        background: transparent !important;
+        color: var(--text-gray) !important;
+        text-decoration: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 100px;
+        border: 1px solid var(--border-subtle) !important;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.8rem;
+    }
+
+    .btn-back:hover {
+        background: var(--bg-elevated) !important;
+        color: white !important;
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+    }
+
+    /* --- GRID --- */
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+
+    /* --- CARD (Estilo Cyber Card do Shop) --- */
+    .history-card {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        transition: transform 0.4s var(--ease-elastic), box-shadow 0.4s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .history-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.8);
+        border-color: rgba(6, 182, 212, 0.3) !important;
+    }
+
+    .card-media {
+        height: 250px; /* Altura ajustada para visual similar ao shop */
+        width: 100%;
+        background: #0f0f0f;
+        position: relative;
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .card-media img {
+        width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: 0.5s;
+    }
+    
+    .history-card:hover .card-media img { opacity: 1; transform: scale(1.06); }
+
+    /* Tags Flutuantes (Estilo Shop) */
+    .floating-tags {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Data (Estilo Glass) */
+    .tag-date {
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #ddd;
+    }
+
+    /* Status (Estilo Desconto do Shop) */
+    .tag-status {
+        background: var(--neon-blue);
+        color: white;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        display: flex; flex-direction: column; flex-grow: 1;
+        background: linear-gradient(to bottom, var(--bg-card), #0e0e0e) !important;
+        z-index: 2;
+        position: relative;
+    }
+
+    .item-title {
+        font-family: var(--font-display) !important;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: white !important;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+    }
+
+    .item-sku {
+        font-size: 0.75rem;
+        color: #555 !important;
+        font-family: monospace;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .coin-val { 
+        color: white; 
+        font-weight: 700; 
+        font-size: 1.1rem; 
+        display: flex; 
+        align-items: center; 
+        gap: 0.4rem; 
+    }
+    .coin-val i { color: var(--coin-gold) !important; font-size: 1rem; }
+
+    /* Botão Arquivado (Estilo Disabled/Secondary do Shop) */
+    .btn-archived {
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-gray);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        cursor: default;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 6rem 2rem;
+        border: 1px dashed var(--border-subtle);
+        border-radius: 20px;
+        background: rgba(255,255,255,0.01);
+    }
+    
+    @media (max-width: 768px) {
+        .header-section { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        .btn-back { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="page-container">
+    <!-- Header -->
+    <header class="header-section">
+        <div class="header-content">
+            <div style="color: var(--neon-cyan); font-weight: 600; letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 0.5rem;">MEUS ITENS</div>
+            <h1>HISTÓRICO DE<br>RESGATES</h1>
+            <p>Seus equipamentos e recompensas desbloqueadas.</p>
+        </div>
+        <a href="{{ url_for('yampi.listar_produtos') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Voltar à Loja
+        </a>
+    </header>
+
+    <!-- Grid Unificado (Ativos + Histórico) -->
+    <div class="history-grid">
+        
+        <!-- Junta as listas para exibir tudo no mesmo grid -->
+        {% set todos_descontos = (descontos_ativos or []) + (descontos_historico or []) %}
+        
+        {% if todos_descontos %}
+            {% for desconto in todos_descontos %}
+            <div class="history-card">
+                <div class="card-media">
+                    <div class="floating-tags">
+                        <span class="tag tag-status">RESGATADO</span>
+                        <span class="tag tag-date">
+                            <i class="bi bi-calendar4-event"></i>
+                            {{ desconto.criado_em.strftime('%d/%m/%Y') }}
+                        </span>
+                    </div>
+                    
+                    <img src="{{ desconto.produto.imagem_url or 'https://via.placeholder.com/400?text=Item' }}" 
+                         alt="{{ desconto.produto.nome }}">
+                </div>
+
+                <div class="card-content">
+                    <h3 class="item-title">{{ desconto.produto.nome }}</h3>
+                    <span class="item-sku">SKU: {{ desconto.produto.sku }}</span>
+
+                    <div class="info-grid">
+                        <div class="coin-val">
+                            <i class="bi bi-coin"></i>
+                            {{ desconto.diamantes_gastos }}
+                        </div>
+                        
+                        <div class="btn-archived">
+                            <i class="bi bi-archive"></i> Arquivado
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
+                <h3 style="color: white; font-family: var(--font-display);">Nenhum resgate encontrado</h3>
+                <p style="color: var(--text-gray);">Você ainda não trocou seus Launcher Coins por itens da loja.</p>
+                <a href="{{ url_for('yampi.listar_produtos') }}" style="color: var(--neon-cyan); margin-top: 1rem; display: inline-block; text-decoration: none; font-weight: 700;">
+                    Ir para a Loja &rarr;
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

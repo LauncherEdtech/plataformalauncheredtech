@@ -1,0 +1,2977 @@
+<!-- app/templates/admin/analytics_dashboard.html -->
+{% extends "layout.html" %}
+
+{% block title %}Painel Administrativo - Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --bg-primary: #000000;
+        --bg-secondary: #0a0a0a;
+        --bg-card: #141414;
+        --bg-card-hover: #1a1a1a;
+        --accent-blue: #00b4d8;
+        --accent-purple: #6c13d3;
+        --accent-green: #10b981;
+        --accent-red: #ef4444;
+        --accent-yellow: #f59e0b;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --text-muted: #666666;
+        --border-color: #333333;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        line-height: 1.6;
+    }
+
+    .admin-dashboard {
+        min-height: 100vh;
+        padding: 2rem;
+        background: var(--bg-primary);
+    }
+
+    .container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .dashboard-header {
+        background: var(--bg-card);
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dashboard-header p {
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 180, 216, 0.3);
+    }
+
+    .btn-secondary {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-card);
+        border-color: var(--accent-blue);
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .nav-tabs::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    .nav-tabs::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 4px;
+    }
+
+    .tab-button {
+        padding: 1rem 2rem;
+        border: none;
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-button:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+    }
+
+    .tab-button.active {
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        border-color: var(--accent-blue);
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-trend {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stat-trend.positive {
+        color: var(--accent-green);
+    }
+
+    .stat-trend.negative {
+        color: var(--accent-red);
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: var(--bg-card);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 350px;
+    }
+
+    /* Table */
+    .table-container {
+        background: var(--bg-card);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .table-search {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .search-input {
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        min-width: 250px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: var(--bg-secondary);
+    }
+
+    th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+        background: var(--bg-card-hover);
+    }
+
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--accent-yellow);
+        border: 1px solid var(--accent-yellow);
+    }
+
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--accent-red);
+        border: 1px solid var(--accent-red);
+    }
+
+    .badge-info {
+        background: rgba(0, 180, 216, 0.1);
+        color: var(--accent-blue);
+        border: 1px solid var(--accent-blue);
+    }
+
+    /* Loading State */
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem;
+        color: var(--text-secondary);
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid var(--border-color);
+        border-top-color: var(--accent-blue);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.5rem;
+    }
+
+    .pagination button {
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background: var(--bg-card-hover);
+        border-color: var(--accent-blue);
+    }
+
+    .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination button.active {
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+        border-color: transparent;
+    }
+
+    /* Info Cards for Lists */
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .info-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .info-list::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    .info-list::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border-left: 3px solid var(--accent-blue);
+        transition: all 0.2s ease;
+    }
+
+    .info-item:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+    }
+
+    .info-item-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .info-item-value {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-dashboard {
+            padding: 1rem;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .nav-tabs {
+            flex-wrap: nowrap;
+        }
+
+        .search-input {
+            min-width: auto;
+            width: 100%;
+        }
+
+        table {
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+        }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-blue);
+    }
+
+    /* Badges de Status de Engajamento */
+.badge-engajamento {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-quente {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.badge-morno {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.badge-frio {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Score Progress Bar */
+.score-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.score-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.score-fill.quente {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+.score-fill.morno {
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.score-fill.frio {
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Risco de Churn */
+.risco-alto {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.risco-medio {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.risco-baixo {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.risco-muito-baixo {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1>🎯 Painel Administrativo</h1>
+                <p>Gestão completa da plataforma Launcher</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    🔄 Atualizar
+                </button>
+                <button class="btn btn-primary" onclick="exportarDados('usuarios')">
+                    📥 Exportar Dados
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="switchTab('geral', event)">
+                📊 Visão Geral
+            </button>
+            <button class="tab-button" onclick="switchTab('usuarios', event)">
+                👥 Usuários
+            </button>
+            <button class="tab-button" onclick="switchTab('analise-engajamento', event)">
+                🌡️ Análise de Engajamento
+            </button>
+
+            <button class="tab-button" onclick="switchTab('vendas', event)">
+                💰 Vendas & Compras
+            </button>
+            <button class="tab-button" onclick="switchTab('shop', event)">
+                🛍️ Shop & Resgates
+            </button>
+            <button class="tab-button" onclick="switchTab('engajamento', event)">
+                📈 Engajamento
+            </button>
+            <button class="tab-button" onclick="switchTab('desempenho', event)">
+                🎓 Desempenho
+            </button>
+            <button class="tab-button" onclick="switchTab('financeiro', event)">
+                💎 XP & Diamantes
+            </button>
+            <button class="tab-button" onclick="switchTab('previsoes', event)">
+                🔮 Análise Preditiva
+            </button>
+        </div>
+
+        <!-- Tab 1: Visão Geral -->
+        <div id="tab-geral" class="tab-content active">
+            <div class="stats-grid" id="stats-geral">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Crescimento de Usuários (30 dias)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCrescimentoUsuarios"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Atividade por Dia da Semana</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartAtividadeSemanal"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Usuários -->
+        <div id="tab-usuarios" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Lista de Usuários</h3>
+                    <div class="table-search">
+                        <input type="text" class="search-input" id="searchUsuarios" placeholder="Buscar usuários...">
+                        <select class="search-input" id="filterStatus" onchange="carregarUsuarios(1)" style="min-width: 150px;">
+                            <option value="todos">Todos</option>
+                            <option value="ativos">Ativos</option>
+                            <option value="inativos">Inativos</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuário</th>
+                                <th>Email</th>
+                                <th>Celular</th>
+                                <th>XP Total</th>
+                                <th>Diamantes</th>
+                                <th>Simulados</th>
+                                <th>Média</th>
+                                <th>Cadastro</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableUsuarios">
+                            <tr>
+                                <td colspan="9">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="paginationUsuarios"></div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Vendas -->
+        <div id="tab-vendas" class="tab-content">
+            <div class="stats-grid" id="stats-vendas">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Evolução de Cadastros (30 dias)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartEvolucaoCadastros"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Novos Usuários por Período</h3>
+                    </div>
+                    <div class="info-list" id="infoNovosUsuarios">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+               </div>
+            </div>
+
+<!-- NOVA SEÇÃO: Análise de Páginas -->
+<h2 style="font-size: 1.75rem; font-weight: 700; margin: 3rem 0 1.5rem 0; color: var(--text-primary);">
+    📊 Análise de Páginas e Navegação
+</h2>
+
+<!-- Grid de Cards de Páginas -->
+<div class="stats-grid" style="margin-bottom: 2rem;">
+    <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-label">Página Mais Utilizada</div>
+        <div class="stat-value" id="pagina-top">-</div>
+        <div class="stat-trend" id="pagina-top-sessoes">-</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-label">Páginas Subutilizadas</div>
+        <div class="stat-value" id="total-paginas-subutilizadas">-</div>
+        <div class="stat-trend">Menos de 10 sessões (30d)</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">Maior Crescimento</div>
+        <div class="stat-value" id="maior-crescimento-pagina">-</div>
+        <div class="stat-trend positive" id="maior-crescimento-valor">-</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-label">Taxa de Retorno Média</div>
+        <div class="stat-value" id="taxa-retorno-media">-</div>
+        <div class="stat-trend">Usuários que voltam</div>
+    </div>
+</div>
+
+<!-- Gráficos e Listas de Análise de Páginas -->
+<div class="charts-grid">
+    <!-- Páginas Mais Utilizadas -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">🔥 Top 5 - Páginas Mais Utilizadas</h3>
+            <span class="badge badge-info" style="font-size: 0.85rem;">Últimos 30 dias</span>
+        </div>
+        <div class="info-list" id="paginas-populares">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crescimento por Página -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">📈 Crescimento de Uso (7d vs 7d anterior)</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="chartCrescimentoPaginas"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid" style="margin-top: 1.5rem;">
+    <!-- Taxa de Engajamento por Página -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">🎯 Taxa de Retorno por Página</h3>
+            <span class="badge badge-success" style="font-size: 0.85rem;">% que voltam</span>
+        </div>
+        <div class="info-list" id="taxa-engajamento-paginas">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jornada do Usuário -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">🗺️ Jornada do Usuário</h3>
+            <span class="badge badge-info" style="font-size: 0.85rem;">Transições mais comuns</span>
+        </div>
+        <div class="info-list" id="jornada-usuario">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Páginas Subutilizadas - Alerta -->
+<div class="chart-card" style="margin-top: 1.5rem; border: 2px solid #f59e0b;">
+    <div class="chart-header">
+        <h3 class="chart-title">⚠️ Páginas que Precisam de Atenção</h3>
+        <span class="badge badge-warning" id="badge-paginas-subutilizadas">0</span>
+    </div>
+    <div class="info-list" id="paginas-subutilizadas">
+        <div class="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div> 
+
+        </div>
+
+        <!-- Tab 4: Shop -->
+        <div id="tab-shop" class="tab-content">
+            <div class="stats-grid" id="stats-shop">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Resgates por Status</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartResgatesStatus"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Produtos Mais Resgatados</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartProdutosPopulares"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 1.5rem;">
+                <div class="chart-header">
+                    <h3 class="chart-title">Evolução de Resgates (30 dias)</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartEvolucaoResgates"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Tab 5: Engajamento -->
+        <div id="tab-engajamento" class="tab-content">
+            <div class="stats-grid" id="stats-engajamento">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Tempo de Estudo por Dia</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartTempoEstudo"></canvas>
+                    </div>
+                </div>
+
+
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribuição de Atividades</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDistribuicaoAtividades"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Top 10 - Mais Ativos</h3>
+                    </div>
+                    <div class="info-list" id="topUsuariosAtivos">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Sequências de Estudo</h3>
+                    </div>
+                    <div class="info-list" id="topSequencias">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: Desempenho -->
+        <div id="tab-desempenho" class="tab-content">
+            <div class="stats-grid" id="stats-desempenho">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Desempenho por Área</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDesempenhoAreas"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribuição de Notas TRI</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDistribuicaoNotas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Top 10 - Melhores Alunos</h3>
+                    </div>
+                    <div class="info-list" id="topAlunos">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Áreas com Baixo Desempenho</h3>
+                    </div>
+                    <div class="info-list" id="areasBaixoDesempenho">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       <!-- Tab 7: Financeiro -->
+        <div id="tab-financeiro" class="tab-content">
+            <div class="stats-grid" id="stats-financeiro">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">XP Distribuído por Origem</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartXpOrigem"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Evolução XP (30 dias)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartEvolucaoXP"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 1.5rem;">
+                <div class="chart-header">
+                    <h3 class="chart-title">Top 10 - Maiores Fortunas em Diamantes 💎</h3>
+                </div>
+                <div class="info-list" id="topDiamantes">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Análise de Engajamento -->
+<div id="tab-analise-engajamento" class="tab-content">
+    
+    <!-- Resumo Geral -->
+    <div class="stats-grid" id="stats-engajamento-geral">
+        <div class="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Gráficos Principais -->
+    <div class="charts-grid">
+        <!-- Gráfico: Distribuição de Engajamento -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Distribuição de Usuários</h3>
+                <span class="badge badge-info" style="font-size: 0.85rem;">Por Nível de Engajamento</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartDistribuicaoEngajamento"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico: Evolução do Engajamento -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Evolução de Usuários Ativos</h3>
+                <span class="badge badge-info" style="font-size: 0.85rem;">Últimos 30 dias</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartEvolucaoEngajamento"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Alertas -->
+    <div class="charts-grid" style="margin-top: 1.5rem;">
+        <!-- Alertas Críticos -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">⚠️ Alertas Críticos</h3>
+                <span class="badge badge-danger" id="badge-criticos">0</span>
+            </div>
+            <div class="info-list" id="alertasCriticos">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usuários que Precisam Atenção -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">🟡 Precisam de Atenção</h3>
+                <span class="badge badge-warning" id="badge-atencao">0</span>
+            </div>
+            <div class="info-list" id="alertasAtencao">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Super Engajados -->
+    <div class="chart-card" style="margin-top: 1.5rem;">
+        <div class="chart-header">
+            <h3 class="chart-title">🔥 Top 10 - Super Engajados</h3>
+            <span class="badge badge-success" id="badge-super">0</span>
+        </div>
+        <div class="info-list" id="topSuperEngajados">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Usuários com Score -->
+    <div class="table-container" style="margin-top: 1.5rem;">
+        <div class="table-header">
+            <h3 class="table-title">Lista Completa - Score de Engajamento</h3>
+            <div class="table-search">
+                <input type="text" class="search-input" id="searchEngajamento" placeholder="Buscar usuários...">
+                <select class="search-input" id="filterEngajamento" onchange="carregarUsuariosEngajamento(1)" style="min-width: 180px;">
+                    <option value="todos">Todos os Usuários</option>
+                    <option value="quente">🔥 Quente</option>
+                    <option value="morno">🟡 Morno</option>
+                    <option value="frio">🧊 Frio</option>
+                </select>
+                <select class="search-input" id="ordenarEngajamento" onchange="carregarUsuariosEngajamento(1)" style="min-width: 150px;">
+                    <option value="score">Ordenar por Score</option>
+                    <option value="username">Ordenar por Nome</option>
+                    <option value="dias_ativos">Ordenar por Atividade</option>
+                </select>
+            </div>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Usuário</th>
+                        <th>Celular</th>
+                        <th>Score</th>
+                        <th>Dias Ativos (7d)</th>
+                        <th>Tempo Estudo (7d)</th>
+                        <th>Simulados (7d)</th>
+                        <th>Streak</th>
+                        <th>Última Atividade</th>
+                        <th>Risco Churn</th>
+                    </tr>
+                </thead>
+                <tbody id="tableEngajamento">
+                    <tr>
+                        <td colspan="9">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" id="paginationEngajamento"></div>
+    </div>
+
+</div>
+
+
+
+        <!-- Tab 8: Previsões -->
+        <div id="tab-previsoes" class="tab-content">
+            <div class="stats-grid" id="kpis-previsoes">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-bottom: 1.5rem;">
+                <div class="chart-header">
+                    <h3 class="chart-title">Tendência de Crescimento</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartCrescimento"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Usuários de Alto Potencial 🌟</h3>
+                    </div>
+                    <div class="info-list" id="usuariosAltoPotencial">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Áreas que Precisam de Atenção ⚠️</h3>
+                    </div>
+                    <div class="info-list" id="areasAtencao">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const charts = {};
+const chartColors = {
+    primary: '#00b4d8',
+    secondary: '#6c13d3',
+    success: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444',
+    info: '#3b82f6'
+};
+
+Chart.defaults.color = '#a0a0a0';
+Chart.defaults.borderColor = '#333333';
+Chart.defaults.font.family = 'Inter, sans-serif';
+
+// ==========================================
+// FUNÇÕES DE NAVEGAÇÃO
+// ==========================================
+function switchTab(tabName, event) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    event.target.classList.add('active');
+    
+    carregarDadosAba(tabName);
+}
+
+function carregarDadosAba(aba) {
+    const loadFunctions = {
+        'geral': carregarMetricasGerais,
+        'usuarios': () => carregarUsuarios(1),
+        'analise-engajamento': carregarAnaliseEngajamento, 
+        'vendas': carregarAnaliseVendas,
+        'shop': carregarAnaliseShop,
+        'engajamento': carregarAnaliseEngajamentoAntigo,
+        'desempenho': carregarAnaliseDesempenho,
+        'financeiro': carregarAnaliseFinanceiro,
+        'previsoes': carregarAnalisePrevisoes
+    };
+    
+    const loadFn = loadFunctions[aba];
+    if (loadFn) {
+        console.log(`📊 Carregando aba: ${aba}`);
+        loadFn();
+    } else {
+        console.error(`❌ Aba não encontrada: ${aba}`);
+    }
+}
+
+// ==========================================
+// TAB 1: MÉTRICAS GERAIS
+// ==========================================
+async function carregarMetricasGerais() {
+    try {
+        const res = await fetch('/admin/analytics/api/metricas-gerais');
+        if (!res.ok) throw new Error('Erro ao carregar métricas');
+        const data = await res.json();
+        
+        console.log('✅ Métricas gerais:', data);
+
+        document.getElementById('stats-geral').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-label">Total de Usuários</div>
+                <div class="stat-value">${(data.total_usuarios || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Usuários Ativos (7d)</div>
+                <div class="stat-value">${(data.usuarios_ativos || 0).toLocaleString()}</div>
+                <div class="stat-trend positive">↗ ${(data.taxa_engajamento || 0).toFixed(1)}% engajamento</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🆕</div>
+                <div class="stat-label">Novos Usuários (30d)</div>
+                <div class="stat-value">${(data.novos_usuarios || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-label">Simulados Concluídos</div>
+                <div class="stat-value">${(data.simulados_concluidos || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-label">Tempo Total de Estudo</div>
+                <div class="stat-value">${(data.tempo_total_horas || 0).toLocaleString()}h</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">XP Médio por Usuário</div>
+                <div class="stat-value">${Math.round(data.xp_medio || 0).toLocaleString()}</div>
+            </div>
+        `;
+
+        await Promise.all([
+            carregarGraficoCrescimento(),
+            carregarGraficoAtividade()
+        ]);
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-geral');
+    }
+}
+
+async function carregarGraficoCrescimento() {
+    try {
+        const res = await fetch('/admin/analytics/api/vendas');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (!data.evolucao_cadastros?.datas?.length) return;
+
+        if (charts.crescimentoUsuarios) charts.crescimentoUsuarios.destroy();
+        const ctx = document.getElementById('chartCrescimentoUsuarios').getContext('2d');
+        charts.crescimentoUsuarios = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.evolucao_cadastros.datas,
+                datasets: [{
+                    label: 'Novos Cadastros',
+                    data: data.evolucao_cadastros.valores,
+                    borderColor: chartColors.primary,
+                    backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro gráfico crescimento:', error);
+    }
+}
+
+
+
+async function carregarGraficoAtividade() {
+    try {
+        const res = await fetch('/admin/analytics/api/engajamento');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (!data.dias_semana?.dias?.length) return;
+
+        if (charts.atividadeSemanal) charts.atividadeSemanal.destroy();
+        const ctx = document.getElementById('chartAtividadeSemanal').getContext('2d');
+        charts.atividadeSemanal = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.dias_semana.dias,
+                datasets: [{
+                    label: 'Minutos',
+                    data: data.dias_semana.tempo,
+                    backgroundColor: chartColors.primary,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro gráfico atividade:', error);
+    }
+}
+
+// ==========================================
+// TAB 2: USUÁRIOS
+// ==========================================
+async function carregarUsuarios(page = 1) {
+    try {
+        const status = document.getElementById('filterStatus')?.value || 'todos';
+        const res = await fetch(`/admin/analytics/api/usuarios?page=${page}&status=${status}`);
+        if (!res.ok) throw new Error('Erro ao carregar usuários');
+        const data = await res.json();
+        
+        console.log('✅ Usuários:', data);
+
+        const tbody = document.getElementById('tableUsuarios');
+        
+        if (!data.usuarios?.length) {
+            tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhum usuário encontrado</p></div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.usuarios.map(u => `
+            <tr>
+                <td>${u.id || '-'}</td>
+                <td>
+                    <strong>${u.username || 'N/A'}</strong>
+                    ${u.is_admin ? '<span class="badge badge-danger" style="margin-left: 0.5rem;">Admin</span>' : ''}
+                </td>
+                <td>${u.email || '-'}</td>
+                <td>${u.telefone || '-'}</td>                
+                <td>${(u.xp_total || 0).toLocaleString()}</td>
+                <td>${(u.diamantes || 0).toLocaleString()}</td>
+                <td>${u.total_simulados || 0}</td>
+                <td>${(u.media_notas || 0).toFixed(1)}</td>
+                <td>${u.data_registro || '-'}</td>
+                <td>${u.is_active ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
+            </tr>
+        `).join('');
+
+        renderPagination('paginationUsuarios', data.pagina_atual || 1, data.paginas || 1, carregarUsuarios);
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        document.getElementById('tableUsuarios').innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Erro ao carregar</p></div></td></tr>';
+    }
+}
+
+function renderPagination(elementId, current, total, callback) {
+    const container = document.getElementById(elementId);
+    if (!container || total <= 1) {
+        if (container) container.innerHTML = '';
+        return;
+    }
+
+    let html = `<button ${current === 1 ? 'disabled' : ''} onclick="${callback.name}(${current - 1})">← Anterior</button>`;
+    for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+        html += `<button class="${i === current ? 'active' : ''}" onclick="${callback.name}(${i})">${i}</button>`;
+    }
+    html += `<button ${current === total ? 'disabled' : ''} onclick="${callback.name}(${current + 1})">Próxima →</button>`;
+    container.innerHTML = html;
+}
+
+// ==========================================
+// TAB 3: VENDAS (CORRIGIDO)
+// ==========================================
+async function carregarAnaliseVendas() {
+    try {
+        const res = await fetch('/admin/analytics/api/vendas');
+        if (!res.ok) throw new Error('Erro ao carregar vendas');
+        const data = await res.json();
+        
+        console.log('✅ Vendas:', data);
+
+        const taxaCrescimento = data.taxa_crescimento_7d || 0;
+        document.getElementById('stats-vendas').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">🎉</div>
+                <div class="stat-label">Novos Usuários Hoje</div>
+                <div class="stat-value">${data.novos_usuarios_hoje || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Últimos 7 Dias</div>
+                <div class="stat-value">${data.novos_usuarios_7d || 0}</div>
+                <div class="stat-trend ${taxaCrescimento >= 0 ? 'positive' : 'negative'}">
+                    ${taxaCrescimento >= 0 ? '↗' : '↘'} ${Math.abs(taxaCrescimento).toFixed(1)}%
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📆</div>
+                <div class="stat-label">Últimos 30 Dias</div>
+                <div class="stat-value">${data.novos_usuarios_30d || 0}</div>
+            </div>
+        `;
+
+        // Gráfico de Evolução de Cadastros
+        if (data.evolucao_cadastros?.datas?.length) {
+            if (charts.evolucaoCadastros) charts.evolucaoCadastros.destroy();
+            const ctx = document.getElementById('chartEvolucaoCadastros');
+            
+            if (ctx) {
+                charts.evolucaoCadastros = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.evolucao_cadastros.datas,
+                        datasets: [{
+                            label: 'Cadastros',
+                            data: data.evolucao_cadastros.valores,
+                            borderColor: chartColors.success,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // Info de Novos Usuários
+        const infoContainer = document.getElementById('infoNovosUsuarios');
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="info-item"><span class="info-item-label">Hoje</span><span class="info-item-value">${data.novos_usuarios_hoje || 0}</span></div>
+                <div class="info-item"><span class="info-item-label">Últimos 7 dias</span><span class="info-item-value">${data.novos_usuarios_7d || 0}</span></div>
+                <div class="info-item"><span class="info-item-label">Últimos 30 dias</span><span class="info-item-value">${data.novos_usuarios_30d || 0}</span></div>
+                <div class="info-item"><span class="info-item-label">Taxa Crescimento</span><span class="info-item-value" style="color: ${taxaCrescimento >= 0 ? chartColors.success : chartColors.danger}">${taxaCrescimento >= 0 ? '↗' : '↘'} ${Math.abs(taxaCrescimento).toFixed(1)}%</span></div>
+            `;
+        }
+
+        // CARREGAR ANÁLISE DE PÁGINAS
+        await carregarAnalisePaginasVendas();
+        
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-vendas');
+    }
+}
+
+// ==========================================
+// ANÁLISE DE PÁGINAS - VERSÃO PARA ABA VENDAS
+// ==========================================
+async function carregarAnalisePaginasVendas() {
+    try {
+        const res = await fetch('/admin/analytics/api/analise-paginas');
+        if (!res.ok) {
+            console.error('Erro ao carregar análise de páginas');
+            return;
+        }
+        const data = await res.json();
+        
+        console.log('✅ Análise de páginas (aba vendas):', data);
+        
+        renderCardsResumoVendas(data);
+        renderPaginasPopularesVendas(data.paginas_populares);
+        renderPaginasSubutilizadasVendas(data.paginas_subutilizadas);
+        renderTaxaEngajamentoPaginasVendas(data.taxa_retorno_paginas);
+        renderGraficoCrescimentoPaginasVendas(data.crescimento_paginas);
+        renderJornadaUsuarioVendas(data.transicoes_comuns);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar análise de páginas (vendas):', error);
+    }
+}
+
+function renderCardsResumoVendas(data) {
+    const paginaTop = document.getElementById('pagina-top');
+    const paginaTopSessoes = document.getElementById('pagina-top-sessoes');
+    const totalSubutilizadas = document.getElementById('total-paginas-subutilizadas');
+    const badgeSubutilizadas = document.getElementById('badge-paginas-subutilizadas');
+    const maiorCrescimentoPagina = document.getElementById('maior-crescimento-pagina');
+    const maiorCrescimentoValor = document.getElementById('maior-crescimento-valor');
+    const taxaRetornoMedia = document.getElementById('taxa-retorno-media');
+    
+    const nomesAmigaveis = {
+        'simulado': '📝 Simulados',
+        'exercicio': '✏️ Exercícios',
+        'redacao': '📄 Redações',
+        'helpzone': '💬 Help Zone',
+        'videoaulas': '🎥 Videoaulas',
+        'cronograma': '📅 Cronograma'
+    };
+    
+    if (data.paginas_populares && data.paginas_populares.length > 0) {
+        const top = data.paginas_populares[0];
+        
+        if (paginaTop) paginaTop.textContent = nomesAmigaveis[top.atividade] || top.atividade;
+        if (paginaTopSessoes) paginaTopSessoes.textContent = `${top.total_sessoes.toLocaleString()} sessões`;
+    }
+    
+    if (data.paginas_subutilizadas) {
+        if (totalSubutilizadas) totalSubutilizadas.textContent = data.paginas_subutilizadas.length;
+        if (badgeSubutilizadas) badgeSubutilizadas.textContent = data.paginas_subutilizadas.length;
+    }
+    
+    if (data.crescimento_paginas && data.crescimento_paginas.length > 0) {
+        const crescimentos = data.crescimento_paginas.sort((a, b) => b.variacao - a.variacao);
+        const maior = crescimentos[0];
+        
+        if (maiorCrescimentoPagina) maiorCrescimentoPagina.textContent = nomesAmigaveis[maior.atividade] || maior.atividade;
+        if (maiorCrescimentoValor) maiorCrescimentoValor.textContent = `↗ ${maior.variacao >= 0 ? '+' : ''}${maior.variacao.toFixed(1)}%`;
+    }
+    
+    if (data.taxa_retorno_paginas && data.taxa_retorno_paginas.length > 0) {
+        const media = data.taxa_retorno_paginas.reduce((sum, p) => sum + p.taxa_retorno, 0) / data.taxa_retorno_paginas.length;
+        if (taxaRetornoMedia) taxaRetornoMedia.textContent = `${media.toFixed(1)}%`;
+    }
+}
+
+function renderPaginasPopularesVendas(paginas) {
+    const container = document.getElementById('paginas-populares');
+    if (!container || !paginas || paginas.length === 0) return;
+    
+    const nomesAmigaveis = {
+        'simulado': '📝 Simulados',
+        'exercicio': '✏️ Exercícios',
+        'redacao': '📄 Redações',
+        'helpzone': '💬 Help Zone',
+        'videoaulas': '🎥 Videoaulas',
+        'cronograma': '📅 Cronograma',
+        'dashboard': '🏠 Dashboard'
+    };
+    
+    container.innerHTML = paginas.slice(0, 5).map((p, i) => {
+        const nome = nomesAmigaveis[p.atividade] || p.atividade;
+        const tempoHoras = (p.tempo_total_minutos / 60).toFixed(1);
+        
+        return `
+            <div class="info-item" style="border-left-color: ${i === 0 ? '#10b981' : '#00b4d8'}">
+                <div>
+                    <strong>#${i + 1} ${nome}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${p.total_sessoes.toLocaleString()} sessões | ${p.usuarios_unicos} usuários únicos
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="info-item-value" style="color: ${i === 0 ? '#10b981' : '#00b4d8'}">
+                        ${tempoHoras}h
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        Tempo médio: ${p.tempo_medio_sessao}min
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderPaginasSubutilizadasVendas(paginas) {
+    const container = document.getElementById('paginas-subutilizadas');
+    if (!container) return;
+    
+    if (!paginas || paginas.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">✅</div>
+                <p>Excelente! Todas as páginas estão sendo bem utilizadas.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const nomesAmigaveis = {
+        'simulado': '📝 Simulados',
+        'exercicio': '✏️ Exercícios',
+        'redacao': '📄 Redações',
+        'helpzone': '💬 Help Zone',
+        'videoaulas': '🎥 Videoaulas',
+        'cronograma': '📅 Cronograma',
+        'dashboard': '🏠 Dashboard'
+    };
+    
+    container.innerHTML = paginas.map(p => {
+        const nome = nomesAmigaveis[p.atividade] || p.atividade;
+        
+        return `
+            <div class="info-item" style="border-left-color: #f59e0b">
+                <div>
+                    <strong>${nome}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Apenas ${p.usuarios_unicos} usuários
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="info-item-value" style="color: #f59e0b">
+                        ${p.total_sessoes}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        sessões (30d)
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+function renderTaxaEngajamentoPaginasVendas(taxas) {
+    const container = document.getElementById('taxa-engajamento-paginas');
+    if (!container || !taxas || taxas.length === 0) return;
+    
+    const nomesAmigaveis = {
+        'simulado': '📝 Simulados',
+        'exercicio': '✏️ Exercícios',
+        'redacao': '📄 Redações',
+        'helpzone': '💬 Help Zone',
+        'videoaulas': '🎥 Videoaulas',
+        'cronograma': '📅 Cronograma',
+        'dashboard': '🏠 Dashboard'
+    };
+    
+    container.innerHTML = taxas.slice(0, 5).map(t => {
+        const nome = nomesAmigaveis[t.atividade] || t.atividade;
+        const corTaxa = t.taxa_retorno >= 50 ? '#10b981' : t.taxa_retorno >= 30 ? '#f59e0b' : '#ef4444';
+        
+        return `
+            <div class="info-item">
+                <div>
+                    <strong>${nome}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${t.usuarios_usaram} usuários (${t.penetracao}% do total)
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="info-item-value" style="color: ${corTaxa}">
+                        ${t.taxa_retorno}%
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        Taxa de retorno
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderGraficoCrescimentoPaginasVendas(crescimento) {
+    if (!crescimento || crescimento.length === 0) return;
+    
+    const canvasElement = document.getElementById('chartCrescimentoPaginas');
+    if (!canvasElement) {
+        console.warn('⚠️ Elemento chartCrescimentoPaginas não encontrado');
+        return;
+    }
+    
+    if (charts.crescimentoPaginas) charts.crescimentoPaginas.destroy();
+    
+    const ctx = canvasElement.getContext('2d');
+    
+    const nomesAmigaveis = {
+        'simulado': '📝 Simulados',
+        'exercicio': '✏️ Exercícios',
+        'redacao': '📄 Redações',
+        'helpzone': '💬 Help Zone',
+        'videoaulas': '🎥 Videoaulas',
+        'cronograma': '📅 Cronograma',
+        'dashboard': '🏠 Dashboard'
+    };
+    
+    const top5 = crescimento.sort((a, b) => Math.abs(b.variacao) - Math.abs(a.variacao)).slice(0, 5);
+    
+    charts.crescimentoPaginas = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: top5.map(c => nomesAmigaveis[c.atividade] || c.atividade),
+            datasets: [{
+                label: 'Variação (%)',
+                data: top5.map(c => c.variacao),
+                backgroundColor: top5.map(c => c.variacao >= 0 ? '#10b981' : '#ef4444'),
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const variacao = context.parsed.y;
+                            const item = top5[context.dataIndex];
+                            return [
+                                `Variação: ${variacao >= 0 ? '+' : ''}${variacao.toFixed(1)}%`,
+                                `Atual: ${item.uso_atual} sessões`,
+                                `Anterior: ${item.uso_anterior} sessões`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderJornadaUsuarioVendas(transicoes) {
+    const container = document.getElementById('jornada-usuario');
+    if (!container) return;
+    
+    if (!transicoes || transicoes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>Dados insuficientes para análise de jornada</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = transicoes.slice(0, 8).map((t, i) => `
+        <div class="info-item" style="border-left-color: #6c13d3">
+            <div>
+                <strong>#${i + 1}</strong>
+                <div style="font-size: 0.9rem; color: var(--text-primary); margin-top: 0.25rem;">
+                    ${t.transicao}
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="info-item-value" style="color: #6c13d3">
+                    ${t.quantidade}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                    transições
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function carregarAnaliseShop() {
+    try {
+        const res = await fetch('/admin/analytics/api/shop');
+        if (!res.ok) throw new Error('Erro ao carregar shop');
+        const data = await res.json();
+        
+        console.log('✅ Shop:', data);
+
+        if (!data.shop_disponivel) {
+            document.getElementById('stats-shop').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state-icon">🛍️</div><p>Módulo Shop não disponível</p></div>';
+            return;
+        }
+
+        document.getElementById('stats-shop').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">🎁</div>
+                <div class="stat-label">Total de Resgates</div>
+                <div class="stat-value">${data.total_resgates || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-label">Pendentes</div>
+                <div class="stat-value">${data.resgates_pendentes || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚚</div>
+                <div class="stat-label">Enviados</div>
+                <div class="stat-value">${data.resgates_enviados || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Entregues</div>
+                <div class="stat-value">${data.resgates_entregues || 0}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-label">Diamantes Gastos</div>
+                <div class="stat-value">${(data.total_diamantes_gastos || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-label">Taxa de Conversão</div>
+                <div class="stat-value">${(data.taxa_conversao || 0).toFixed(1)}%</div>
+            </div>
+        `;
+
+        if (charts.resgatesStatus) charts.resgatesStatus.destroy();
+        const ctx1 = document.getElementById('chartResgatesStatus');
+        if (ctx1) {
+            charts.resgatesStatus = new Chart(ctx1.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pendente', 'Enviado', 'Entregue'],
+                    datasets: [{
+                        data: [data.resgates_pendentes || 0, data.resgates_enviados || 0, data.resgates_entregues || 0],
+                        backgroundColor: [chartColors.warning, chartColors.info, chartColors.success],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        if (data.produtos_populares?.length) {
+            if (charts.produtosPopulares) charts.produtosPopulares.destroy();
+            const ctx2 = document.getElementById('chartProdutosPopulares');
+            if (ctx2) {
+                charts.produtosPopulares = new Chart(ctx2.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.produtos_populares.map(p => p.nome || 'N/A'),
+                        datasets: [{
+                            label: 'Resgates',
+                            data: data.produtos_populares.map(p => p.total_resgates || 0),
+                            backgroundColor: chartColors.primary,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        if (data.evolucao_resgates?.datas?.length) {
+            if (charts.evolucaoResgates) charts.evolucaoResgates.destroy();
+            const ctx3 = document.getElementById('chartEvolucaoResgates');
+            if (ctx3) {
+                charts.evolucaoResgates = new Chart(ctx3.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.evolucao_resgates.datas,
+                        datasets: [{
+                            label: 'Resgates',
+                            data: data.evolucao_resgates.valores,
+                            borderColor: chartColors.primary,
+                            backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-shop');
+    }
+}
+
+// ==========================================
+// TAB 5: ENGAJAMENTO ANTIGO (manter compatibilidade)
+// ==========================================
+async function carregarAnaliseEngajamentoAntigo() {
+    try {
+        const res = await fetch('/admin/analytics/api/engajamento');
+        if (!res.ok) throw new Error('Erro ao carregar engajamento');
+        const data = await res.json();
+        
+        console.log('✅ Engajamento:', data);
+
+        document.getElementById('stats-engajamento').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">Média Sequência de Estudo</div>
+                <div class="stat-value">${(data.sequencias?.media || 0).toFixed(1)} dias</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-label">Maior Sequência</div>
+                <div class="stat-value">${data.sequencias?.maior || 0} dias</div>
+            </div>
+        `;
+
+        if (data.atividade_diaria?.datas?.length) {
+            if (charts.tempoEstudo) charts.tempoEstudo.destroy();
+            const ctx = document.getElementById('chartTempoEstudo');
+            if (ctx) {
+                charts.tempoEstudo = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.atividade_diaria.datas,
+                        datasets: [{
+                            label: 'Minutos',
+                            data: data.atividade_diaria.tempo_minutos,
+                            borderColor: chartColors.primary,
+                            backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        if (data.atividades_populares?.length) {
+            if (charts.distribuicaoAtividades) charts.distribuicaoAtividades.destroy();
+            const ctx = document.getElementById('chartDistribuicaoAtividades');
+            if (ctx) {
+                charts.distribuicaoAtividades = new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.atividades_populares.map(a => a.atividade || 'Desconhecido'),
+                        datasets: [{
+                            data: data.atividades_populares.map(a => a.sessoes || 0),
+                            backgroundColor: [
+                                chartColors.primary,
+                                chartColors.secondary,
+                                chartColors.success,
+                                chartColors.warning,
+                                chartColors.danger,
+                                chartColors.info
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-engajamento');
+    }
+}
+
+
+// ==========================================
+// TAB 6: DESEMPENHO
+// ==========================================
+async function carregarAnaliseDesempenho() {
+    try {
+        const res = await fetch('/admin/analytics/api/desempenho');
+        if (!res.ok) throw new Error('Erro ao carregar desempenho');
+        const data = await res.json();
+        
+        console.log('✅ Desempenho:', data);
+
+        document.getElementById('stats-desempenho').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-label">Total de Simulados</div>
+                <div class="stat-value">${(data.total_simulados || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Média Geral TRI</div>
+                <div class="stat-value">${(data.media_geral_tri || 0).toFixed(1)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Taxa de Conclusão</div>
+                <div class="stat-value">${(data.taxa_conclusao || 0).toFixed(1)}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-label">Taxa de Acertos</div>
+                <div class="stat-value">${(data.taxa_acertos_geral || 0).toFixed(1)}%</div>
+            </div>
+        `;
+
+        if (data.desempenho_areas && data.desempenho_areas.length > 0) {
+            if (charts.desempenhoAreas) charts.desempenhoAreas.destroy();
+            const ctx1 = document.getElementById('chartDesempenhoAreas');
+            if (ctx1) {
+                charts.desempenhoAreas = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.desempenho_areas.map(a => a.area || 'N/A'),
+                        datasets: [{
+                            label: 'Média TRI',
+                            data: data.desempenho_areas.map(a => a.media || 0),
+                            backgroundColor: chartColors.primary,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Média: ${context.parsed.x.toFixed(1)} pontos`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 1000
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        if (data.distribuicao_notas && data.distribuicao_notas.length > 0) {
+            if (charts.distribuicaoNotas) charts.distribuicaoNotas.destroy();
+            const ctx2 = document.getElementById('chartDistribuicaoNotas');
+            if (ctx2) {
+                const cores = {
+                    '0-500': chartColors.danger,
+                    '500-600': chartColors.warning,
+                    '600-700': chartColors.info,
+                    '700-800': chartColors.success,
+                    '800+': '#10b981'
+                };
+                
+                charts.distribuicaoNotas = new Chart(ctx2.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.distribuicao_notas.map(d => d.faixa || 'N/A'),
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: data.distribuicao_notas.map(d => d.quantidade || 0),
+                            backgroundColor: data.distribuicao_notas.map(d => cores[d.faixa] || chartColors.primary),
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.parsed.y} simulados`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        const topAlunosContainer = document.getElementById('topAlunos');
+        if (topAlunosContainer) {
+            if (data.top_alunos && data.top_alunos.length > 0) {
+                topAlunosContainer.innerHTML = data.top_alunos.map((a, i) => `
+                    <div class="info-item">
+                        <div>
+                            <strong>#${i + 1} ${a.nome || a.username || 'N/A'}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                ${(a.simulados || 0)} simulados realizados
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="info-item-value" style="color: ${chartColors.success}">
+                                ${(a.media || 0).toFixed(1)}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                pontos TRI
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                topAlunosContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Sem dados de alunos</p></div>';
+            }
+        }
+
+        const areasBaixoContainer = document.getElementById('areasBaixoDesempenho');
+        if (areasBaixoContainer) {
+            if (data.areas_baixo_desempenho && data.areas_baixo_desempenho.length > 0) {
+                areasBaixoContainer.innerHTML = data.areas_baixo_desempenho.map(a => `
+                    <div class="info-item" style="border-left-color: ${chartColors.danger}">
+                        <div>
+                            <strong>${a.area || 'N/A'}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                ${(a.total || 0)} simulados
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="info-item-value" style="color: ${chartColors.danger}">
+                                ${(a.media || 0).toFixed(1)}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                abaixo de 600
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                areasBaixoContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><p>Nenhuma área crítica! Todas as áreas estão com bom desempenho.</p></div>';
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-desempenho');
+    }
+}
+
+// ==========================================
+// TAB 7: FINANCEIRO
+// ==========================================
+async function carregarAnaliseFinanceiro() {
+    try {
+        const res = await fetch('/admin/analytics/api/financeiro');
+        if (!res.ok) throw new Error('Erro ao carregar financeiro');
+        const data = await res.json();
+        
+        console.log('✅ Financeiro:', data);
+
+        document.getElementById('stats-financeiro').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">XP Total Distribuído</div>
+                <div class="stat-value">${(data.xp_total_distribuido || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-label">Diamantes em Circulação</div>
+                <div class="stat-value">${(data.diamantes_circulacao || 0).toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-label">Taxa de Conversão</div>
+                <div class="stat-value">${(data.taxa_conversao || 0).toFixed(1)}%</div>
+                <div class="stat-trend">XP → Diamantes</div>
+            </div>
+        `;
+
+        if (data.xp_por_origem?.length) {
+            if (charts.xpOrigem) charts.xpOrigem.destroy();
+            const ctx1 = document.getElementById('chartXpOrigem');
+            if (ctx1) {
+                charts.xpOrigem = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.xp_por_origem.map(x => x.origem || 'N/A'),
+                        datasets: [{
+                            label: 'XP',
+                            data: data.xp_por_origem.map(x => x.total || 0),
+                            backgroundColor: chartColors.primary,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        if (data.evolucao_xp?.datas?.length) {
+            if (charts.evolucaoXP) charts.evolucaoXP.destroy();
+            const ctx2 = document.getElementById('chartEvolucaoXP');
+            if (ctx2) {
+                charts.evolucaoXP = new Chart(ctx2.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.evolucao_xp.datas,
+                        datasets: [{
+                            label: 'XP',
+                            data: data.evolucao_xp.valores,
+                            borderColor: chartColors.secondary,
+                            backgroundColor: 'rgba(108, 19, 211, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        const topDiamantesContainer = document.getElementById('topDiamantes');
+        if (topDiamantesContainer) {
+            topDiamantesContainer.innerHTML = data.top_diamantes?.length 
+                ? data.top_diamantes.map((u, i) => `
+                    <div class="info-item">
+                        <div>
+                            <strong>#${i + 1} @${u.username || 'N/A'}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${(u.xp || 0).toLocaleString()} XP</div>
+                        </div>
+                        <div class="info-item-value" style="color: ${chartColors.secondary}">💎 ${(u.diamantes || 0).toLocaleString()}</div>
+                    </div>
+                `).join('')
+                : '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Sem dados</p></div>';
+        }
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('stats-financeiro');
+    }
+}
+
+
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+function showError(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) el.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state-icon">⚠️</div><p>Erro ao carregar</p></div>';
+}
+
+async function exportarDados(tipo) {
+    try {
+        const res = await fetch(`/admin/analytics/api/exportar/${tipo}`);
+        if (!res.ok) throw new Error('Erro ao exportar');
+        const data = await res.json();
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${tipo}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        alert('✅ Dados exportados com sucesso!');
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        alert('❌ Erro ao exportar dados');
+    }
+}
+
+// INICIALIZAÇÃO
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Dashboard iniciando...');
+    carregarDadosAba('geral');
+    
+    const searchInput = document.getElementById('searchUsuarios');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('#tableUsuarios tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    }
+    
+    const searchEngajamento = document.getElementById('searchEngajamento');
+    if (searchEngajamento) {
+        searchEngajamento.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('#tableEngajamento tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    }
+});
+async function carregarAnaliseEngajamento() {
+    try {
+        const [distribuicao, alertas, evolucao] = await Promise.all([
+            fetch('/admin/analytics/api/engajamento/distribuicao').then(r => r.json()),
+            fetch('/admin/analytics/api/engajamento/alertas').then(r => r.json()),
+            fetch('/admin/analytics/api/engajamento/evolucao').then(r => r.json())
+        ]);
+        
+        console.log('✅ Dados de engajamento carregados:', {distribuicao, alertas, evolucao});
+        
+        renderResumoEngajamento(distribuicao);
+        renderGraficoDistribuicao(distribuicao);
+        renderGraficoEvolucao(evolucao);
+        renderAlertas(alertas);
+        
+        await carregarUsuariosEngajamento(1);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar análise de engajamento:', error);
+        showError('stats-engajamento-geral');
+    }
+}
+
+function renderResumoEngajamento(data) {
+    const container = document.getElementById('stats-engajamento-geral');
+    
+    const total = data.total_usuarios || 0;
+    const dist = data.distribuicao || {quente: 0, morno: 0, frio: 0};
+    const perc = data.percentuais || {quente: 0, morno: 0, frio: 0};
+    
+    container.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total de Usuários</div>
+            <div class="stat-value">${total.toLocaleString()}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-label">Usuários Quentes</div>
+            <div class="stat-value" style="color: #ef4444;">${dist.quente}</div>
+            <div class="stat-trend" style="color: #ef4444;">
+                ${perc.quente}% do total
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🟡</div>
+            <div class="stat-label">Usuários Mornos</div>
+            <div class="stat-value" style="color: #f59e0b;">${dist.morno}</div>
+            <div class="stat-trend" style="color: #f59e0b;">
+                ${perc.morno}% do total
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🧊</div>
+            <div class="stat-label">Usuários Frios</div>
+            <div class="stat-value" style="color: #3b82f6;">${dist.frio}</div>
+            <div class="stat-trend" style="color: #3b82f6;">
+                ${perc.frio}% do total
+            </div>
+        </div>
+    `;
+}
+
+function renderGraficoDistribuicao(data) {
+    if (charts.distribuicaoEngajamento) {
+        charts.distribuicaoEngajamento.destroy();
+    }
+    
+    const ctx = document.getElementById('chartDistribuicaoEngajamento');
+    if (!ctx) return;
+    
+    const dist = data.distribuicao || {quente: 0, morno: 0, frio: 0};
+    
+    charts.distribuicaoEngajamento = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['🔥 Quente', '🟡 Morno', '🧊 Frio'],
+            datasets: [{
+                data: [dist.quente, dist.morno, dist.frio],
+                backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} usuários (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderGraficoEvolucao(data) {
+    if (charts.evolucaoEngajamento) {
+        charts.evolucaoEngajamento.destroy();
+    }
+    
+    const ctx = document.getElementById('chartEvolucaoEngajamento');
+    if (!ctx) return;
+    
+    const evolucao = data.evolucao || [];
+    
+    charts.evolucaoEngajamento = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: evolucao.map(e => {
+                const date = new Date(e.data);
+                return date.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+            }),
+            datasets: [{
+                label: 'Usuários Ativos',
+                data: evolucao.map(e => e.usuarios_ativos),
+                borderColor: chartColors.primary,
+                backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+}
+
+function renderAlertas(alertas) {
+    const containerCriticos = document.getElementById('alertasCriticos');
+    const badgeCriticos = document.getElementById('badge-criticos');
+    
+    if (alertas.criticos && alertas.criticos.length > 0) {
+        badgeCriticos.textContent = alertas.criticos.length;
+        containerCriticos.innerHTML = alertas.criticos.slice(0, 10).map(u => `
+            <div class="info-item" style="border-left-color: #ef4444;">
+                <div>
+                    <strong>${u.username}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${u.dias_sem_atividade} dias sem atividade
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="badge badge-danger" style="font-size: 0.75rem;">Score: ${u.score}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        ${u.ultima_atividade}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        badgeCriticos.textContent = '0';
+        containerCriticos.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><p>Nenhum alerta crítico!</p></div>';
+    }
+    
+    const containerAtencao = document.getElementById('alertasAtencao');
+    const badgeAtencao = document.getElementById('badge-atencao');
+    
+    if (alertas.atenção && alertas.atenção.length > 0) {
+        badgeAtencao.textContent = alertas.atenção.length;
+        containerAtencao.innerHTML = alertas.atenção.slice(0, 10).map(u => `
+            <div class="info-item" style="border-left-color: #f59e0b;">
+                <div>
+                    <strong>${u.username}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${u.dias_sem_atividade} dias sem atividade
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="badge badge-warning" style="font-size: 0.75rem;">Score: ${u.score}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        ${u.ultima_atividade}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        badgeAtencao.textContent = '0';
+        containerAtencao.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><p>Nenhum alerta de atenção!</p></div>';
+    }
+    
+    const containerSuper = document.getElementById('topSuperEngajados');
+    const badgeSuper = document.getElementById('badge-super');
+    
+    if (alertas.super_engajados && alertas.super_engajados.length > 0) {
+        badgeSuper.textContent = alertas.super_engajados.length;
+        containerSuper.innerHTML = alertas.super_engajados.slice(0, 10).map((u, i) => `
+            <div class="info-item" style="border-left-color: #10b981;">
+                <div>
+                    <strong>#${i + 1} ${u.username}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${u.dias_ativos_7d} dias ativos | ${u.tempo_estudo_7d}h de estudo
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="badge badge-success" style="font-size: 0.85rem;">
+                        🔥 Score: ${u.score}
+                    </div>
+                    <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">
+                        Streak: ${u.streak_dias} dias
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        badgeSuper.textContent = '0';
+        containerSuper.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhum super engajado ainda</p></div>';
+    }
+}
+
+async function carregarUsuariosEngajamento(page = 1) {
+    try {
+        const filtro = document.getElementById('filterEngajamento')?.value || 'todos';
+        const ordem = document.getElementById('ordenarEngajamento')?.value || 'score';
+        
+        const res = await fetch(`/admin/analytics/api/engajamento/usuarios?page=${page}&filtro=${filtro}&ordem=${ordem}`);
+        if (!res.ok) throw new Error('Erro ao carregar usuários');
+        
+        const data = await res.json();
+        console.log('✅ Usuários com engajamento:', data);
+        
+        const tbody = document.getElementById('tableEngajamento');
+        
+        if (!data.usuarios || data.usuarios.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhum usuário encontrado</p></div></td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.usuarios.map(u => {
+            const badgeClass = u.classificacao === 'quente' ? 'badge-quente' : 
+                              u.classificacao === 'morno' ? 'badge-morno' : 'badge-frio';
+            const icon = u.classificacao === 'quente' ? '🔥' : 
+                        u.classificacao === 'morno' ? '🟡' : '🧊';
+            
+            const riscoClass = u.risco_churn === 'alto' ? 'risco-alto' :
+                              u.risco_churn === 'medio' ? 'risco-medio' :
+                              u.risco_churn === 'baixo' ? 'risco-baixo' : 'risco-muito-baixo';
+            
+            const riscoTexto = u.risco_churn === 'alto' ? '⚠️ Alto' :
+                              u.risco_churn === 'medio' ? '🟡 Médio' :
+                              u.risco_churn === 'baixo' ? '✅ Baixo' : '✨ Muito Baixo';
+            
+            return `
+                <tr>
+                    <td>
+                        <span class="badge-engajamento ${badgeClass}">
+                            ${icon} ${u.classificacao.charAt(0).toUpperCase() + u.classificacao.slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>${u.username}</strong>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${u.email}</div>
+                    </td>
+                    <td>${u.telefone || '-'}</td>
+                    <td>
+                        <div style="font-weight: 700; font-size: 1.1rem; color: ${
+                            u.score >= 60 ? '#ef4444' : u.score >= 30 ? '#f59e0b' : '#3b82f6'
+                        };">
+                            ${u.score}
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill ${u.classificacao}" style="width: ${u.score}%;"></div>
+                        </div>
+                    </td>
+                    <td>${u.dias_ativos_7d} dias</td>
+                    <td>${u.tempo_estudo_7d}h</td>
+                    <td>${u.simulados_7d}</td>
+                    <td>
+                        <span style="color: ${u.streak_dias >= 7 ? '#ef4444' : '#f59e0b'};">
+                            ${u.streak_dias > 0 ? `🔥 ${u.streak_dias}` : '-'}
+                        </span>
+                    </td>
+                    <td style="font-size: 0.85rem;">${u.ultima_atividade}</td>
+                    <td>
+                        <span class="${riscoClass}">${riscoTexto}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        renderPagination('paginationEngajamento', data.pagina_atual || 1, data.paginas || 1, carregarUsuariosEngajamento);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar tabela de engajamento:', error);
+        document.getElementById('tableEngajamento').innerHTML = 
+            '<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Erro ao carregar</p></div></td></tr>';
+    }
+}
+
+
+
+// ==========================================
+// TAB 8: PREVISÕES
+// ==========================================
+async function carregarAnalisePrevisoes() {
+    try {
+        const res = await fetch('/admin/analytics/api/previsoes');
+        if (!res.ok) throw new Error('Erro ao carregar previsões');
+        const data = await res.json();
+        
+        console.log('✅ Previsões:', data);
+
+        const saude = data.saude_plataforma || {};
+        let saudeColor = chartColors.success;
+        let saudeIcon = '✅';
+        
+        if (saude.score_geral >= 80) {
+            saudeColor = chartColors.success;
+            saudeIcon = '✅';
+        } else if (saude.score_geral >= 60) {
+            saudeColor = chartColors.primary;
+            saudeIcon = '👍';
+        } else if (saude.score_geral >= 40) {
+            saudeColor = chartColors.warning;
+            saudeIcon = '⚠️';
+        } else {
+            saudeColor = chartColors.danger;
+            saudeIcon = '🚨';
+        }
+
+        document.getElementById('kpis-previsoes').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">${saudeIcon}</div>
+                <div class="stat-label">Saúde da Plataforma</div>
+                <div class="stat-value" style="color: ${saudeColor}">
+                    ${(saude.score_geral || 0).toFixed(1)}
+                </div>
+                <div class="stat-trend" style="color: ${saudeColor}">
+                    ${saude.status || 'indefinido'}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-label">Tendência de Crescimento</div>
+                <div class="stat-value">${(data.tendencia_crescimento || 0) >= 0 ? '+' : ''}${(data.tendencia_crescimento || 0).toFixed(1)}%</div>
+                <div class="stat-trend ${(data.tendencia_crescimento || 0) >= 0 ? 'positive' : 'negative'}">
+                    ${(data.tendencia_crescimento || 0) >= 0 ? '↗' : '↘'} vs semana anterior
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🔮</div>
+                <div class="stat-label">Projeção 30 Dias</div>
+                <div class="stat-value">+${(data.projecao_30_dias || 0).toLocaleString()}</div>
+                <div class="stat-trend">novos usuários estimados</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-label">Taxa de Retenção (30d)</div>
+                <div class="stat-value">${(data.taxa_retencao_30d || 0).toFixed(1)}%</div>
+                <div class="stat-trend ${(data.taxa_retencao_30d || 0) >= 50 ? 'positive' : 'negative'}">
+                    ${(data.taxa_retencao_30d || 0) >= 50 ? '✅ Boa' : '⚠️ Precisa melhorar'}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-label">Usuários em Risco</div>
+                <div class="stat-value" style="color: ${chartColors.danger}">
+                    ${(data.usuarios_em_risco_critico || 0).toLocaleString()}
+                </div>
+                <div class="stat-trend" style="color: ${chartColors.danger}">
+                    Risco crítico de churn
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📱</div>
+                <div class="stat-label">Stickiness (DAU/MAU)</div>
+                <div class="stat-value">${(data.stickiness || 0).toFixed(1)}%</div>
+                <div class="stat-trend ${(data.stickiness || 0) >= 20 ? 'positive' : 'negative'}">
+                    ${(data.stickiness || 0) >= 20 ? '✅ Excelente' : '⚠️ Pode melhorar'}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-label">Taxa de Conversão</div>
+                <div class="stat-value">${(data.taxa_conversao_premium || 0).toFixed(1)}%</div>
+                <div class="stat-trend">Freemium → Premium</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-label">Taxa de Churn</div>
+                <div class="stat-value" style="color: ${data.taxa_churn > 30 ? chartColors.danger : chartColors.success}">
+                    ${(data.taxa_churn || 0).toFixed(1)}%
+                </div>
+                <div class="stat-trend ${data.taxa_churn < 30 ? 'positive' : 'negative'}">
+                    ${data.taxa_churn < 30 ? '✅ Sob controle' : '⚠️ Alta'}
+                </div>
+            </div>
+        `;
+
+        if (data.crescimento_usuarios?.datas?.length) {
+            if (charts.crescimento) charts.crescimento.destroy();
+            const ctx = document.getElementById('chartCrescimento');
+            if (ctx) {
+                charts.crescimento = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.crescimento_usuarios.datas.map(d => {
+                            const date = new Date(d);
+                            return date.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+                        }),
+                        datasets: [{
+                            label: 'Novos Usuários',
+                            data: data.crescimento_usuarios.novos,
+                            borderColor: chartColors.primary,
+                            backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 2,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.parsed.y} novos usuários`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        const usuariosAltoPotencialContainer = document.getElementById('usuariosAltoPotencial');
+        if (usuariosAltoPotencialContainer) {
+            if (data.usuarios_alto_potencial && data.usuarios_alto_potencial.length > 0) {
+                usuariosAltoPotencialContainer.innerHTML = data.usuarios_alto_potencial.map((u, i) => `
+                    <div class="info-item" style="border-left-color: ${chartColors.success}">
+                        <div>
+                            <strong>#${i + 1} ${u.nome || u.username || 'N/A'}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                ${u.telefone || 'Sem telefone'} | ${(u.simulados || 0)} simulados | ${(u.xp || 0).toLocaleString()} XP
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.2rem; font-weight: 700; color: ${chartColors.success}">
+                                ${(u.media_notas || 0).toFixed(1)} pts
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                💎 ${(u.diamantes || 0).toLocaleString()} diamantes
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                usuariosAltoPotencialContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>Dados insuficientes</p></div>';
+            }
+        }
+
+        const areasAtencaoContainer = document.getElementById('areasAtencao');
+        if (areasAtencaoContainer) {
+            if (data.areas_baixo_desempenho && data.areas_baixo_desempenho.length > 0) {
+                areasAtencaoContainer.innerHTML = data.areas_baixo_desempenho.map(a => `
+                    <div class="info-item" style="border-left-color: ${chartColors.danger}">
+                        <div>
+                            <strong>${a.area || 'N/A'}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                ${(a.total_simulados || 0)} simulados | ${(a.usuarios_afetados || 0)} usuários
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="info-item-value" style="color: ${chartColors.danger}">
+                                ${(a.media || 0).toFixed(1)} pts
+                            </div>
+                            <div style="font-size: 0.75rem; color: ${chartColors.danger};">
+                                ⚠️ Abaixo de 600
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                areasAtencaoContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><p>Nenhuma área crítica!</p></div>';
+            }
+        }
+
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        showError('kpis-previsoes');
+    }
+}
+
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+

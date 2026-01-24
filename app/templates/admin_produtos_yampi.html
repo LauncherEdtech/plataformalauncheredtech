@@ -1,0 +1,387 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin - Produtos Yampi{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    :root {
+        --bg-core: #090909;
+        --bg-card: #121212;
+        --bg-elevated: #1a1a1a;
+        --neon-purple: #8b5cf6;
+        --neon-cyan: #06b6d4;
+        --text-white: #ffffff;
+        --text-gray: #a1a1aa;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+        background-color: var(--bg-core);
+        background-image: radial-gradient(circle at 50% 0%, #1a103c 0%, #000 60%);
+        min-height: 100vh;
+    }
+
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Header */
+    .admin-header {
+        background: rgba(18, 18, 18, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-subtle);
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .header-title h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .header-title p {
+        color: var(--text-gray);
+        margin: 0.5rem 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--neon-purple);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-info .value { font-size: 1.5rem; font-weight: 700; color: white; }
+    .stat-info .label { font-size: 0.875rem; color: var(--text-gray); }
+
+    /* Action Bar */
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .sync-btn {
+        background: linear-gradient(135deg, var(--neon-purple), #6d28d9);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .sync-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); color: white; }
+    .sync-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Table */
+    .table-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .custom-table th {
+        background: var(--bg-elevated);
+        color: var(--text-gray);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+    }
+
+    .custom-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-subtle);
+        color: white;
+        vertical-align: middle;
+    }
+
+    .custom-table tr:last-child td { border-bottom: none; }
+    .custom-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .product-cell { display: flex; align-items: center; gap: 1rem; }
+    .product-img {
+        width: 48px; height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #000;
+        border: 1px solid var(--border-subtle);
+    }
+    .product-info h4 { margin: 0; font-size: 0.95rem; color: white; }
+    .product-info span { font-size: 0.8rem; color: var(--text-gray); font-family: monospace; }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .status-inactive { background: rgba(113, 113, 122, 0.2); color: #a1a1aa; }
+
+    .btn-icon {
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-gray);
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .btn-icon:hover { background: var(--bg-elevated); color: white; border-color: var(--text-gray); }
+
+    /* Loading Overlay */
+    .sync-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    .spinner {
+        width: 50px; height: 50px;
+        border: 3px solid rgba(139, 92, 246, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--neon-purple);
+        animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="header-title">
+            <h1><i class="bi bi-shield-lock-fill" style="color: var(--neon-purple);"></i> Admin Yampi</h1>
+            <p>Gerencie a sincronização de produtos e configurações da loja.</p>
+        </div>
+        <a href="{{ url_for('yampi.listar_produtos') }}" class="btn btn-outline-light">
+            <i class="bi bi-shop"></i> Ver Loja
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="stat-info">
+                <div class="value">{{ produtos|length }}</div>
+                <div class="label">Produtos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-info">
+                <div class="value">{{ produtos|selectattr("ativo")|list|length }}</div>
+                <div class="label">Ativos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-bar">
+        <h3 style="color: white; margin: 0; font-size: 1.25rem;">Catálogo Sincronizado</h3>
+        <button class="sync-btn" onclick="sincronizarYampi()">
+            <i class="bi bi-arrow-repeat"></i> Sincronizar Agora
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Preço Orig.</th>
+                        <th>Configuração</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in produtos %}
+                    <tr>
+                        <td>
+                            <div class="product-cell">
+                                <img src="{{ p.imagem_url or 'https://via.placeholder.com/48' }}" class="product-img" onerror="this.src='https://via.placeholder.com/48'">
+                                <div class="product-info">
+                                    <h4>{{ p.nome }}</h4>
+                                    <span>{{ p.sku }}</span>
+                                    {% if p.descricao %}
+                                        <i class="bi bi-file-text" style="color: #06b6d4; font-size: 0.8rem; margin-left: 5px;" title="Descrição HTML presente"></i>
+                                    {% else %}
+                                        <i class="bi bi-exclamation-circle" style="color: #ef4444; font-size: 0.8rem; margin-left: 5px;" title="Sem descrição"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>R$ {{ "%.2f"|format(p.preco_original) }}</td>
+                        <td>
+                            <div style="font-size: 0.9rem;">
+                                <span style="color: var(--neon-cyan);">{{ p.percentual_desconto }}% OFF</span> • 
+                                <span style="color: #fbbf24;">{{ p.diamantes_necessarios }} 💎</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if p.ativo %}
+                            <span class="status-badge status-active">Ativo</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-icon" title="Editar (Em breve)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 3rem;">
+                            <div style="color: var(--text-gray);">
+                                <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
+                                Nenhum produto encontrado. Clique em Sincronizar.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="sync-overlay" id="syncOverlay">
+    <div class="spinner"></div>
+    <h3 style="color: white; margin-top: 1.5rem;">Sincronizando...</h3>
+    <p style="color: var(--text-gray);">Buscando dados na Yampi (Imagens, Descrições, Preços)</p>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+const YAMPI_CONFIG = {{ yampi_config | tojson }};
+
+async function sincronizarYampi() {
+    const overlay = document.getElementById('syncOverlay');
+    overlay.style.display = 'flex';
+    
+    try {
+        // CORREÇÃO: Adicionado 'texts' e 'categories' na URL do JavaScript também!
+        const apiUrl = `https://api.dooki.com.br/v2/${YAMPI_CONFIG.alias}/catalog/products?limit=50&include=images,texts,categories,skus.prices.installments`;
+        
+        console.log('🔄 Buscando produtos:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'User-Token': YAMPI_CONFIG.token,
+                'User-Secret-Key': YAMPI_CONFIG.secret,
+                'Accept': 'application/json',
+                'User-Agent': 'Plataforma-Launcher/1.0'
+            }
+        });
+        
+        if (!response.ok) throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        
+        const data = await response.json();
+        const produtos = data.data || [];
+        
+        if (produtos.length === 0) throw new Error('Nenhum produto encontrado na loja Yampi');
+        
+        // Envia para o Flask salvar
+        const saveResponse = await fetch('/shop/yampi/admin/salvar-produtos', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({produtos: produtos})
+        });
+        
+        const result = await saveResponse.json();
+        
+        overlay.style.display = 'none';
+        
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sincronizado!',
+                text: result.message,
+                background: '#1a1a1a',
+                color: '#fff'
+            }).then(() => location.reload());
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        overlay.style.display = 'none';
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro na Sincronização',
+            text: error.message,
+            background: '#1a1a1a',
+            color: '#fff'
+        });
+    }
+}
+</script>
+{% endblock %}

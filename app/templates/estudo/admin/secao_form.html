@@ -1,0 +1,895 @@
+<!-- app/templates/estudo/admin/secao_form.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Editar' if secao else 'Nova' }} Seção - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .form-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: #00b4d8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #0084ff;
+        text-decoration: underline;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    /* Form Cards */
+    .form-section {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Form Fields */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: white;
+        font-size: 0.95rem;
+    }
+
+    .form-label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #00b4d8;
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .help-text {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+
+    /* Grid Layouts */
+    .form-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-grid-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .form-grid-4 {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+
+    /* Color Input */
+    .color-input-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .color-preview {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .color-preview:hover {
+        transform: scale(1.1);
+        border-color: #00b4d8;
+    }
+
+    .color-text-input {
+        flex: 1;
+    }
+
+    /* Icon Selector */
+    .icon-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .icon-option {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 1.8rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .icon-option:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(1.1);
+    }
+
+    .icon-option.selected {
+        border-color: #00b4d8;
+        background: rgba(0, 180, 216, 0.3);
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+    }
+
+    .icon-option.selected::after {
+        content: "✓";
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        background: #00b4d8;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    /* Toggle Switch */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .toggle-switch.active {
+        background: #00b4d8;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch.active .toggle-slider {
+        transform: translateX(30px);
+    }
+
+    .toggle-label {
+        font-weight: 600;
+        color: white;
+    }
+
+    /* Preview Section */
+    .preview-section {
+        background: rgba(0, 180, 216, 0.1);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .preview-title {
+        color: #00b4d8;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .preview-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .preview-info h4 {
+        color: white;
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+    }
+
+    .preview-info p {
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .preview-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        flex-wrap: wrap;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #00b4d8, #0084ff);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0084ff, #0056b3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* Loading States */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Validation */
+    .form-control.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+    }
+
+    .field-error {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    .field-error.active {
+        display: block;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .form-grid-2,
+        .form-grid-3,
+        .form-grid-4 {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+
+        .icon-selector {
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-title {
+            font-size: 1.6rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .form-header {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Header -->
+    <div class="form-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> › 
+            <a href="{{ url_for('estudo.admin_secoes') }}">Seções</a> › 
+            {{ 'Editar Seção' if secao else 'Nova Seção' }}
+        </div>
+        <h1 class="form-title">{{ '✏️ Editar Seção' if secao else '➕ Nova Seção' }}</h1>
+        <p class="form-subtitle">
+            {{ 'Atualize as configurações da seção' if secao else 'Crie uma nova seção independente para organizar matérias' }}
+        </p>
+    </div>
+
+    <form method="POST" id="secaoForm">
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>📋</span>
+                Informações Básicas
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label required" for="titulo">Título da Seção</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="titulo" 
+                       name="titulo" 
+                       value="{{ secao.titulo if secao else '' }}"
+                       placeholder="Ex: Concursos Públicos, Vestibulares, Idiomas..."
+                       required>
+                <div class="help-text">Nome principal que aparecerá no sistema</div>
+                <div class="field-error" id="titulo-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="subtitulo">Subtítulo</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="subtitulo" 
+                       name="subtitulo" 
+                       value="{{ secao.subtitulo if secao else '' }}"
+                       placeholder="Texto complementar opcional...">
+                <div class="help-text">Descrição curta que aparece abaixo do título</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="descricao">Descrição</label>
+                <textarea class="form-control" 
+                          id="descricao" 
+                          name="descricao" 
+                          rows="4"
+                          placeholder="Descreva o objetivo e conteúdo desta seção...">{{ secao.descricao if secao else '' }}</textarea>
+                <div class="help-text">Descrição detalhada da seção (opcional)</div>
+            </div>
+        </div>
+
+        <!-- Aparência -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>🎨</span>
+                Aparência e Layout
+            </h3>
+
+            
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="cor">Cor da Seção</label>
+                    <div class="color-input-group">
+                        <input type="color" 
+                               class="color-preview" 
+                               id="cor" 
+                               name="cor" 
+                               value="{{ secao.cor if secao else '#00b4d8' }}"
+                               onchange="updatePreview()">
+                        <input type="text" 
+                               class="form-control color-text-input" 
+                               id="cor-text" 
+                               placeholder="#00b4d8"
+                               value="{{ secao.cor if secao else '#00b4d8' }}"
+                               onchange="updateColorPicker()">
+                    </div>
+                    <div class="help-text">Cor que será usada nos elementos visuais da seção</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="grid_cols">Colunas do Grid</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="grid_cols" 
+                           name="grid_cols" 
+                           value="{{ secao.grid_cols if secao else 4 }}"
+                           min="1"
+                           max="6"
+                           onchange="updatePreview()">
+                    <div class="help-text">Número de colunas para exibir as matérias (1-6)</div>
+                </div>
+            </div>
+
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="ordem">Ordem de Exibição</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="ordem" 
+                           name="ordem" 
+                           value="{{ secao.ordem if secao else 0 }}"
+                           min="0"
+                           onchange="updatePreview()">
+                    <div class="help-text">Ordem em que a seção aparece na lista (0 = primeira)</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status da Seção</label>
+                    <div class="toggle-container">
+                        <div class="toggle-switch {{ 'active' if not secao or secao.ativo else '' }}" 
+                             onclick="toggleStatus()" 
+                             id="status-toggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-label" id="status-label">
+                            {{ 'Ativa' if not secao or secao.ativo else 'Inativa' }}
+                        </span>
+                        <input type="hidden" 
+                               id="ativo" 
+                               name="ativo" 
+                               value="{{ 'true' if not secao or secao.ativo else 'false' }}">
+                    </div>
+                    <div class="help-text">Se inativa, a seção não aparecerá para os usuários</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ícone da Seção</label>
+                <input type="hidden" 
+                       id="icone" 
+                       name="icone" 
+                       value="{{ secao.icone if secao else '🧩' }}">
+                <div class="icon-selector" id="icon-selector">
+                    <!-- Ícones populares para seções -->
+                    <div class="icon-option {{ 'selected' if not secao or secao.icone == '🧩' else '' }}" onclick="selectIcon('🧩')">🧩</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '📚' else '' }}" onclick="selectIcon('📚')">📚</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🎓' else '' }}" onclick="selectIcon('🎓')">🎓</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🏛️' else '' }}" onclick="selectIcon('🏛️')">🏛️</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🌍' else '' }}" onclick="selectIcon('🌍')">🌍</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🔬' else '' }}" onclick="selectIcon('🔬')">🔬</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🎯' else '' }}" onclick="selectIcon('🎯')">🎯</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '💼' else '' }}" onclick="selectIcon('💼')">💼</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🚀' else '' }}" onclick="selectIcon('🚀')">🚀</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '⭐' else '' }}" onclick="selectIcon('⭐')">⭐</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🎨' else '' }}" onclick="selectIcon('🎨')">🎨</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🏆' else '' }}" onclick="selectIcon('🏆')">🏆</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '💡' else '' }}" onclick="selectIcon('💡')">💡</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🔥' else '' }}" onclick="selectIcon('🔥')">🔥</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '⚡' else '' }}" onclick="selectIcon('⚡')">⚡</div>
+                    <div class="icon-option {{ 'selected' if secao and secao.icone == '🎪' else '' }}" onclick="selectIcon('🎪')">🎪</div>
+                </div>
+                <div class="help-text">Escolha um ícone que represente bem o tipo de conteúdo da seção</div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-section">
+            <div class="preview-title">
+                <span>👁️</span>
+                Preview da Seção
+            </div>
+            <div class="preview-card">
+                <div class="preview-header">
+                    <div class="preview-icon" id="preview-icon" style="background: {{ secao.cor if secao else '#00b4d8' }}">
+                        {{ secao.icone if secao else '🧩' }}
+                    </div>
+                    <div class="preview-info">
+                        <h4 id="preview-title">{{ secao.titulo if secao else 'Título da Seção' }}</h4>
+                        <p id="preview-subtitle">
+                            {{ secao.subtitulo if secao and secao.subtitulo else 'Subtítulo aparecerá aqui...' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="preview-meta">
+                    <span>📊 Ordem: <span id="preview-ordem">{{ secao.ordem if secao else 0 }}</span></span>
+                    <span>🎨 Colunas: <span id="preview-cols">{{ secao.grid_cols if secao else 4 }}</span></span>
+                    <span>📱 Status: <span id="preview-status">{{ 'Ativa' if not secao or secao.ativo else 'Inativa' }}</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span>{{ '💾' if secao else '✅' }}</span>
+                <span>{{ 'Salvar Alterações' if secao else 'Criar Seção' }}</span>
+            </button>
+            <a href="{{ url_for('estudo.admin_secoes') }}" class="btn btn-secondary">
+                <span>❌</span>
+                <span>Cancelar</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Variáveis globais
+let isSubmitting = false;
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupValidation();
+    updatePreview();
+});
+
+// Seleção de ícone
+function selectIcon(emoji) {
+    document.getElementById('icone').value = emoji;
+    
+    // Atualizar seleção visual
+    document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+    event.target.classList.add('selected');
+    
+    updatePreview();
+}
+
+// Toggle de status
+function toggleStatus() {
+    const toggle = document.getElementById('status-toggle');
+    const input = document.getElementById('ativo');
+    const label = document.getElementById('status-label');
+    
+    const isActive = toggle.classList.contains('active');
+    
+    if (isActive) {
+        toggle.classList.remove('active');
+        input.value = 'false';
+        label.textContent = 'Inativa';
+    } else {
+        toggle.classList.add('active');
+        input.value = 'true';
+        label.textContent = 'Ativa';
+    }
+    
+    updatePreview();
+}
+
+// Atualizar cor
+function updateColorPicker() {
+    const colorText = document.getElementById('cor-text').value;
+    const colorInput = document.getElementById('cor');
+    
+    if (/^#[0-9A-F]{6}$/i.test(colorText)) {
+        colorInput.value = colorText;
+        updatePreview();
+    }
+}
+
+
+// Atualizar preview
+function updatePreview() {
+    const titulo = document.getElementById('titulo').value || 'Título da Seção';
+    const subtitulo = document.getElementById('subtitulo').value || 'Subtítulo aparecerá aqui...';
+    const cor = document.getElementById('cor').value;
+    const icone = document.getElementById('icone').value;
+    const ordem = document.getElementById('ordem').value || '0';
+    const cols = document.getElementById('grid_cols').value || '4';
+    const ativo = document.getElementById('ativo').value === 'true';
+    
+    // Atualizar elementos do preview
+    document.getElementById('preview-title').textContent = titulo;
+    document.getElementById('preview-subtitle').textContent = subtitulo;
+    document.getElementById('preview-icon').style.background = cor;
+    document.getElementById('preview-icon').textContent = icone;
+    document.getElementById('preview-ordem').textContent = ordem;
+    document.getElementById('preview-cols').textContent = cols;
+    document.getElementById('preview-status').textContent = ativo ? 'Ativa' : 'Inativa';
+    
+    // Atualizar cor do texto
+    document.getElementById('cor-text').value = cor;
+}
+
+// Validação
+function setupValidation() {
+    const form = document.getElementById('secaoForm');
+    const tituloInput = document.getElementById('titulo');
+    
+    tituloInput.addEventListener('input', function() {
+        updatePreview();
+        clearFieldError('titulo');
+    });
+    
+    document.getElementById('subtitulo').addEventListener('input', updatePreview);
+    document.getElementById('cor').addEventListener('change', function() {
+        updatePreview();
+    });
+    document.getElementById('ordem').addEventListener('input', updatePreview);
+    document.getElementById('grid_cols').addEventListener('input', updatePreview);
+    
+    form.addEventListener('submit', handleSubmit);
+}
+
+function handleSubmit(e) {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    const titulo = document.getElementById('titulo').value.trim();
+    
+    // Validação básica
+    if (!titulo) {
+        showFieldError('titulo', 'O título da seção é obrigatório');
+        return;
+    }
+    
+    if (titulo.length < 3) {
+        showFieldError('titulo', 'O título deve ter pelo menos 3 caracteres');
+        return;
+    }
+    
+    // Validar colunas
+    const cols = parseInt(document.getElementById('grid_cols').value);
+    if (cols < 1 || cols > 6) {
+        showNotification('O número de colunas deve estar entre 1 e 6', 'error');
+        return;
+    }
+    
+    // Submeter formulário
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submit-btn');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> <span>Salvando...</span>';
+    
+    e.target.submit();
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`);
+    
+    if (field) field.classList.add('error');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('active');
+    }
+    
+    field.focus();
+}
+
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`);
+    
+    if (field) field.classList.remove('error');
+    if (errorElement) {
+        errorElement.classList.remove('active');
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+</script>
+
+<style>
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+</style>
+{% endblock %}

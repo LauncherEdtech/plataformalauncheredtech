@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa de Direcionamento — Launcher</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --primary:#0062cc;
+      --secondary:#3399ff;
+      --bg:#f4f6f9;
+      --light:#ffffff;
+      --dark:#111827;
+      --muted:#6c757d;
+      --border:#e9ecef;
+      --danger:#dc3545;
+    }
+
+    body{
+      background: var(--bg);
+      color: var(--dark);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 14px 50px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+
+    .brand-badge{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #e6f7ff;
+      border: 1px solid #b3e0ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--primary);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #e6f7ff;
+      border: 1px solid #b3e0ff;
+      color: var(--primary);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .card{
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+      padding: 22px;
+    }
+
+    .hero{
+      padding: 28px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+    }
+
+    .hero h1{
+      font-size: 1.75rem;
+      font-weight: 1000;
+      margin: 0 0 10px;
+      letter-spacing: .2px;
+    }
+
+    .alert-line{
+      display:inline-flex;
+      gap: 10px;
+      align-items:center;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #fff3f3;
+      border: 1px solid rgba(220,53,69,.25);
+      color: #7a1d1d;
+      font-weight: 900;
+      margin-bottom: 14px;
+    }
+
+    .hero p{
+      margin: 0 0 14px;
+      color: #2b2f33;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .cta{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .btn-primary-soft{
+      background: linear-gradient(to right, var(--secondary), var(--primary));
+      border: none;
+      border-radius: 50px;
+      padding: 12px 18px;
+      color: #fff;
+      font-weight: 950;
+      box-shadow: 0 14px 34px rgba(0,98,204,.20);
+    }
+
+    .btn-secondary-soft{
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 12px 18px;
+      color: var(--dark);
+      font-weight: 950;
+    }
+
+    .stepper{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0 12px;
+    }
+
+    .progress-wrap{
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .progress{
+      height: 10px;
+      border-radius: 999px;
+      background: #e9ecef;
+    }
+    .progress-bar{
+      background: linear-gradient(to right, var(--secondary), var(--primary));
+    }
+
+    .step-count{
+      font-weight: 900;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .block-title{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #e6f7ff;
+      border: 1px solid #b3e0ff;
+      color: var(--primary);
+      font-weight: 950;
+      margin-bottom: 14px;
+    }
+
+    .q-title{
+      font-size: 1.25rem;
+      font-weight: 950;
+      margin: 0 0 10px;
+    }
+
+    .option{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      cursor: pointer;
+      transition: .15s ease;
+      background: #fff;
+      margin-bottom: 10px;
+    }
+    .option:hover{
+      border-color: rgba(0,98,204,.35);
+      background: #f8fbff;
+      transform: translateY(-1px);
+    }
+    .option.selected{
+      border-color: rgba(0,98,204,.65);
+      background: #e6f7ff;
+      box-shadow: 0 10px 24px rgba(0,98,204,.10);
+    }
+    .option .radio{
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,98,204,.4);
+      margin-top: 2px;
+      flex: 0 0 auto;
+      position: relative;
+    }
+    .option.selected .radio{
+      border-color: var(--primary);
+    }
+    .option.selected .radio::after{
+      content:'';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      position:absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .option .text{
+      font-weight: 750;
+      color: #2b2f33;
+      line-height: 1.35;
+    }
+
+    .footer-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .hint{
+      color: var(--muted);
+      font-weight: 650;
+      font-size: .95rem;
+    }
+
+    .result-head{
+      text-align:center;
+      margin-bottom: 14px;
+    }
+    .result-head h2{
+      font-weight: 1000;
+      margin: 0 0 8px;
+      color: var(--primary);
+    }
+    .result-head p{
+      margin: 0;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .result-box{
+      background: #fff3f3;
+      border: 1px solid rgba(220,53,69,.25);
+      border-left: 6px solid var(--danger);
+      border-radius: 14px;
+      padding: 18px;
+      margin: 14px 0 18px;
+    }
+    .result-box .k{
+      font-weight: 1000;
+      text-transform: uppercase;
+      font-size: .85rem;
+      letter-spacing: .8px;
+      color: #7a1d1d;
+      margin-bottom: 8px;
+    }
+    .result-box .headline{
+      font-weight: 950;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #3a1414;
+    }
+    .result-box .txt{
+      margin: 0;
+      font-weight: 650;
+      color: #3a1414;
+    }
+
+    .base-msg{
+      background: #111827;
+      color: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .base-msg .t{
+      font-weight: 1000;
+      margin-bottom: 8px;
+      color: #7db7ff;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      font-size: .85rem;
+    }
+    .base-msg p{
+      margin: 0;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge"><i class="fas fa-compass"></i></div>
+        <div>Launcher — Mapa de Direcionamento</div>
+      </div>
+      <div class="pill"><i class="fas fa-lock-open"></i> Sem login</div>
+    </div>
+
+    <!-- TELA 1 -->
+    <div id="tela1" class="card hero">
+      <div class="alert-line"><i class="fas fa-triangle-exclamation"></i> ATENÇÃO!!</div>
+
+      <h1>Esse form NÃO é diagnóstico. Ele é um detector de risco.</h1>
+
+      <p>
+        No final você terá clareza nessa pergunta:<br>
+        <strong>"Do jeito que você estuda hoje, você está no caminho certo ou desperdiçando esforço?"</strong>
+      </p>
+
+      <div class="cta">
+        <button class="btn btn-primary-soft" id="btnStart">
+          <i class="fas fa-rocket"></i> Iniciar meu Mapeamento
+        </button>
+        <button class="btn btn-secondary-soft" id="btnPreview">
+          <i class="fas fa-circle-info"></i> Como funciona?
+        </button>
+      </div>
+    </div>
+
+    <!-- TELA 2 -->
+    <div id="tela2" class="card hidden">
+      <div class="stepper">
+        <div class="progress-wrap">
+          <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="step-count">
+          <span id="stepNow">1</span>/<span id="stepTotal">8</span>
+        </div>
+      </div>
+
+      <div class="block-title" id="blockTitle">
+        <i class="fas fa-layer-group"></i> Mapeamento: Realidade Atual (estado do estudo)
+      </div>
+
+      <div class="q-title" id="qTitle">Pergunta</div>
+      <div id="options"></div>
+
+      <div class="footer-actions">
+        <div class="hint" id="hint">Selecione uma opção para continuar.</div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-secondary-soft" id="btnBack">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </button>
+          <button class="btn btn-primary-soft" id="btnNext" disabled>
+            Responder <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 3 -->
+    <div id="tela3" class="card hidden">
+      <div class="result-head">
+        <h2 id="resTitle">RESULTADO DO SEU MAPEAMENTO</h2>
+        <p>Esse resultado mostra o seu ponto de risco principal hoje.</p>
+      </div>
+
+      <div class="result-box">
+        <div class="k" id="resK">PERFIL</div>
+        <div class="headline" id="resHeadline"></div>
+        <p class="txt" id="resText"></p>
+      </div>
+
+      <div class="base-msg">
+        <div class="t"><i class="fas fa-bolt"></i> Ponto decisivo</div>
+        <p id="resBase"></p>
+      </div>
+
+      <div class="cta justify-content-center">
+        <a class="btn btn-primary-soft" id="btnVSL" href="{{ vsl_url }}" target="_blank" rel="noopener">
+          <i class="fas fa-play"></i> Ver como aplicar isso na prática
+        </a>
+        <button class="btn btn-secondary-soft" id="btnRestart">
+          <i class="fas fa-rotate-left"></i> Refazer mapeamento
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_ENVIAR = "/mapeamento/enviar";
+
+    const tela1 = document.getElementById("tela1");
+    const tela2 = document.getElementById("tela2");
+    const tela3 = document.getElementById("tela3");
+
+    const btnStart = document.getElementById("btnStart");
+    const btnPreview = document.getElementById("btnPreview");
+
+    const blockTitle = document.getElementById("blockTitle");
+    const qTitle = document.getElementById("qTitle");
+    const optionsEl = document.getElementById("options");
+
+    const stepNow = document.getElementById("stepNow");
+    const stepTotal = document.getElementById("stepTotal");
+    const progressBar = document.getElementById("progressBar");
+
+    const btnBack = document.getElementById("btnBack");
+    const btnNext = document.getElementById("btnNext");
+    const hint = document.getElementById("hint");
+
+    const resTitle = document.getElementById("resTitle");
+    const resK = document.getElementById("resK");
+    const resHeadline = document.getElementById("resHeadline");
+    const resText = document.getElementById("resText");
+    const resBase = document.getElementById("resBase");
+    const btnRestart = document.getElementById("btnRestart");
+
+    // Perguntas (ordem e blocos fixos)
+    const perguntas = [
+      {
+        block: "Mapeamento: Realidade Atual (estado do estudo)",
+        icon: "fa-layer-group",
+        id: "q1",
+        title: "1 - Quanto tempo você costuma estudar por dia?",
+        options: [
+          { value: "menos_30", label: "Menos de 30 minutos" },
+          { value: "30_1h", label: "Entre 30 min e 1 hora" },
+          { value: "1_2h", label: "Entre 1 e 2 horas" },
+          { value: "mais_2h", label: "Mais de 2 horas" },
+        ],
+      },
+      {
+        block: "Mapeamento: Realidade Atual (estado do estudo)",
+        icon: "fa-layer-group",
+        id: "q2",
+        title: "2 - Você está estudando para o ENEM com algum plano definido?",
+        options: [
+          { value: "nao_plano", label: "Não sigo nenhum plano" },
+          { value: "plano_nao_sigo", label: "Tenho um plano, mas não sigo sempre" },
+          { value: "plano_frequente", label: "Sigo um plano com frequência" },
+        ],
+      },
+      {
+        block: "Mapeamento: Realidade Atual (estado do estudo)",
+        icon: "fa-layer-group",
+        id: "q3",
+        title: "3 - Você já fez o ENEM alguma vez?",
+        options: [
+          { value: "nunca", label: "Nunca fiz" },
+          { value: "ja_sem_preparo", label: "Já fiz, mas sem preparação adequada" },
+          { value: "ja_estudando", label: "Já fiz estudando de verdade" },
+        ],
+      },
+      {
+        block: "Mapeamento: Método (onde mora o problema)",
+        icon: "fa-screwdriver-wrench",
+        id: "q4",
+        title: "4 - Hoje, você sabe exatamente quais são seus principais pontos fracos?",
+        options: [
+          { value: "nao_sei", label: "Não sei" },
+          { value: "tenho_nocao", label: "Tenho uma noção" },
+          { value: "sei_claramente", label: "Sei claramente" },
+        ],
+      },
+      {
+        block: "Mapeamento: Método (onde mora o problema)",
+        icon: "fa-screwdriver-wrench",
+        id: "q5",
+        title: "5 - Quando você erra uma questão, o que costuma fazer?",
+        options: [
+          { value: "sigo_sem_analisar", label: "Sigo estudando sem analisar" },
+          { value: "olho_sem_aprofundar", label: "Olho a resposta, mas não aprofundo" },
+          { value: "analiso_corrijo", label: "Analiso o erro e tento corrigir" },
+        ],
+      },
+      {
+        block: "Mapeamento: Método (onde mora o problema)",
+        icon: "fa-screwdriver-wrench",
+        id: "q6",
+        title: "6 - Você acompanha sua evolução ao longo do tempo?",
+        options: [
+          { value: "nao", label: "Não acompanho" },
+          { value: "informal", label: "Acompanho de forma informal" },
+          { value: "metodo", label: "Acompanho com algum método" },
+        ],
+      },
+      {
+        block: "Mapeamento: Dor (consciência emocional)",
+        icon: "fa-heart-crack",
+        id: "q7",
+        title: "7 - Você já estudou por semanas ou meses sem ver resultado claro?",
+        options: [
+          { value: "sim", label: "Sim" },
+          { value: "as_vezes", label: "Às vezes" },
+          { value: "nao", label: "Não" },
+        ],
+      },
+      {
+        block: "Mapeamento: Dor (consciência emocional)",
+        icon: "fa-heart-crack",
+        id: "q8",
+        title: "8 - Hoje, você se sente seguro sobre o que deveria estudar agora?",
+        options: [
+          { value: "perdido", label: "Não, me sinto perdido" },
+          { value: "duvidas", label: "Tenho dúvidas" },
+          { value: "sei_exatamente", label: "Sim, sei exatamente" },
+        ],
+      }
+    ];
+
+
+    stepTotal.textContent = String(perguntas.length);
+
+    let index = 0;
+    let selectedValue = null;
+    const respostas = {};
+
+    function show(el){ el.classList.remove("hidden"); }
+    function hide(el){ el.classList.add("hidden"); }
+
+    function renderQuestion() {
+      const q = perguntas[index];
+      selectedValue = respostas[q.id] || null;
+
+      blockTitle.innerHTML = '<i class="fas ' + q.icon + '"></i> ' + q.block;
+
+      stepNow.textContent = String(index + 1);
+      const pct = Math.round(((index) / (perguntas.length)) * 100);
+      progressBar.style.width = pct + '%';
+
+      qTitle.textContent = q.title;
+
+      optionsEl.innerHTML = "";
+      q.options.forEach(function(opt) {
+        const div = document.createElement("div");
+        div.className = "option" + (selectedValue === opt.value ? " selected" : "");
+        div.innerHTML = '<div class="radio"></div><div class="text">' + opt.label + '</div>';
+        
+        div.addEventListener("click", function() {
+          selectedValue = opt.value;
+          respostas[q.id] = selectedValue;
+          document.querySelectorAll(".option").forEach(function(o) { o.classList.remove("selected"); });
+          div.classList.add("selected");
+          btnNext.disabled = false;
+          hint.textContent = 'Ok. Clique em "Responder" para continuar.';
+        });
+        
+        optionsEl.appendChild(div);
+      });
+
+      btnBack.disabled = index === 0;
+      btnNext.disabled = !selectedValue;
+      hint.textContent = selectedValue ? 'Ok. Clique em "Responder" para continuar.' : "Selecione uma opção para continuar.";
+    }
+
+    async function submitAnswers() {
+      btnNext.disabled = true;
+      btnNext.innerHTML = 'Processando <i class="fas fa-spinner fa-spin"></i>';
+
+      try {
+        const resp = await fetch(API_ENVIAR, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ respostas: respostas })
+        });
+
+        const data = await resp.json();
+
+        if (!data.success) {
+          alert(data.error || "Erro ao processar. Tente novamente.");
+          btnNext.disabled = false;
+          btnNext.innerHTML = 'Responder <i class="fas fa-arrow-right"></i>';
+          return;
+        }
+
+        hide(tela2);
+        show(tela3);
+
+        const r = data.resultado;
+        const registroId = data.id;
+
+        resTitle.textContent = r.titulo;
+        resK.textContent = 'PERFIL ' + data.perfil;
+        resHeadline.textContent = r.headline;
+        resText.textContent = r.texto;
+        resBase.textContent = r.base;
+
+        const btnVSL = document.getElementById("btnVSL");
+        btnVSL.href = r.cta_url;
+        btnVSL.innerHTML = '<i class="fas fa-play"></i> ' + r.cta_text;
+        
+        btnVSL.onclick = function(e) {
+          const url = '/mapeamento/registrar-clique/' + registroId;
+          
+          if (navigator.sendBeacon) {
+            try {
+              navigator.sendBeacon(url, new Blob([], { type: "application/octet-stream" }));
+            } catch (err) {
+              fetch(url, { method: "POST", keepalive: true }).catch(function() {});
+            }
+          } else {
+            fetch(url, { method: "POST", keepalive: true }).catch(function() {});
+          }
+        };
+
+      } catch (e) {
+        console.error(e);
+        alert("Erro ao processar. Tente novamente.");
+        btnNext.disabled = false;
+        btnNext.innerHTML = 'Responder <i class="fas fa-arrow-right"></i>';
+      }
+    }
+
+    btnStart.addEventListener("click", function() {
+      hide(tela1);
+      show(tela2);
+      index = 0;
+      renderQuestion();
+    });
+
+    btnPreview.addEventListener("click", function() {
+      alert("Você responde 8 perguntas (uma por vez) e recebe um perfil com o principal risco do seu estudo hoje.");
+    });
+
+    btnBack.addEventListener("click", function() {
+      if (index === 0) return;
+      index--;
+      renderQuestion();
+    });
+
+    btnNext.addEventListener("click", async function() {
+      if (index < perguntas.length - 1) {
+        index++;
+        renderQuestion();
+        return;
+      }
+
+      await submitAnswers();
+    });
+
+    btnRestart.addEventListener("click", function() {
+      for (const k of Object.keys(respostas)) delete respostas[k];
+      index = 0;
+      selectedValue = null;
+
+      hide(tela3);
+      show(tela1);
+
+      progressBar.style.width = "0%";
+      btnNext.innerHTML = 'Responder <i class="fas fa-arrow-right"></i>';
+    });
+  </script>
+</body>
+</html>

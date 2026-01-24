@@ -1,0 +1,693 @@
+<!-- app/templates/estudo/admin/secao_materias.html -->
+{% extends "layout.html" %}
+
+{% block title %}Matérias da Seção "{{ secao.titulo }}" - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .admin-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: #00b4d8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #0084ff;
+        text-decoration: underline;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .secao-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .header-info h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .header-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .independence-notice {
+        background: rgba(0, 180, 216, 0.1);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        text-align: left;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Navegação */
+    .navigation-bar {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .nav-left {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: inherit;
+    }
+
+    .btn-back {
+        background: rgba(108, 117, 125, 0.8);
+        color: white;
+    }
+
+    .btn-back:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-add:hover {
+        background: linear-gradient(135deg, #218838, #1ca085);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Estatísticas */
+    .stats-section {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stats-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #00b4d8;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Container de Matérias */
+    .materias-container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Lista de Matérias */
+    .materias-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .materia-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .materia-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .materia-card.inativa {
+        opacity: 0.6;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .materia-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .materia-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .materia-details {
+        flex: 1;
+    }
+
+    .materia-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .materia-description {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .materia-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-ativa {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-inativa {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+
+    /* Ações */
+    .materia-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-primary {
+        background: #0084ff;
+        color: white;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .btn-primary:hover { background: #0056b3; color: white; }
+    .btn-success:hover { background: #218838; color: white; }
+    .btn-warning:hover { background: #e0a800; color: #333; }
+    .btn-danger:hover { background: #c82333; color: white; }
+
+    /* Estado Vazio */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .empty-subtitle {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 2rem;
+    }
+
+    .empty-action {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .empty-action:hover {
+        background: linear-gradient(135deg, #218838, #1ca085);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .admin-header {
+            padding: 1.5rem;
+        }
+
+        .header-content {
+            flex-direction: column;
+        }
+
+        .header-info h1 {
+            font-size: 1.6rem;
+        }
+
+        .navigation-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .nav-left {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .materias-container {
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .materia-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .materia-actions {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .materia-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .materia-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> › 
+            <a href="{{ url_for('estudo.admin_secoes') }}">Seções</a> › 
+            Matérias da Seção
+        </div>
+        
+        <div class="header-content">
+            <div class="secao-icon" style="background: {{ secao.cor }};">
+                {{ secao.icone }}
+            </div>
+            <div class="header-info">
+                <h1>{{ secao.titulo }}</h1>
+                {% if secao.subtitulo %}
+                    <p class="header-subtitle">{{ secao.subtitulo }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="independence-notice">
+            <strong>🔒 Seção Independente:</strong> 
+            Esta seção possui suas próprias matérias exclusivas. 
+            Cada matéria criada aqui pertence apenas a esta seção e não pode ser compartilhada com outras.
+        </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="navigation-bar">
+        <div class="nav-left">
+            <a href="{{ url_for('estudo.admin_secoes') }}" class="btn btn-back">
+                <span>⬅️</span>
+                <span>Voltar às Seções</span>
+            </a>
+        </div>
+        <a href="{{ url_for('estudo.admin_nova_materia_secao', secao_id=secao.id) }}" class="btn btn-add">
+            <span>➕</span>
+            <span>Nova Matéria Exclusiva</span>
+        </a>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-section">
+        <h3 class="stats-title">
+            <span>📊</span>
+            Estatísticas da Seção
+        </h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ estatisticas.total_materias }}</div>
+                <div class="stat-label">Matérias</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ estatisticas.total_modulos }}</div>
+                <div class="stat-label">Módulos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ estatisticas.total_aulas }}</div>
+                <div class="stat-label">Aulas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ secao.grid_cols }}</div>
+                <div class="stat-label">Colunas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="materias-container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>📚</span>
+                Matérias Exclusivas desta Seção
+            </h2>
+        </div>
+
+        {% if materias %}
+            <div class="materias-grid">
+                {% for materia in materias %}
+                <div class="materia-card {{ 'inativa' if not materia.ativa else '' }}">
+                    <div class="materia-info">
+                        <div class="materia-icon" style="background: {{ materia.cor }};">
+                            {{ materia.icone }}
+                        </div>
+                        <div class="materia-details">
+                            <h3 class="materia-title">{{ materia.nome }}</h3>
+                            {% if materia.descricao %}
+                                <p class="materia-description">{{ materia.descricao }}</p>
+                            {% endif %}
+                            <div class="materia-meta">
+                                <div class="meta-item">
+                                    <span>📊</span>
+                                    <span>Ordem: {{ materia.ordem }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📖</span>
+                                    <span>{{ materia.modulos.count() }} módulos</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>🎓</span>
+                                    {% set total_aulas = 0 %}
+                                    {% for modulo in materia.modulos %}
+                                        {% set total_aulas = total_aulas + modulo.aulas.count() %}
+                                    {% endfor %}
+                                    <span>{{ total_aulas }} aulas</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>🔗</span>
+                                    <span>Exclusiva desta seção</span>
+                                </div>
+                                <div class="status-badge {{ 'status-ativa' if materia.ativa else 'status-inativa' }}">
+                                    <span>{{ '✅' if materia.ativa else '❌' }}</span>
+                                    <span>{{ 'Ativa' if materia.ativa else 'Inativa' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="materia-actions">
+                        <a href="{{ url_for('estudo.materia', materia_id=materia.id) }}" 
+                           class="btn btn-primary btn-sm" 
+                           title="Visualizar matéria">
+                            <span>👁️</span>
+                            <span>Ver</span>
+                        </a>
+                        <a href="{{ url_for('estudo.novo_modulo', materia_id=materia.id) }}" 
+                           class="btn btn-success btn-sm" 
+                           title="Adicionar módulo">
+                            <span>➕</span>
+                            <span>Módulo</span>
+                        </a>
+
+    <form action="{{ url_for('estudo.toggle_materia_ativa', materia_id=materia.id) }}" 
+          method="POST" 
+          style="display: inline;" 
+          onsubmit="return confirm('{{ 'Desativar' if materia.ativa else 'Ativar' }} a matéria \"{{ materia.nome }}\"?')">
+        <button type="submit" 
+                class="btn {{ 'btn-warning' if materia.ativa else 'btn-success' }} btn-sm" 
+                title="{{ 'Desativar matéria' if materia.ativa else 'Ativar matéria' }}">
+            <span>{{ '⏸️' if materia.ativa else '▶️' }}</span>
+            <span>{{ 'Desativar' if materia.ativa else 'Ativar' }}</span>
+        </button>
+    </form>
+
+
+                        <a href="{{ url_for('estudo.editar_materia', materia_id=materia.id) }}" 
+                           class="btn btn-warning btn-sm" 
+                           title="Editar matéria">
+                            <span>✏️</span>
+                            <span>Editar</span>
+                        </a>
+                        <form action="{{ url_for('estudo.excluir_materia', materia_id=materia.id) }}" 
+                              method="POST" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('⚠️ ATENÇÃO: Excluir a matéria \"{{ materia.nome }}\" irá remover permanentemente todos os seus módulos e aulas. Esta ação NÃO pode ser desfeita. Tem certeza?')">
+                            <button type="submit" class="btn btn-danger btn-sm" title="Excluir matéria">
+                                <span>🗑️</span>
+                                <span>Excluir</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h3 class="empty-title">Nenhuma matéria nesta seção</h3>
+                <p class="empty-subtitle">
+                    Esta seção ainda não possui matérias. Crie a primeira matéria exclusiva para começar a organizar o conteúdo.<br>
+                    <strong>Lembre-se:</strong> As matérias criadas aqui pertencem apenas a esta seção.
+                </p>
+                <a href="{{ url_for('estudo.admin_nova_materia_secao', secao_id=secao.id) }}" class="empty-action">
+                    <span>🚀</span>
+                    <span>Criar Primeira Matéria</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Confirmação de exclusão mais detalhada
+function confirmarExclusao(materiaId, nomeMateria, totalModulos, totalAulas) {
+    const mensagem = `⚠️ ATENÇÃO: Excluir a matéria "${nomeMateria}" irá remover permanentemente:\n\n` +
+                    `• ${totalModulos} módulos\n` +
+                    `• ${totalAulas} aulas\n` +
+                    `• Todo o progresso dos estudantes\n\n` +
+                    `Esta ação NÃO pode ser desfeita.\n\n` +
+                    `Tem certeza que deseja continuar?`;
+    
+    return confirm(mensagem);
+}
+
+// Adicionar tooltips informativos
+document.addEventListener('DOMContentLoaded', function() {
+    const exclusiveItems = document.querySelectorAll('[data-exclusive="true"]');
+    exclusiveItems.forEach(item => {
+        item.title = 'Esta matéria pertence exclusivamente a esta seção';
+    });
+});
+</script>
+{% endblock %}

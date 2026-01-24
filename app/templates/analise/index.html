@@ -1,0 +1,692 @@
+{% extends "layout.html" %}
+
+{% block title %}Análise de Desempenho - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .analise {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+    }
+
+    .page-header .lead {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-light);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .stat-card h6 {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Chart Cards */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .chart-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-title i {
+        color: var(--primary);
+    }
+
+    .chart-body {
+        padding: 2rem;
+        min-height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+
+    .empty-state {
+        text-align: center;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--border-light);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h5 {
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Action Cards */
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .action-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .action-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .action-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .action-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .action-card:hover .action-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .action-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .action-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .action-description {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        border: 2px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .analise {
+            padding: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .page-header .lead {
+            font-size: 1.125rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+
+        .actions-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .action-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+        }
+
+        .action-icon i {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+        }
+
+        .chart-header,
+        .chart-body {
+            padding: 1rem;
+        }
+
+        .action-card {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Custom Chart Styles */
+    .chart-container canvas {
+        border-radius: var(--radius);
+    }
+
+    /* Special Stats Colors */
+    .stat-card:nth-child(1)::before {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+
+    .stat-card:nth-child(2)::before {
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    }
+
+    .stat-card:nth-child(3)::before {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .stat-card:nth-child(4)::before {
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+</style>
+
+<div class="analise">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-graph-up-arrow"></i>
+            Análise de Desempenho
+        </h1>
+        <p class="lead">Entenda seus pontos fortes e fracos para direcionar seus estudos com inteligência.</p>
+    </div>
+    
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h6>Simulados Concluídos</h6>
+            <div class="stat-value">{{ simulados_concluidos }}</div>
+            <div class="stat-label">Total realizado</div>
+        </div>
+        <div class="stat-card">
+            <h6>Questões Respondidas</h6>
+            <div class="stat-value">{{ total_questoes }}</div>
+            <div class="stat-label">Total de questões</div>
+        </div>
+        <div class="stat-card">
+            <h6>Acertos</h6>
+            <div class="stat-value">{{ total_acertos }}</div>
+            <div class="stat-label">Questões corretas</div>
+        </div>
+        <div class="stat-card">
+            <h6>Taxa de Acerto</h6>
+            <div class="stat-value">{{ percentual_acertos|round|int }}%</div>
+            <div class="stat-label">Média geral</div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="charts-grid">
+        <!-- Evolução TRI -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">
+                    <i class="bi bi-graph-up"></i>
+                    Evolução da Nota TRI
+                </h5>
+            </div>
+            <div class="chart-body">
+                {% if notas %}
+                    <div class="chart-container">
+                        <canvas id="chartTRI"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-graph-up"></i>
+                        <h5>Nenhum histórico encontrado</h5>
+                        <p>Você ainda não tem histórico de notas TRI.</p>
+                        <a href="{{ url_for('simulados.index') }}" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i>
+                            Fazer Simulado
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Desempenho por Área -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">
+                    <i class="bi bi-pie-chart"></i>
+                    Desempenho por Área
+                </h5>
+            </div>
+            <div class="chart-body">
+                {% if desempenho_areas %}
+                    <div class="chart-container">
+                        <canvas id="chartAreas"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-pie-chart"></i>
+                        <h5>Sem dados por área</h5>
+                        <p>Você ainda não tem dados de desempenho por área.</p>
+                        <a href="{{ url_for('simulados.index') }}" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i>
+                            Fazer Simulado
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Links para Análises Detalhadas -->
+    <div class="actions-grid">
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="bi bi-clipboard-data"></i>
+            </div>
+            <h4 class="action-title">Histórico de Simulados</h4>
+            <p class="action-description">
+                Veja todos os seus simulados realizados com detalhes de desempenho e evolução.
+            </p>
+            <a href="{{ url_for('analise.simulados') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-right"></i>
+                Ver Simulados
+            </a>
+        </div>
+        
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="bi bi-journals"></i>
+            </div>
+            <h4 class="action-title">Desempenho por Área</h4>
+            <p class="action-description">
+                Analise seu desempenho detalhado em cada área do conhecimento do ENEM.
+            </p>
+            <a href="{{ url_for('analise.areas') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-right"></i>
+                Ver por Área
+            </a>
+        </div>
+        
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h4 class="action-title">Relatório de Evolução</h4>
+            <p class="action-description">
+                Visualize sua trajetória de estudos e evolução ao longo do tempo.
+            </p>
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="bi bi-clock"></i>
+                Em breve
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if notas %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuração de cores para tema escuro
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+
+        // Gráfico de evolução TRI
+        const ctxTRI = document.getElementById('chartTRI');
+        if (ctxTRI) {
+            const chartTRI = new Chart(ctxTRI, {
+                type: 'line',
+                data: {
+                    labels: {{ datas|tojson }},
+                    datasets: [{
+                        label: 'Nota TRI',
+                        data: {{ notas|tojson }},
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 1000,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de desempenho por área
+        const ctxAreas = document.getElementById('chartAreas');
+        if (ctxAreas) {
+            const chartAreas = new Chart(ctxAreas, {
+                type: 'doughnut',
+                data: {
+                    labels: [{% for area, dados in desempenho_areas.items() %}'{{ area }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Percentual de Acertos',
+                        data: [{% for area, dados in desempenho_areas.items() %}{{ dados.percentual|round|int }},{% endfor %}],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#00d9ff',
+                            '#10b981',
+                            '#f59e0b'
+                        ],
+                        borderColor: '#111111',
+                        borderWidth: 3,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

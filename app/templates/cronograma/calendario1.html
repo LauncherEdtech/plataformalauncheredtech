@@ -1,0 +1,769 @@
+{% extends "layout.html" %}
+
+{% block title %}Calendário do Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        min-height: 100vh;
+    }
+
+    .calendario-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .calendario-header {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .header-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+    .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(1.1);
+    }
+
+    .current-month {
+        font-size: 1.3rem;
+        font-weight: 600;
+        min-width: 200px;
+        text-align: center;
+    }
+
+    .btn-back {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .calendar-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 25px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .weekday-label {
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.75rem;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+    }
+
+    .calendar-day-cell {
+        aspect-ratio: 1;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 15px;
+        padding: 0.75rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .calendar-day-cell:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(1.05);
+        z-index: 10;
+    }
+
+    .calendar-day-cell.empty {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+    .calendar-day-cell.empty:hover {
+        background: rgba(255, 255, 255, 0.03);
+        transform: none;
+    }
+
+    .calendar-day-cell.today {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.15);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .calendar-day-cell.has-aulas {
+        border-color: rgba(0, 180, 216, 0.5);
+    }
+
+    .calendar-day-cell.completed {
+        border-color: rgba(40, 167, 69, 0.5);
+        background: rgba(40, 167, 69, 0.1);
+    }
+
+    .day-number {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .day-aulas-count {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0.25rem;
+    }
+
+    /* ✅ NOVO: Barra de Progresso */
+    .day-progress-container {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .day-progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 0.25rem;
+    }
+
+    .day-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #11998e, #38ef7d);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .day-progress-text {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+    }
+
+    .day-aulas-indicators {
+        display: flex;
+        gap: 2px;
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+
+    .aula-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .aula-indicator.aula {
+        background: #00b4d8;
+    }
+
+    .aula-indicator.simulado {
+        background: #ffc107;
+    }
+
+    .aula-indicator.redacao {
+        background: #ff6b6b;
+    }
+
+    .aula-indicator.revisao {
+        background: #667eea;
+    }
+
+    .aula-indicator.concluida {
+        background: #28a745;
+    }
+
+    .calendar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 15px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 8px;
+        border: 2px solid;
+    }
+
+    .legend-color.hoje {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.15);
+    }
+
+    .legend-color.tem-aulas {
+        border-color: #00b4d8;
+        background: rgba(0, 180, 216, 0.15);
+    }
+
+    .legend-color.concluido {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.15);
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 1rem;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: linear-gradient(to bottom, #001233, #000000);
+        border-radius: 25px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .modal-close {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .modal-aulas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .modal-aula-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .modal-aula-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-aula-item.concluida {
+        border-color: rgba(40, 167, 69, 0.5);
+        background: rgba(40, 167, 69, 0.05);
+    }
+
+    .aula-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .aula-type-badge.aula {
+        background: rgba(0, 180, 216, 0.2);
+        color: #00b4d8;
+    }
+
+    .aula-type-badge.simulado {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .aula-type-badge.redacao {
+        background: rgba(220, 53, 69, 0.2);
+        color: #ff6b6b;
+    }
+
+    .modal-aula-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-aula-meta {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .modal-aula-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary-small {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .btn-primary-small:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-success-small {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success-small:hover {
+        background: rgba(40, 167, 69, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .calendario-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .calendar-card {
+            padding: 1rem;
+        }
+
+        .calendar-days {
+            gap: 0.25rem;
+        }
+
+        .calendar-day-cell {
+            padding: 0.5rem;
+        }
+
+        .day-number {
+            font-size: 0.9rem;
+        }
+
+        .day-aulas-count {
+            font-size: 0.65rem;
+        }
+
+        .weekday-label {
+            font-size: 0.75rem;
+            padding: 0.5rem;
+        }
+
+        .modal-content {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendario-container">
+    <div class="calendario-header">
+        <h1 class="header-title">📅 Calendário do Cronograma</h1>
+        
+        <div class="header-nav">
+            <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+            <div class="current-month">{{ nome_mes }} {{ ano }}</div>
+            <button class="nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        
+        <a href="{{ url_for('cronograma.index') }}" class="btn-back">
+            <span>←</span>
+            <span>Voltar</span>
+        </a>
+    </div>
+
+    <div class="calendar-card">
+        <div class="calendar-weekdays">
+            <div class="weekday-label">SEG</div>
+            <div class="weekday-label">TER</div>
+            <div class="weekday-label">QUA</div>
+            <div class="weekday-label">QUI</div>
+            <div class="weekday-label">SEX</div>
+            <div class="weekday-label">SÁB</div>
+            <div class="weekday-label">DOM</div>
+        </div>
+
+        <div class="calendar-days">
+            {% for week in calendario %}
+                {% for day in week %}
+                    {% if day == 0 %}
+                    <div class="calendar-day-cell empty"></div>
+                    {% else %}
+                    {% set hoje = (hoje_dia == day and hoje_mes == mes and hoje_ano == ano) %}
+                    {% set tem_aulas = day in itens_por_dia %}
+                    {% set aulas_do_dia = itens_por_dia.get(day, []) %}
+                    {% set concluidas = aulas_do_dia|selectattr('concluido')|list %}
+                    {% set total_aulas = aulas_do_dia|length %}
+                    {% set total_concluidas = concluidas|length %}
+                    {% set progresso_pct = (total_concluidas / total_aulas * 100)|int if total_aulas > 0 else 0 %}
+                    {% set todas_concluidas = tem_aulas and (total_concluidas == total_aulas) %}
+                    
+                    <div class="calendar-day-cell 
+                        {{ 'today' if hoje else '' }}
+                        {{ 'has-aulas' if tem_aulas else '' }}
+                        {{ 'completed' if todas_concluidas else '' }}"
+                        onclick="openDayModal({{ day }})">
+                        
+                        <div class="day-number">{{ day }}</div>
+                        
+                        {% if tem_aulas %}
+                        <div class="day-aulas-count">
+                            {{ total_aulas }} aula{{ 's' if total_aulas > 1 else '' }}
+                        </div>
+                        
+                        <!-- ✅ NOVA: Barra de Progresso -->
+                        <div class="day-progress-container">
+                            <div class="day-progress-bar">
+                                <div class="day-progress-fill" style="width: {{ progresso_pct }}%"></div>
+                            </div>
+                            <div class="day-progress-text">{{ progresso_pct }}%</div>
+                        </div>
+                        
+                        <div class="day-aulas-indicators">
+                            {% for item in aulas_do_dia[:5] %}
+                            <div class="aula-indicator {{ item.tipo_item }} {{ 'concluida' if item.concluido else '' }}"></div>
+                            {% endfor %}
+                            {% if total_aulas > 5 %}
+                            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.6);">+{{ total_aulas - 5 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="calendar-legend">
+            <div class="legend-item">
+                <div class="legend-color hoje"></div>
+                <span>Hoje</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color tem-aulas"></div>
+                <span>Com Aulas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color concluido"></div>
+                <span>100% Concluído</span>
+            </div>
+            <div class="legend-item">
+                <div class="aula-indicator aula" style="width: 15px; height: 15px;"></div>
+                <span>Aula</span>
+            </div>
+            <div class="legend-item">
+                <div class="aula-indicator simulado" style="width: 15px; height: 15px;"></div>
+                <span>Simulado</span>
+            </div>
+            <div class="legend-item">
+                <div class="aula-indicator redacao" style="width: 15px; height: 15px;"></div>
+                <span>Redação</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="dayModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Aulas do Dia</h2>
+            <button class="modal-close" onclick="closeDayModal()">×</button>
+        </div>
+        
+        <div class="modal-aulas-list" id="modalAulasList"></div>
+    </div>
+</div>
+
+<script>
+const itensData = {{ itens_por_dia_json|tojson|safe }};
+const currentMes = {{ mes }};
+const currentAno = {{ ano }};
+
+function changeMonth(direction) {
+    let newMes = currentMes + direction;
+    let newAno = currentAno;
+    
+    if (newMes < 1) {
+        newMes = 12;
+        newAno--;
+    } else if (newMes > 12) {
+        newMes = 1;
+        newAno++;
+    }
+    
+    window.location.href = `/cronograma/calendario?mes=${newMes}&ano=${newAno}`;
+}
+
+function openDayModal(day) {
+    const aulas = itensData[day];
+    
+    if (!aulas || aulas.length === 0) {
+        return;
+    }
+    
+    const modal = document.getElementById('dayModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalList = document.getElementById('modalAulasList');
+    
+    const dataFormatada = new Date(currentAno, currentMes - 1, day).toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    });
+
+    
+    modalTitle.textContent = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
+    
+    modalList.innerHTML = aulas.map(item => `
+        <div class="modal-aula-item ${item.concluido ? 'concluida' : ''}">
+            <div>
+                <span class="aula-type-badge ${item.tipo_item}">
+                    ${item.tipo_item === 'simulado' ? '📝 Simulado' : 
+                      item.tipo_item === 'redacao' ? '✍️ Redação' :
+                      item.tipo_item === 'revisao' ? '🔄 Revisão' : '📖 Aula'}
+                </span>
+                ${item.concluido ? '<span class="aula-type-badge" style="background: rgba(40, 167, 69, 0.2); color: #28a745;">✓ Concluída</span>' : ''}
+            </div>
+            
+            <div class="modal-aula-title">
+                ${item.aula ? item.aula.titulo : item.observacoes || 'Atividade Programada'}
+            </div>
+            
+            <div class="modal-aula-meta">
+                ${item.aula && item.aula.modulo && item.aula.modulo.materia ? `<span>📚 ${item.aula.modulo.materia.nome}</span>` : ''}
+                <span>⏱️ ${item.tempo_previsto} min</span>
+                <span>🕐 ${item.ordem_no_dia}ª do dia</span>
+            </div>
+            
+            <div class="modal-aula-actions">
+                ${!item.concluido ? `
+                    <button class="btn-small btn-success-small" onclick="marcarConcluido(${item.id})">
+                        <span>✓</span>
+                        <span>Concluir</span>
+                    </button>
+                ` : ''}
+                
+                ${item.tipo_item === 'aula' && item.aula ? `
+                    <a href="/estudo/aula/${item.aula.id}" class="btn-small btn-primary-small">
+                        <span>▶</span>
+                        <span>Iniciar</span>
+                    </a>
+                ` : item.tipo_item === 'simulado' ? `
+                    <a href="/simulados/" class="btn-small btn-primary-small">
+                        <span>📝</span>
+                        <span>Fazer Simulado</span>
+                    </a>
+                ` : item.tipo_item === 'redacao' ? `
+                    <a href="/redacao/" class="btn-small btn-primary-small">
+                        <span>✍️</span>
+                        <span>Escrever</span>
+                    </a>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    modal.classList.add('active');
+}
+
+function closeDayModal() {
+    document.getElementById('dayModal').classList.remove('active');
+}
+
+async function marcarConcluido(itemId) {
+    if (!confirm('Marcar esta aula como concluída?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/cronograma/api/marcar_concluido/${itemId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('✅ Aula concluída!', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification('❌ Erro ao marcar como concluída', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showNotification('❌ Erro ao marcar como concluída', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #11998e, #38ef7d)' : 'linear-gradient(135deg, #dc3545, #c82333)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 99999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+document.getElementById('dayModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDayModal();
+    }
+});
+</script>
+{% endblock %}

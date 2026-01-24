@@ -1,0 +1,404 @@
+{% extends "layout.html" %}
+
+{% block title %}Esqueci Minha Senha - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-red: #800000;
+        --primary-dark: #600000;
+        --accent-red: #a00000;
+        --success-green: #28a745;
+        --warning-yellow: #ffc107;
+        --danger-red: #dc3545;
+        --text-light: #ffffff;
+        --text-muted: rgba(255, 255, 255, 0.7);
+        --bg-glass: rgba(255, 255, 255, 0.1);
+        --bg-card: rgba(30, 30, 30, 0.9);
+        --border-glass: rgba(255, 255, 255, 0.2);
+    }
+
+    body {
+        background: linear-gradient(135deg, #800000 0%, #000000 50%, #111111 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .forgot-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .forgot-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-glass);
+        border-radius: 24px;
+        padding: 3rem;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .forgot-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .forgot-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-red), var(--accent-red));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+    }
+
+    .forgot-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .forgot-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 0.75rem;
+    }
+
+    .forgot-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-light);
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: var(--text-light);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-red);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--accent-red) 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(128, 0, 0, 0.4);
+    }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 1rem 2rem;
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: var(--text-light);
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .info-box {
+        background: rgba(23, 162, 184, 0.1);
+        border: 1px solid rgba(23, 162, 184, 0.3);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 1.5rem 0;
+        color: #17a2b8;
+    }
+
+    .info-box i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .security-tips {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .security-tips h6 {
+        color: var(--text-light);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .security-tips ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .security-tips li {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        padding-left: 1.5rem;
+        position: relative;
+    }
+
+    .security-tips li::before {
+        content: '•';
+        color: var(--primary-red);
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+    }
+
+    @media (max-width: 576px) {
+        .forgot-card {
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+        }
+
+        .forgot-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="forgot-container">
+    <div class="forgot-card">
+        <div class="forgot-header">
+            <div class="forgot-icon">
+                <i class="bi bi-shield-lock"></i>
+            </div>
+            <h1 class="forgot-title">Esqueci Minha Senha</h1>
+            <p class="forgot-subtitle">
+                Não se preocupe! Digite seu email e enviaremos instruções para redefinir sua senha.
+            </p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.esqueci_senha') }}" id="forgotForm">
+            <div class="form-group">
+                <label for="email" class="form-label">
+                    <i class="bi bi-envelope me-2"></i>E-mail cadastrado
+                </label>
+                <input type="email" 
+                       class="form-control" 
+                       id="email" 
+                       name="email" 
+                       placeholder="Digite seu email cadastrado"
+                       required 
+                       autofocus
+                       autocomplete="email">
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="bi bi-send me-2"></i>
+                Enviar Instruções
+            </button>
+
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Voltar ao Login
+            </a>
+        </form>
+
+        <div class="info-box">
+            <i class="bi bi-info-circle-fill"></i>
+            <strong>Como funciona:</strong> Você receberá um email com um link seguro para redefinir sua senha. 
+            O link expira em 1 hora por motivos de segurança.
+        </div>
+
+        <div class="security-tips">
+            <h6><i class="bi bi-shield-check me-2"></i>Dicas de Segurança</h6>
+            <ul>
+                <li>Verifique sua caixa de spam se não receber o email</li>
+                <li>O link de reset funciona apenas uma vez</li>
+                <li>Nunca compartilhe seus dados de login</li>
+                <li>Use uma senha forte com pelo menos 8 caracteres</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forgotForm = document.getElementById('forgotForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const emailInput = document.getElementById('email');
+
+    if (forgotForm) {
+        forgotForm.addEventListener('submit', function(e) {
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                e.preventDefault();
+                showNotification('Por favor, digite seu email.', 'warning');
+                emailInput.focus();
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                showNotification('Por favor, digite um email válido.', 'warning');
+                emailInput.focus();
+                return;
+            }
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Enviando...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Email validation on input
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email && !emailRegex.test(email)) {
+                this.style.borderColor = '#dc3545';
+            } else {
+                this.style.borderColor = '';
+            }
+        });
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${getNotificationColor(type)};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+        `;
+        
+        const icon = getNotificationIcon(type);
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+
+    function getNotificationColor(type) {
+        const colors = {
+            'success': 'linear-gradient(135deg, #28a745, #20c997)',
+            'warning': 'linear-gradient(135deg, #ffc107, #fd7e14)',
+            'danger': 'linear-gradient(135deg, #dc3545, #e83e8c)',
+            'info': 'linear-gradient(135deg, #17a2b8, #6f42c1)'
+        };
+        return colors[type] || colors['info'];
+    }
+
+    function getNotificationIcon(type) {
+        const icons = {
+            'success': 'bi bi-check-circle-fill',
+            'warning': 'bi bi-exclamation-triangle-fill',
+            'danger': 'bi bi-x-circle-fill',
+            'info': 'bi bi-info-circle-fill'
+        };
+        return icons[type] || icons['info'];
+    }
+});
+
+// Add notification animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+{% endblock %}

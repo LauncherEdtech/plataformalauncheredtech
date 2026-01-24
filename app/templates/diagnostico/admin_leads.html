@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leads - Diagnóstico ENEM</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --primary:#0062cc;
+      --secondary:#3399ff;
+      --bg:#f4f6f9;
+      --light:#fff;
+      --dark:#212529;
+      --muted:#6c757d;
+      --border:#e9ecef;
+
+      --success:#28a745;
+      --danger:#dc3545;
+    }
+
+    body{
+      background: var(--bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--dark);
+    }
+
+    .header-admin{
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+      margin-bottom: 18px;
+    }
+
+    .header-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-admin h1{
+      margin:0;
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+
+    .header-admin h1 i{ color: var(--primary); }
+
+    .header-admin p{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #e6f7ff;
+      color: var(--primary);
+      border: 1px solid #b3e0ff;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .panel{
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      margin-bottom: 18px;
+    }
+
+    .panel h4{
+      margin:0;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+
+    .panel h4 i{ color: var(--primary); }
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+    }
+
+    .toolbar-left{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .toolbar-right{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .input-search{
+      min-width: 260px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-weight: 700;
+    }
+
+    .select-filter{
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    .btn-soft-primary{
+      background: linear-gradient(to right, var(--secondary), var(--primary));
+      border: none;
+      color: #fff;
+      font-weight: 900;
+      border-radius: 50px;
+      padding: 10px 14px;
+      box-shadow: 0 12px 28px rgba(0,98,204,.18);
+    }
+
+    .btn-soft-secondary{
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--dark);
+      font-weight: 900;
+      border-radius: 50px;
+      padding: 10px 14px;
+    }
+
+    .btn-soft-success{
+      background: rgba(40,167,69,.10);
+      border: 1px solid rgba(40,167,69,.25);
+      color: var(--success);
+      font-weight: 900;
+      border-radius: 50px;
+      padding: 10px 14px;
+    }
+
+    .table thead th{
+      background: #f8fbff;
+      border-bottom: 1px solid var(--border);
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: var(--dark);
+      white-space: nowrap;
+    }
+
+    .table td{
+      vertical-align: middle;
+      font-weight: 600;
+      color: #2b2f33;
+    }
+
+    .badge-soft{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      white-space: nowrap;
+    }
+    .badge-soft.success{ border-color: rgba(40,167,69,.35); color: var(--success); background: rgba(40,167,69,.08); }
+    .badge-soft.danger{ border-color: rgba(220,53,69,.35); color: var(--danger); background: rgba(220,53,69,.10); }
+    .badge-soft.info{ border-color: rgba(0,98,204,.25); color: var(--primary); background: rgba(0,98,204,.08); }
+
+    .wa-link{
+      text-decoration: none;
+      color: var(--success);
+      font-weight: 900;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .wa-link:hover{ text-decoration: underline; }
+
+    .small-muted{
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .row-hidden { display: none !important; }
+
+    @media (max-width: 768px){
+      .input-search{ min-width: 100%; width: 100%; }
+      .toolbar{ gap: 12px; }
+      .toolbar-left, .toolbar-right{ width: 100%; justify-content: space-between; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header-admin">
+    <div class="container">
+      <div class="header-top">
+        <div>
+          <h1><i class="fas fa-users"></i> Leads — Diagnóstico ENEM</h1>
+          <p class="mb-0">Total: <strong id="totalLeads">{{ leads|length }}</strong> leads (mostrando últimos 100)</p>
+        </div>
+        <div class="pill">
+          <i class="fas fa-shield-alt"></i> Admin
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="panel">
+      <h4><i class="fas fa-list"></i> Lista de Leads</h4>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input
+            type="text"
+            id="searchInput"
+            class="input-search"
+            placeholder="Buscar por nome, telefone ou curso..."
+            autocomplete="off"
+          >
+
+          <select id="filtroClique" class="select-filter">
+            <option value="todos">Todos</option>
+            <option value="clicou">Clicou no CTA</option>
+            <option value="nao_clicou">Não clicou</option>
+          </select>
+
+          <select id="ordenacao" class="select-filter">
+            <option value="data_desc">Mais recentes</option>
+            <option value="data_asc">Mais antigos</option>
+            <option value="cliques_desc">Mais cliques</option>
+            <option value="cliques_asc">Menos cliques</option>
+          </select>
+        </div>
+
+        <div class="toolbar-right">
+          <a href="{{ url_for('diagnostico.admin_estatisticas') }}" class="btn btn-soft-secondary">
+            <i class="fas fa-chart-line"></i> Estatísticas
+          </a>
+
+          <button type="button" class="btn btn-soft-success" onclick="exportarCSVFiltrado()">
+            <i class="fas fa-file-csv"></i> Exportar CSV (filtro)
+          </button>
+
+          <a href="{{ url_for('diagnostico.index') }}" class="btn btn-soft-primary">
+            <i class="fas fa-home"></i> Diagnóstico
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-3 small-muted">
+        Visíveis agora: <span id="visibleCount">0</span> leads
+      </div>
+
+      <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle" id="tabelaLeads">
+          <thead>
+            <tr>
+              <th style="width:90px;">ID</th>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>Curso</th>
+              <th>Horário do evento (BR)</th>
+              <th>Tempo gasto</th>
+              <th>CTA</th>
+              <th>Cliques</th>
+              <th>Último clique (BR)</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for lead in leads %}
+              {% set tel_digits = (lead.telefone or '')|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') %}
+
+              {# CSV e exibição não devem usar UTC -> use os campos *_br vindos do SQL #}
+              {% set data_evento_br = lead.data_realizacao_br or '-' %}
+              {% set ultimo_clique_br = lead.data_ultimo_clique_br or '-' %}
+
+              {# tempo_realizado vem em segundos; formatar como "68s", "3min 0s", "18min 42s" #}
+              {% set t = (lead.tempo_realizado or 0) | int %}
+              {% if t < 60 %}
+                {% set tempo_fmt = (t|string) ~ 's' %}
+              {% else %}
+                {% set tempo_fmt = (t // 60)|string ~ 'min ' ~ (t % 60)|string ~ 's' %}
+              {% endif %}
+
+              <tr
+                data-nome="{{ (lead.nome or '')|lower }}"
+                data-curso="{{ (lead.curso_desejado or '')|lower }}"
+                data-telefone="{{ tel_digits }}"
+                data-clicou="{{ '1' if lead.clicou_cta else '0' }}"
+                data-cliques="{{ lead.total_cliques or 0 }}"
+                data-data="{{ lead.data_realizacao_br_sort or '' }}"
+                data-ultimo="{{ lead.data_ultimo_clique_br_sort or '' }}"
+                data-tempo="{{ t }}"
+              >
+                <td><strong>#{{ lead.id }}</strong></td>
+                <td>{{ lead.nome }}</td>
+
+                <td>
+                  {# mensagem pronta #}
+                  {% set msg = "Oi, " ~ (lead.nome or "tudo bem") ~ "! Vi seu Diagnóstico ENEM na Launcher. Você quer que eu te mostre como aplicar isso na prática para " ~ (lead.curso_desejado or "seu curso") ~ "?" %}
+                  <a
+                    class="wa-link"
+                    target="_blank"
+                    rel="noopener"
+                    href="https://wa.me/55{{ tel_digits }}?text={{ msg|urlencode }}"
+                    title="Abrir WhatsApp"
+                  >
+                    <i class="fab fa-whatsapp"></i> {{ lead.telefone }}
+                  </a>
+                </td>
+
+                <td>{{ lead.curso_desejado }}</td>
+
+                <td>{{ data_evento_br }}</td>
+
+                <td>{{ tempo_fmt }}</td>
+
+                <td>
+                  {% if lead.clicou_cta %}
+                    <span class="badge-soft success"><i class="fas fa-check-circle"></i> SIM</span>
+                  {% else %}
+                    <span class="badge-soft danger"><i class="fas fa-times-circle"></i> NÃO</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  <span class="badge-soft info">{{ lead.total_cliques or 0 }}</span>
+                </td>
+
+                <td>{{ ultimo_clique_br }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="small-muted mt-2">
+        Observação: “Horário do evento” e “Último clique” já estão convertidos para Brasília no backend (SQL).
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const filtroClique = document.getElementById('filtroClique');
+    const ordenacao = document.getElementById('ordenacao');
+    const visibleCountEl = document.getElementById('visibleCount');
+
+    function normalizar(str) {
+      return (str || '').toString().toLowerCase().trim();
+    }
+
+    function aplicarFiltros() {
+      const q = normalizar(searchInput.value);
+      const f = filtroClique.value;
+
+      const rows = Array.from(document.querySelectorAll('#tabelaLeads tbody tr'));
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const nome = row.dataset.nome || '';
+        const curso = row.dataset.curso || '';
+        const telefone = row.dataset.telefone || '';
+        const clicou = row.dataset.clicou || '0';
+
+        const bateBusca =
+          !q ||
+          nome.includes(q) ||
+          curso.includes(q) ||
+          telefone.includes(q.replace(/\D/g, ''));
+
+        const bateFiltro =
+          f === 'todos' ||
+          (f === 'clicou' && clicou === '1') ||
+          (f === 'nao_clicou' && clicou === '0');
+
+        const show = bateBusca && bateFiltro;
+        row.classList.toggle('row-hidden', !show);
+
+        if (show) visibleCount++;
+      });
+
+      visibleCountEl.textContent = String(visibleCount);
+      aplicarOrdenacao();
+    }
+
+    function aplicarOrdenacao() {
+      const tbody = document.querySelector('#tabelaLeads tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      const visiveis = rows.filter(r => !r.classList.contains('row-hidden'));
+      const ocultos  = rows.filter(r => r.classList.contains('row-hidden'));
+
+      const mode = ordenacao.value;
+
+      visiveis.sort((a, b) => {
+        const da = a.dataset.data || '';
+        const db = b.dataset.data || '';
+        const ua = a.dataset.ultimo || '';
+        const ub = b.dataset.ultimo || '';
+        const ca = parseInt(a.dataset.cliques || '0', 10);
+        const cb = parseInt(b.dataset.cliques || '0', 10);
+        const ta = parseInt(a.dataset.tempo || '0', 10);
+        const tb = parseInt(b.dataset.tempo || '0', 10);
+
+        if (mode === 'data_desc') return db.localeCompare(da);
+        if (mode === 'data_asc')  return da.localeCompare(db);
+        if (mode === 'cliques_desc') return cb - ca;
+        if (mode === 'cliques_asc')  return ca - cb;
+
+        // opcional: você pode adicionar uma opção de ordenação por tempo depois
+        // if (mode === 'tempo_desc') return tb - ta;
+        // if (mode === 'tempo_asc') return ta - tb;
+
+        // fallback
+        return ub.localeCompare(ua);
+      });
+
+      tbody.innerHTML = '';
+      [...visiveis, ...ocultos].forEach(r => tbody.appendChild(r));
+    }
+
+    function exportarCSVFiltrado() {
+      const table = document.getElementById('tabelaLeads');
+      const rows = Array.from(table.querySelectorAll('tbody tr'))
+        .filter(r => !r.classList.contains('row-hidden'));
+
+      let csv = [];
+
+      // Headers
+      const headers = [];
+      table.querySelectorAll('thead th').forEach(th => headers.push(th.textContent.trim()));
+      csv.push(headers.join(','));
+
+      // Rows (visíveis) - já com horário BR e tempo formatado, sem UTC
+      rows.forEach(tr => {
+        const cols = Array.from(tr.querySelectorAll('td')).map(td => {
+          const text = td.textContent.trim().replace(/\s+/g, ' ');
+          return '"' + text.replace(/"/g, '""') + '"';
+        });
+        csv.push(cols.join(','));
+      });
+
+      const csvContent = csv.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'leads_diagnostico_filtrado_BR_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.click();
+    }
+
+    searchInput.addEventListener('input', aplicarFiltros);
+    filtroClique.addEventListener('change', aplicarFiltros);
+    ordenacao.addEventListener('change', aplicarOrdenacao);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      aplicarFiltros();
+    });
+  </script>
+</body>
+</html>

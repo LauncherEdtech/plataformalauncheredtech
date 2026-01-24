@@ -1,0 +1,794 @@
+<!-- app/templates/perfil/index.html -->
+{% extends "layout.html" %}
+
+{% block title %}Meu Perfil - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .perfil-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header do Perfil */
+    .perfil-header {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .perfil-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .avatar-container {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 800;
+        color: white;
+        border: 4px solid var(--accent);
+        box-shadow: 0 8px 32px rgba(0, 217, 255, 0.3);
+        position: relative;
+    }
+
+    .avatar::after {
+        content: '';
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        background: var(--success);
+        border-radius: 50%;
+        border: 3px solid var(--surface);
+    }
+
+    .user-info h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .user-info p {
+        color: var(--text-muted);
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .badge-item {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--border-light);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    /* Main Content Cards */
+    .content-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .card-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.6;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header h3 i {
+        color: var(--accent);
+        font-size: 1.25rem;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* Produtos Resgatados */
+    .product-item {
+        background: var(--surface-light);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--accent);
+        transition: all 0.3s ease;
+    }
+
+    .product-item:hover {
+        background: rgba(0, 217, 255, 0.05);
+        border-left-color: var(--primary);
+    }
+
+    .product-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .product-date {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .product-price {
+        background: var(--success);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Sidebar Cards */
+    .sidebar-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    /* Sequência de Estudo */
+    .streak-card {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .streak-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .streak-label {
+        font-size: 1.125rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    /* Conquistas */
+    .achievement-badge {
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        color: #1a1a1a;
+        padding: 0.75rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0.5rem 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .achievement-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    }
+
+    /* Progresso por Matéria */
+    .progress-item {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-name {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .progress-percentage {
+        font-weight: 600;
+        color: var(--accent);
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        background: var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        border-radius: 10px;
+        transition: width 0.8s ease;
+    }
+
+    .progress-meta {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Botões */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-1px);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .perfil-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .avatar-container {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .user-info h1 {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .stat-card:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
+<div class="perfil-container">
+    <!-- Header do Perfil -->
+    <div class="perfil-header">
+        <div class="avatar-container">
+            <div class="avatar">
+                {{ (current_user.nome_completo or current_user.username)[0].upper() }}
+            </div>
+            <div class="user-info">
+                <h1>{{ current_user.nome_completo or current_user.username }}</h1>
+                <p>
+                    <i class="bi bi-envelope"></i>
+                    {{ current_user.email }}
+                </p>
+                <p>
+                    <i class="bi bi-calendar-check"></i>
+                    Membro desde {{ current_user.data_registro.strftime('%B de %Y') if current_user.data_registro else 'N/A' }}
+                </p>
+            </div>
+        </div>
+        
+        <div class="user-badges">
+            {% if aulas_concluidas > 0 %}
+            <div class="badge-item">
+                <i class="bi bi-star-fill"></i>
+                Estudante Ativo
+            </div>
+            {% endif %}
+            
+            {% if posicao_ranking != 'N/A' and posicao_ranking <= 10 %}
+            <div class="badge-item">
+                <i class="bi bi-trophy-fill"></i>
+                Top 10 Ranking
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estatísticas Principais -->
+    <div class="stats-grid">
+        <!-- XP Total -->
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div class="stat-value">{{ xp_total or 0 }}</div>
+            <div class="stat-label">XP Total Acumulado</div>
+        </div>
+
+        <!-- Diamantes -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="bi bi-coin"></i>
+            </div>
+            <div class="stat-value">{{ diamantes or 0 }}</div>
+            <div class="stat-label"> Launcher Coins Disponíveis</div>
+        </div>
+
+        <!-- Posição Ranking -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ffd700, #f59e0b);">
+                <i class="bi bi-trophy-fill" style="color: #1a1a1a;"></i>
+            </div>
+            <div class="stat-value">#{{ posicao_ranking }}</div>
+            <div class="stat-label">Posição no Ranking</div>
+        </div>
+
+        <!-- Aulas Concluídas -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="bi bi-book-fill"></i>
+            </div>
+            <div class="stat-value">{{ aulas_concluidas or 0 }}</div>
+            <div class="stat-label">Aulas Concluídas</div>
+        </div>
+
+        <!-- Tempo de Estudo -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+            <div class="stat-value">{{ tempo_estudo_total or '0h' }}</div>
+            <div class="stat-label">Tempo Total de Estudo</div>
+        </div>
+
+        <!-- Simulados Feitos -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="bi bi-clipboard-check-fill"></i>
+            </div>
+            <div class="stat-value">{{ simulados_realizados or 0 }}</div>
+            <div class="stat-label">Simulados Realizados</div>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <!-- Produtos Resgatados -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="bi bi-bag-check"></i>
+                        Produtos Resgatados
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if produtos_resgatados %}
+                        {% for produto in produtos_resgatados %}
+                        <div class="product-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="product-name">{{ produto.nome }}</div>
+                                    <div class="product-date">{{ produto.data_resgate.strftime('%d/%m/%Y') }}</div>
+                                </div>
+                                <div class="product-price">
+                                    <i class="bi bi-gem"></i>
+                                    {{ produto.preco }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>Ainda não resgatou nenhum produto na loja</p>
+                            <a href="{{ url_for('shop.index') }}" class="btn btn-primary">
+                                <i class="bi bi-shop"></i>
+                                Visitar Loja
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sequência de Estudo -->
+            <div class="streak-card">
+                <div class="streak-number">{{ sequencia_dias or 0 }}</div>
+                <div class="streak-label">
+                    <i class="bi bi-fire"></i>
+                    Dias Consecutivos
+                </div>
+            </div>
+
+            <!-- Conquistas -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="bi bi-award"></i>
+                        Conquistas
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if aulas_concluidas > 0 %}
+                    <div class="achievement-badge">
+                        <i class="bi bi-star-fill"></i>
+                        Primeira Aula
+                    </div>
+                    {% endif %}
+                    
+                    {% if diamantes >= 100 %}
+                    <div class="achievement-badge">
+                        <i class="bi bi-gem"></i>
+                        100 Diamantes
+                    </div>
+                    {% endif %}
+                    
+                    {% if sequencia_dias >= 7 %}
+                    <div class="achievement-badge">
+                        <i class="bi bi-fire"></i>
+                        7 Dias Seguidos
+                    </div>
+                    {% endif %}
+                    
+                    {% if posicao_ranking != 'N/A' and posicao_ranking <= 10 %}
+                    <div class="achievement-badge">
+                        <i class="bi bi-trophy-fill"></i>
+                        Top 10
+                    </div>
+                    {% endif %}
+                    
+                    {% if not (aulas_concluidas or diamantes >= 100 or sequencia_dias >= 7) %}
+                    <div class="empty-state">
+                        <i class="bi bi-trophy"></i>
+                        <p>Continue estudando para desbloquear conquistas!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Progresso por Matéria -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="bi bi-graph-up"></i>
+                        Progresso por Matéria
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if progresso_materias %}
+                        {% for materia in progresso_materias %}
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span class="progress-name">{{ materia.nome }}</span>
+                                <span class="progress-percentage">{{ materia.percentual }}%</span>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill" style="width: {{ materia.percentual }}%"></div>
+                            </div>
+                            <div class="progress-meta">
+                                {{ materia.aulas_concluidas }}/{{ materia.total_aulas }} aulas
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-book"></i>
+                            <p>Comece a estudar para ver seu progresso!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Animação das barras de progresso
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const width = entry.target.style.width;
+                entry.target.style.width = '0';
+                setTimeout(() => {
+                    entry.target.style.width = width;
+                }, 300);
+            }
+        });
+    });
+    
+    progressBars.forEach(bar => observer.observe(bar));
+});
+</script>
+{% endblock %}

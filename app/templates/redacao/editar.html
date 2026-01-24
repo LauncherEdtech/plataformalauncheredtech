@@ -1,0 +1,569 @@
+<!-- app/templates/redacao/editar.html -->
+{% extends "layout.html" %}
+
+{% block title %}Editar Redação - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        animation: fadeInDown 0.6s ease-out;
+    }
+    
+    .submission-container {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 2rem;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+    
+    @media (max-width: 992px) {
+        .submission-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .card {
+        background: linear-gradient(145deg, var(--card-bg) 0%, var(--primary-dark) 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+    
+    .card-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+    }
+    
+    .card-header h3 i {
+        margin-right: 0.75rem;
+        color: var(--accent);
+        font-size: 1.4rem;
+    }
+    
+    .card-content {
+        padding: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    .form-group label .optional {
+        font-weight: 400;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-left: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--primary-dark);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(108, 93, 211, 0.15);
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-secondary);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 300px;
+        line-height: 1.6;
+    }
+    
+    .character-counter {
+        margin-top: 0.75rem;
+        text-align: right;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .character-counter.warning {
+        color: var(--warning);
+    }
+    
+    .character-counter.danger {
+        color: var(--danger);
+    }
+    
+    .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .editor-toolbar {
+        background: var(--primary);
+        border-radius: 8px 8px 0 0;
+        border: 2px solid var(--border-color);
+        border-bottom: none;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .editor-toolbar button {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    
+    .editor-toolbar button:hover {
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+    
+    .editor-toolbar .spacer {
+        display: inline-block;
+        width: 1px;
+        height: 20px;
+        background-color: var(--border-color);
+        margin: 0 0.5rem;
+        vertical-align: middle;
+    }
+    
+    .textarea-container {
+        position: relative;
+    }
+    
+    .textarea-container .form-control {
+        border-radius: 0 0 8px 8px;
+        border-top: none;
+    }
+    
+    .counter {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: var(--card-bg);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    
+    .counter.text-warning {
+        color: var(--warning);
+    }
+    
+    .counter.text-danger {
+        color: var(--danger);
+    }
+    
+    .alert {
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        border: 1px solid;
+        animation: slideInDown 0.3s ease-out;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, rgba(255, 184, 77, 0.1) 0%, var(--card-bg) 100%);
+        border-color: var(--warning);
+        color: var(--text-primary);
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, rgba(0, 183, 255, 0.1) 0%, var(--card-bg) 100%);
+        border-color: var(--info);
+        color: var(--text-primary);
+    }
+    
+    .alert i {
+        font-size: 1.25rem;
+        margin-top: 0.25rem;
+    }
+
+    .alert-warning i {
+        color: var(--warning);
+    }
+
+    .alert-info i {
+        color: var(--info);
+    }
+    
+    .alert-content {
+        flex: 1;
+    }
+    
+    .alert h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .alert p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .info-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-section h4 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-section h4 i {
+        color: var(--accent);
+    }
+    
+    .info-section p {
+        margin: 0 0 1rem 0;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+    
+    .tips-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .tips-list li {
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+    }
+    
+    .tips-list li:last-child {
+        margin-bottom: 0;
+    }
+    
+    .tips-list li strong {
+        color: var(--accent-light);
+    }
+    
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Editar Redação</h1>
+        <p class="page-subtitle">Atualize sua redação e reenvie para nova avaliação</p>
+    </div>
+    <a href="{{ url_for('redacao.visualizar', redacao_id=redacao.id) }}" class="btn btn-outline-light">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-content">
+        <h5 class="card-title">Atenção</h5>
+        <p>
+            Ao editar e reenviar sua redação, ela será reavaliada. Sua avaliação anterior 
+            será substituída pela nova.
+        </p>
+        <p>
+            <strong>Dica:</strong> Use o feedback recebido para melhorar seu texto.
+        </p>
+    </div>
+</div>
+
+<!-- Aviso sobre título opcional -->
+<div class="alert alert-info" role="alert">
+    <i class="fas fa-info-circle"></i>
+    <div class="alert-content">
+        <h4>Título Opcional</h4>
+        <p>Assim como no ENEM, o título é opcional em sua redação. Você pode deixar em branco se preferir focar apenas no texto dissertativo-argumentativo.</p>
+    </div>
+</div>
+
+<div class="submission-container">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-edit"></i> Editar e Reenviar Redação</h3>
+        </div>
+        <div class="card-content">
+            <form method="POST" class="submission-form" id="redacaoForm">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="titulo">Título da sua redação <span class="optional">(opcional)</span>:</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                  value="{{ redacao.titulo or '' }}" placeholder="Digite um título criativo para sua redação (opcional)">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="tema">Tema <span class="optional">(opcional)</span>:</label>
+                            <input type="text" class="form-control" id="tema" name="tema" 
+                                  value="{{ redacao.tema or '' }}" placeholder="Tema da redação (se houver)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="conteudo">Redação <span style="color: var(--danger);">*</span>:</label>
+                    
+                    <div class="editor-toolbar">
+                        <button type="button" onclick="formatText('bold')" title="Negrito">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button type="button" onclick="formatText('italic')" title="Itálico">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button type="button" onclick="formatText('underline')" title="Sublinhado">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                        <span class="spacer"></span>
+                        <button type="button" onclick="insertParagraph()" title="Novo parágrafo">
+                            <i class="fas fa-paragraph"></i> Parágrafo
+                        </button>
+                        <button type="button" onclick="checkSpelling()" title="Verificar ortografia">
+                            <i class="fas fa-spell-check"></i> Verificar Ortografia
+                        </button>
+                    </div>
+                    
+                    <div class="textarea-container">
+                        <textarea class="form-control" id="conteudo" name="conteudo" rows="16" required
+                                  placeholder="Escreva sua redação aqui...">{{ redacao.conteudo }}</textarea>
+                        <div class="counter" id="charCounter">0 caracteres</div>
+                    </div>
+                    <div class="form-text text-muted">Sua redação deve ter pelo menos 500 caracteres. Redações típicas do ENEM têm entre 2500 e 3000 caracteres.</div>
+                </div>
+
+                <div class="alert alert-warning" role="alert" id="warningBox" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="alert-content">
+                        <h4>Atenção</h4>
+                        <p id="warningMessage"></p>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <a href="{{ url_for('redacao.visualizar', redacao_id=redacao.id) }}" class="btn btn-outline-light">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        <i class="fas fa-save"></i> Salvar e Enviar para Avaliação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card info-card">
+        <div class="card-header">
+            <h3><i class="fas fa-info-circle"></i> Dicas de Edição</h3>
+        </div>
+        <div class="card-content">
+            <div class="info-section">
+                <h4><i class="fas fa-edit"></i> Como melhorar sua redação?</h4>
+                <p>Use o feedback recebido anteriormente para identificar pontos de melhoria em sua redação. Foque especialmente nas competências que tiveram menor pontuação.</p>
+            </div>
+            
+            <div class="info-section">
+                <h4><i class="fas fa-list-check"></i> Pontos importantes para revisar:</h4>
+                <ul class="tips-list">
+                    <li><strong>Estrutura:</strong> Verifique se sua redação tem introdução, desenvolvimento e conclusão bem definidos</li>
+                    <li><strong>Argumentação:</strong> Certifique-se de que seus argumentos estão claros e bem fundamentados</li>
+                    <li><strong>Coesão:</strong> Use conectivos adequados para ligar as ideias</li>
+                    <li><strong>Proposta:</strong> Sua proposta de intervenção deve ser detalhada e viável</li>
+                    <li><strong>Norma culta:</strong> Revise a gramática, ortografia e pontuação</li>
+                    <li><strong>Tema:</strong> Mantenha-se sempre dentro do tema proposto</li>
+                    <li><strong>Título:</strong> Se optar por usar, certifique-se de que seja pertinente ao tema</li>
+                </ul>
+            </div>
+            
+            <div class="info-section">
+                <h4><i class="fas fa-lightbulb"></i> Estratégias de revisão:</h4>
+                <ul class="tips-list">
+                    <li>Leia sua redação em voz alta para identificar problemas de fluidez</li>
+                    <li>Verifique se cada parágrafo desenvolve uma ideia principal</li>
+                    <li>Confirme se há exemplos e dados que sustentem seus argumentos</li>
+                    <li>Revise se a conclusão retoma a tese e apresenta solução viável</li>
+                    <li>O título (se usado) deve ser conciso e relacionado ao tema central</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos do formulário
+        const textArea = document.getElementById('conteudo');
+        const charCounter = document.getElementById('charCounter');
+        const warningBox = document.getElementById('warningBox');
+        const warningMessage = document.getElementById('warningMessage');
+        const submitButton = document.getElementById('submitButton');
+        const form = document.getElementById('redacaoForm');
+        
+        // Contador de caracteres
+        function updateCounter() {
+            const length = textArea.value.length;
+            charCounter.textContent = length + ' caracteres';
+            
+            if (length < 500) {
+                charCounter.className = 'counter text-danger';
+                warningBox.style.display = 'block';
+                warningMessage.textContent = 'Sua redação precisa ter pelo menos 500 caracteres para ser enviada.';
+                submitButton.disabled = true;
+            } else if (length > 4000) {
+                charCounter.className = 'counter text-warning';
+                warningBox.style.display = 'block';
+                warningMessage.textContent = 'Sua redação está muito longa. O ideal é entre 2500 e 3000 caracteres.';
+                submitButton.disabled = false;
+            } else {
+                charCounter.className = 'counter';
+                warningBox.style.display = 'none';
+                submitButton.disabled = false;
+            }
+        }
+        
+        textArea.addEventListener('input', updateCounter);
+        
+        // Funções do editor
+        window.formatText = function(format) {
+            alert('Em um editor real, esta função aplicaria o formato: ' + format);
+        };
+        
+        window.insertParagraph = function() {
+            const curPos = textArea.selectionStart;
+            const textBefore = textArea.value.substring(0, curPos);
+            const textAfter = textArea.value.substring(curPos);
+            
+            textArea.value = textBefore + "\n\n" + textAfter;
+            textArea.focus();
+            textArea.selectionStart = curPos + 2;
+            textArea.selectionEnd = curPos + 2;
+            
+            updateCounter();
+        };
+        
+        window.checkSpelling = function() {
+            alert('Esta função verificaria a ortografia do texto (simulação).');
+        };
+        
+        // Controle do envio do formulário
+        form.addEventListener('submit', function(e) {
+            const length = textArea.value.length;
+            
+            if (length < 500) {
+                e.preventDefault();
+                alert('Sua redação precisa ter pelo menos 500 caracteres para ser enviada.');
+                return false;
+            }
+            
+            if (!confirm('Deseja salvar as alterações e enviar para reavaliação? A avaliação anterior será substituída.')) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Exibir mensagem de carregamento
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        });
+        
+        // Inicializar contador na carga da página
+        updateCounter();
+    });
+</script>
+{% endblock %}

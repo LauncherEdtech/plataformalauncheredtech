@@ -1,0 +1,19 @@
+{# === SEÇÕES DE MATÉRIAS CRIADAS PELO ADMIN === #}
+{% for s, itens in secoes_materias %}
+  <div class="section-header" style="margin-top:32px;display:flex;justify-content:space-between;align-items:center;">
+    <h2>{{ s.icone or '🧩' }} {{ s.titulo }}</h2>
+  </div>
+
+  <div class="content-grid" style="display:grid;grid-template-columns:repeat({{ s.grid_cols or 4 }}, minmax(0,1fr));gap:12px;">
+    {% for it in itens %}
+      {% set m = it.materia %}
+      <a href="{{ url_for('estudo.materia', materia_id=m.id) }}" class="subject-card" style="text-decoration:none;color:inherit;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+        <img src="{{ it.imagem_url or m.imagem_url }}" alt="" style="width:100%;height:160px;object-fit:cover;">
+        <div style="padding:10px;">
+          <div style="font-weight:700;">{{ m.icone or '📚' }} {{ it.titulo_override or m.nome }}</div>
+          {% if it.badge %}<span class="badge bg-danger" style="margin-top:6px;">{{ it.badge }}</span>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endfor %}

@@ -1,0 +1,982 @@
+{% extends "layout.html" %}
+
+{% block title %}Desempenho Detalhado - Simulado - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .desempenho-detalhado {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+    }
+
+    .back-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-1px);
+    }
+
+    /* Simulado Info Card */
+    .simulado-info {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .simulado-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .simulado-content {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .simulado-details h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .simulado-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .meta-item i {
+        color: var(--accent);
+        width: 16px;
+    }
+
+    .nota-tri-display {
+        text-align: center;
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem 1.5rem;
+        min-width: 180px;
+    }
+
+    .nota-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .nota-label {
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.875rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out calc(0.2s + var(--delay, 0s)) both;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-light);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .stat-card:nth-child(1)::before {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+
+    .stat-card:nth-child(2)::before {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .stat-card:nth-child(3)::before {
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    }
+
+    .stat-card:nth-child(4)::before {
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+
+    .stat-card h6 {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .chart-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-title i {
+        color: var(--primary);
+    }
+
+    .chart-body {
+        padding: 2rem;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 250px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        margin-bottom: 2rem;
+        margin-top: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .section-title i {
+        color: var(--accent);
+    }
+
+    /* Detail Cards */
+    .details-grid {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .details-grid-areas {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+
+    .details-grid-difficulty {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .detail-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.5s + var(--delay, 0s)) both;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .detail-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .detail-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .detail-badge {
+        background: var(--primary);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .detail-body {
+        padding: 1.5rem;
+    }
+
+    .detail-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: var(--text-muted);
+    }
+
+    .detail-stat-value {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .progress-bar-custom {
+        width: 100%;
+        height: 12px;
+        background: var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 1s ease-out;
+        position: relative;
+    }
+
+    .progress-fill-success {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .progress-fill-warning {
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+
+    .progress-fill-danger {
+        background: linear-gradient(90deg, var(--danger), #dc2626);
+    }
+
+    .detail-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Questions Table */
+    .questions-section {
+        animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .questions-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .questions-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .questions-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .questions-title i {
+        color: var(--primary);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .questions-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .questions-table th,
+    .questions-table td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .questions-table th {
+        background: #0a0a0a;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .questions-table td {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .questions-table tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .questions-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: var(--success);
+        color: white;
+    }
+
+    .badge-warning {
+        background: var(--warning);
+        color: #000;
+    }
+
+    .badge-danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    .badge-muted {
+        background: var(--secondary);
+        color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .desempenho-detalhado {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .simulado-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .nota-tri-display {
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .details-grid-areas,
+        .details-grid-difficulty {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-header {
+            padding: 1rem;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .detail-body {
+            padding: 1rem;
+        }
+
+        .questions-table th,
+        .questions-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .simulado-info {
+            padding: 1.5rem;
+        }
+
+        .simulado-details h3 {
+            font-size: 1.5rem;
+        }
+
+        .nota-value {
+            font-size: 2.5rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+        }
+
+        .chart-body {
+            padding: 1rem;
+            min-height: 250px;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .questions-table {
+            font-size: 0.8rem;
+        }
+
+        .questions-table th,
+        .questions-table td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+<div class="desempenho-detalhado">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-graph-up"></i>
+            Análise Detalhada de Desempenho
+        </h1>
+        <a href="{{ url_for('analise.simulados') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para Simulados
+        </a>
+    </div>
+    
+    <!-- Simulado Info -->
+    <div class="simulado-info">
+        <div class="simulado-content">
+            <div class="simulado-details">
+                <h3>{{ simulado.titulo }}</h3>
+                <div class="simulado-meta">
+                    <div class="meta-item">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Realizado em {{ simulado.data_realizado.strftime('%d/%m/%Y às %H:%M') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-stopwatch"></i>
+                        <span>Tempo total: {{ simulado.tempo_realizado }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nota-tri-display">
+                <div class="nota-value">{{ simulado.nota_tri|int }}</div>
+                <div class="nota-label">Nota TRI</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card" style="--delay: 0s">
+            <h6>Questões Respondidas</h6>
+            <div class="stat-value">{{ total_questoes }}</div>
+        </div>
+        <div class="stat-card" style="--delay: 0.1s">
+            <h6>Acertos</h6>
+            <div class="stat-value">{{ total_acertos }}</div>
+        </div>
+        <div class="stat-card" style="--delay: 0.2s">
+            <h6>Percentual de Acertos</h6>
+            <div class="stat-value">{{ total_percentual|round|int }}%</div>
+        </div>
+        <div class="stat-card" style="--delay: 0.3s">
+            <h6>Nota Média</h6>
+            <div class="stat-value">{% if notas|length > 0 %}{{ (notas|map('float')|sum / notas|length)|round|int }}{% else %}0{% endif %}</div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="charts-grid">
+        <!-- Desempenho por Área -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">
+                    <i class="bi bi-pie-chart"></i>
+                    Desempenho por Área
+                </h5>
+            </div>
+            <div class="chart-body">
+                <div class="chart-container">
+                    <canvas id="chartAreas"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Desempenho por Dificuldade -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">
+                    <i class="bi bi-bar-chart-steps"></i>
+                    Desempenho por Dificuldade
+                </h5>
+            </div>
+            <div class="chart-body">
+                <div class="chart-container">
+                    <canvas id="chartDificuldades"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detalhes por Área -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-journals"></i>
+            Detalhes por Área
+        </h2>
+    </div>
+    <div class="details-grid details-grid-areas">
+        {% for area_nome, area_dados in areas.items() %}
+        <div class="detail-card" style="--delay: {{ loop.index0 * 0.1 }}s">
+            <div class="detail-header">
+                <h5 class="detail-title">{{ area_nome }}</h5>
+                <span class="detail-badge">{{ area_dados.percentual|round|int }}%</span>
+            </div>
+            <div class="detail-body">
+                <div class="detail-stat">
+                    <span>Acertos:</span>
+                    <span class="detail-stat-value">{{ area_dados.acertos }} de {{ area_dados.total }}</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill progress-fill-success" style="width: {{ area_dados.percentual }}%;"></div>
+                </div>
+                
+                <div class="detail-meta">
+                    <span>Média: {% if area_dados.notas|length > 0 %}{{ (area_dados.notas|sum / area_dados.notas|length)|round(2) }}{% else %}0.0{% endif %}</span>
+                    <span>Total: {{ area_dados.total }} questões</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Detalhes por Dificuldade -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-bar-chart-steps"></i>
+            Detalhes por Dificuldade
+        </h2>
+    </div>
+    <div class="details-grid details-grid-difficulty">
+        {% for dif_nome, dif_dados in dificuldades.items() %}
+        <div class="detail-card" style="--delay: {{ loop.index0 * 0.1 }}s">
+            <div class="detail-header">
+                <h5 class="detail-title">{{ dif_nome }}</h5>
+                <span class="detail-badge">{{ dif_dados.percentual|round|int }}%</span>
+            </div>
+            <div class="detail-body">
+                <div class="detail-stat">
+                    <span>Acertos:</span>
+                    <span class="detail-stat-value">{{ dif_dados.acertos }} de {{ dif_dados.total }}</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill 
+                              {% if dif_nome == 'Fácil' %}progress-fill-success
+                              {% elif dif_nome == 'Média' %}progress-fill-warning
+                              {% else %}progress-fill-danger{% endif %}" 
+                         style="width: {{ dif_dados.percentual }}%;"></div>
+                </div>
+                
+                <div class="detail-meta">
+                    <span>Média: {% if dif_dados.notas|length > 0 %}{{ (dif_dados.notas|sum / dif_dados.notas|length)|round(2) }}{% else %}0.0{% endif %}</span>
+                    <span>Total: {{ dif_dados.total }} questões</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Lista de Questões -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-list-check"></i>
+            Detalhes por Questão
+        </h2>
+    </div>
+    <div class="questions-section">
+        <div class="questions-card">
+            <div class="questions-header">
+                <h5 class="questions-title">
+                    <i class="bi bi-table"></i>
+                    Questões do Simulado
+                </h5>
+            </div>
+            <div class="table-container">
+                <table class="questions-table">
+                    <thead>
+                        <tr>
+                            <th>Questão</th>
+                            <th>Área</th>
+                            <th>Dificuldade</th>
+                            <th>Sua Resposta</th>
+                            <th>Resposta Correta</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for questao in questoes_detalhes %}
+                        <tr>
+                            <td>{{ questao.numero }}</td>
+                            <td>{{ questao.area }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if questao.dificuldade == 'Fácil' %}badge-success
+                                    {% elif questao.dificuldade == 'Média' %}badge-warning
+                                    {% else %}badge-danger{% endif %}">
+                                    {{ questao.dificuldade }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if questao.resposta_usuario %}
+                                    {{ questao.resposta_usuario }}
+                                {% else %}
+                                    <span class="badge badge-muted">Em branco</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ questao.resposta_correta }}</td>
+                            <td>
+                                {% if questao.acertou %}
+                                    <span class="badge badge-success">Acerto</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Erro</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuração de cores para tema escuro
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+
+        // Gráfico de desempenho por área
+        const ctxAreas = document.getElementById('chartAreas');
+        if (ctxAreas) {
+            const chartAreas = new Chart(ctxAreas, {
+                type: 'doughnut',
+                data: {
+                    labels: [{% for area_nome, area_dados in areas.items() %}'{{ area_nome }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Percentual de Acertos',
+                        data: [{% for area_nome, area_dados in areas.items() %}{{ area_dados.percentual|round|int }},{% endfor %}],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#00d9ff', 
+                            '#10b981',
+                            '#f59e0b'
+                        ],
+                        borderColor: '#111111',
+                        borderWidth: 3,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de desempenho por dificuldade
+        const ctxDif = document.getElementById('chartDificuldades');
+        if (ctxDif) {
+            const chartDif = new Chart(ctxDif, {
+                type: 'bar',
+                data: {
+                    labels: [{% for dif_nome, dif_dados in dificuldades.items() %}'{{ dif_nome }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Percentual de Acertos',
+                        data: [{% for dif_nome, dif_dados in dificuldades.items() %}{{ dif_dados.percentual|round|int }},{% endfor %}],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderColor: [
+                            '#059669',
+                            '#d97706',
+                            '#dc2626'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

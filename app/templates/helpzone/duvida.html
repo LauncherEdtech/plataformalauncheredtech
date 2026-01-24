@@ -1,0 +1,1126 @@
+<!-- app/templates/helpzone/duvida.html -->
+<!-- Autor: Desenvolvimento Plataforma Launcher -->
+
+{% extends "layout.html" %}
+
+{% block title %}{{ duvida.titulo }} - Help Zone - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #800000;
+        --secondary-color: #500000;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --hover-color: #a00000;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), #a00000);
+        --gradient-success: linear-gradient(135deg, #28a745, #20c997);
+        --gradient-warning: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+    
+    .duvida-detalhe {
+        max-width: 1000px;
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    body {
+        background: linear-gradient(to bottom, #800000 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+    }
+    
+    /* Header Navigation */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid rgba(128, 0, 0, 0.3);
+        animation: slideInDown 0.6s ease-out;
+    }
+    
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .back-btn:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateX(-4px);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+    }
+    
+    .status-badge {
+        padding: 0.75rem 1.25rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .status-badge.bg-success {
+        background: var(--gradient-success) !important;
+        border: 1px solid rgba(40, 167, 69, 0.5);
+    }
+    
+    .status-badge.bg-warning {
+        background: var(--gradient-warning) !important;
+        color: #000 !important;
+        border: 1px solid rgba(255, 193, 7, 0.5);
+    }
+    
+    /* Cards */
+    .card {
+        background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.8;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, rgba(128, 0, 0, 0.2), rgba(128, 0, 0, 0.1));
+        border-bottom: 1px solid rgba(128, 0, 0, 0.3);
+        padding: 1.5rem;
+        color: var(--text-color);
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        line-height: 1.3;
+    }
+    
+    /* User Info */
+    .user-avatar {
+        border-radius: 50%;
+        border: 3px solid rgba(128, 0, 0, 0.5);
+        transition: all 0.3s ease;
+        object-fit: cover;
+    }
+    
+    .user-avatar:hover {
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(128, 0, 0, 0.5);
+    }
+    
+    /* Voting System */
+    .voting-system {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: linear-gradient(145deg, rgba(0, 0, 0, 0.3), rgba(20, 20, 20, 0.2));
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        min-width: 80px;
+    }
+    
+    .vote-btn-like, .vote-btn-dislike {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        padding: 0.75rem;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .vote-btn-like {
+        color: #ff6b9d;
+        border-color: rgba(255, 107, 157, 0.3);
+    }
+    
+    .vote-btn-like:hover, .vote-btn-like.active {
+        background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+        border-color: #ff6b9d;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 107, 157, 0.5);
+    }
+    
+    .vote-btn-dislike {
+        color: #ff6b6b;
+        border-color: rgba(255, 107, 107, 0.3);
+    }
+    
+    .vote-btn-dislike:hover, .vote-btn-dislike.active {
+        background: linear-gradient(135deg, #ff6b6b, #ff8a80);
+        border-color: #ff6b6b;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 107, 107, 0.5);
+    }
+    
+    .vote-count {
+        font-weight: 700;
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.5);
+        min-width: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .vote-count.positive {
+        color: #4caf50;
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    
+    .vote-count.negative {
+        color: #f44336;
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+    
+    .solution-btn {
+        background: linear-gradient(135deg, #4caf50, #8bc34a);
+        border: none;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        width: 100%;
+        font-weight: 600;
+    }
+    
+    .solution-btn:hover {
+        background: linear-gradient(135deg, #66bb6a, #9ccc65);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+    
+    /* Solution Card */
+    .solution-card {
+        border: 2px solid #4caf50 !important;
+        position: relative;
+    }
+    
+    .solution-card::before {
+        background: var(--gradient-success) !important;
+    }
+    
+    .solution-header {
+        background: var(--gradient-success) !important;
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    /* Response Form */
+    .response-form {
+        background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 2.5rem;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.8s ease-out;
+    }
+    
+    .form-control {
+        background: linear-gradient(145deg, rgba(0, 0, 0, 0.7), rgba(20, 20, 20, 0.8));
+        color: var(--text-color);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.25rem;
+        font-size: 1rem;
+        line-height: 1.6;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        resize: vertical;
+        min-height: 150px;
+    }
+    
+    .form-control:focus {
+        background: linear-gradient(145deg, rgba(128, 0, 0, 0.1), rgba(0, 0, 0, 0.9));
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.2);
+        color: var(--text-color);
+        transform: translateY(-2px);
+    }
+    
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        font-style: italic;
+    }
+    
+    .btn-primary {
+        background: var(--gradient-primary);
+        border: none;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(128, 0, 0, 0.4);
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(128, 0, 0, 0.1);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-primary.active {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.3);
+    }
+    
+    /* Area Badge */
+    .badge.bg-primary {
+        background: var(--gradient-primary) !important;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Floating Animations */
+    .floating-heart, .floating-x {
+        position: fixed;
+        pointer-events: none;
+        z-index: 1000;
+        animation: floatUp 2s ease-out forwards;
+        user-select: none;
+    }
+    
+    @keyframes floatUp {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(0deg);
+        }
+        50% {
+            opacity: 0.8;
+            transform: translateY(-30px) scale(1.2) rotate(180deg);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-80px) scale(0.5) rotate(360deg);
+        }
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* Staggered animation for cards */
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+    .card:nth-child(4) { animation-delay: 0.4s; }
+    
+    /* Content styling */
+    .duvida-conteudo, .resposta-conteudo {
+        line-height: 1.7;
+        font-size: 1.05rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .duvida-conteudo p, .resposta-conteudo p {
+        margin-bottom: 1rem;
+    }
+    
+    /* Empty state */
+    .empty-responses {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(145deg, rgba(20, 20, 20, 0.5), rgba(30, 30, 30, 0.3));
+        border-radius: 20px;
+        border: 2px dashed rgba(128, 0, 0, 0.3);
+    }
+    
+    .empty-responses i {
+        color: rgba(128, 0, 0, 0.5);
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .duvida-detalhe {
+            padding: 0 0.5rem;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .response-form {
+            padding: 1.5rem;
+        }
+        
+        .voting-system {
+            flex-direction: row;
+            gap: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .vote-btn-like, .vote-btn-dislike {
+            width: 45px;
+            height: 45px;
+            padding: 0.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+        }
+        
+        .solution-btn {
+            font-size: 0.7rem;
+            padding: 0.5rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .response-form {
+            padding: 1rem;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 1.25rem;
+        }
+        
+        .voting-system {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    /* Loading States */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        margin: auto;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+
+<div class="duvida-detalhe">
+    <!-- Header com navegação -->
+    <div class="page-header">
+        <a href="{{ url_for('helpzone.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>Voltar para o Help Zone
+        </a>
+        <div>
+            {% if duvida.resolvida %}
+                <span class="badge bg-success status-badge">
+                    <i class="bi bi-check-circle-fill"></i>Resolvida
+                </span>
+            {% else %}
+                <span class="badge bg-warning text-dark status-badge">
+                    <i class="bi bi-clock-fill"></i>Aberta
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Pergunta Principal -->
+    <div class="card question-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 d-flex align-items-center">
+                <i class="bi bi-question-circle me-2"></i>Pergunta
+            </h5>
+            <span class="badge bg-primary">{{ duvida.area|upper }}</span>
+        </div>
+        <div class="card-body">
+            <h1 class="card-title">{{ duvida.titulo }}</h1>
+            
+            <!-- Informações do autor -->
+            <div class="d-flex align-items-center mb-4">
+                <img src="{{ url_for('static', filename='images/avatars/' ~ duvida.user_id ~ '.jpg', _external=True) }}" 
+                     class="user-avatar me-3" width="56" height="56" alt="Avatar"
+                     onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                <div>
+                    <h6 class="mb-1">{{ User.query.get(duvida.user_id).username }}</h6>
+                    <div class="text-muted small d-flex align-items-center">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        {{ duvida.data_criacao.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Conteúdo da dúvida -->
+            <div class="duvida-conteudo mb-4">
+                {{ duvida.conteudo|safe }}
+            </div>
+            
+            <!-- Ações da dúvida -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="voting-system">
+                    <!-- Botão Like -->
+                    <form action="{{ url_for('helpzone.votar_duvida', duvida_id=duvida.id) }}" method="POST" class="vote-form">
+                        <input type="hidden" name="valor" value="1">
+                        <button type="submit" class="vote-btn-like {{ 'active' if voto_duvida == 1 else '' }}"
+                                data-bs-toggle="tooltip" title="Gostei desta pergunta">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                    </form>
+                    
+                    <!-- Contador -->
+                    {% set vote_total = duvida.total_votos() %}
+                    <div class="vote-count {{ 'positive' if vote_total > 0 else 'negative' if vote_total < 0 else '' }}">
+                        {{ vote_total }}
+                    </div>
+                    
+                    <!-- Botão Dislike -->
+                    <form action="{{ url_for('helpzone.votar_duvida', duvida_id=duvida.id) }}" method="POST" class="vote-form">
+                        <input type="hidden" name="valor" value="-1">
+                        <button type="submit" class="vote-btn-dislike {{ 'active' if voto_duvida == -1 else '' }}"
+                                data-bs-toggle="tooltip" title="Não gostei desta pergunta">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                <form action="{{ url_for('helpzone.mesma_duvida', duvida_id=duvida.id) }}" method="POST">
+                    <button type="submit" class="btn btn-outline-primary {{ 'active' if tem_mesma_duvida else '' }}">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Tenho a mesma dúvida
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Seção de Respostas -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="d-flex align-items-center">
+            <i class="bi bi-chat-dots me-3"></i>
+            {{ respostas|length }} Resposta{{ 's' if respostas|length != 1 else '' }}
+        </h2>
+        {% if respostas %}
+        <small class="text-muted">
+            <i class="bi bi-sort-down me-1"></i>
+            Ordenadas por soluções e curtidas
+        </small>
+        {% endif %}
+    </div>
+    
+    {% if respostas %}
+        {% for resposta in respostas %}
+        <div class="card resposta-card {{ 'solution-card' if resposta.solucao }}">
+            {% if resposta.solucao %}
+            <div class="card-header solution-header d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Solução Aceita</strong>
+                <div class="ms-auto">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row">
+                    <!-- Sistema de Votação -->
+                    <div class="voting-system me-md-4 mb-3 mb-md-0">
+                        <!-- Like para resposta -->
+                        <form action="{{ url_for('helpzone.votar_resposta', resposta_id=resposta.id) }}" method="POST" class="vote-form">
+                            <input type="hidden" name="valor" value="1">
+                            <button type="submit" class="vote-btn-like {{ 'active' if votos_respostas.get(resposta.id) == 1 else '' }}"
+                                    data-bs-toggle="tooltip" title="Gostei desta resposta">
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+                        </form>
+                        
+                        <!-- Contador -->
+                        {% set resp_total = resposta.total_votos() %}
+                        <div class="vote-count {{ 'positive' if resp_total > 0 else 'negative' if resp_total < 0 else '' }}">
+                            {{ resp_total }}
+                        </div>
+                        
+                        <!-- Dislike para resposta -->
+                        <form action="{{ url_for('helpzone.votar_resposta', resposta_id=resposta.id) }}" method="POST" class="vote-form">
+                            <input type="hidden" name="valor" value="-1">
+                            <button type="submit" class="vote-btn-dislike {{ 'active' if votos_respostas.get(resposta.id) == -1 else '' }}"
+                                    data-bs-toggle="tooltip" title="Não gostei desta resposta">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        </form>
+                        
+                        <!-- Botão Marcar como Solução -->
+                        {% if current_user.is_authenticated and duvida.user_id == current_user.id and not resposta.solucao and not duvida.resolvida %}
+                        <form action="{{ url_for('helpzone.marcar_solucao', resposta_id=resposta.id) }}" method="POST">
+                            <button type="submit" class="solution-btn" data-bs-toggle="tooltip" title="Marcar como solução">
+                                <i class="bi bi-check-circle mb-1 d-block"></i>
+                                <small>Solução</small>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Conteúdo da Resposta -->
+                    <div class="flex-grow-1">
+                        <!-- Informações do autor da resposta -->
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ url_for('static', filename='images/avatars/' ~ resposta.user_id ~ '.jpg', _external=True) }}" 
+                                 class="user-avatar me-3" width="48" height="48" alt="Avatar"
+                                 onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ User.query.get(resposta.user_id).username }}</h6>
+                                <div class="text-muted small d-flex align-items-center">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    {{ resposta.data_criacao.strftime('%d/%m/%Y às %H:%M') }}
+                                </div>
+                            </div>
+                            {% if resposta.solucao %}
+                            <div class="ms-auto">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-star-fill me-1"></i>Melhor Resposta
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Conteúdo da resposta -->
+                        <div class="resposta-conteudo">
+                            {{ resposta.conteudo|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-responses">
+            <i class="bi bi-chat-square-text display-2"></i>
+            <h4 class="mb-3">Nenhuma resposta ainda</h4>
+            <p class="text-muted mb-4">Seja o primeiro a ajudar respondendo esta dúvida!</p>
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-primary" onclick="document.getElementById('response-form').scrollIntoView({behavior: 'smooth'})">
+                <i class="bi bi-pencil-square me-2"></i>Responder Agora
+            </button>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <!-- Formulário de Resposta -->
+    {% if current_user.is_authenticated %}
+        <div class="response-form" id="response-form">
+            <h4 class="mb-4 d-flex align-items-center">
+                <i class="bi bi-pencil-square me-3"></i>Sua Resposta
+            </h4>
+            <form action="{{ url_for('helpzone.responder', duvida_id=duvida.id) }}" method="POST" id="responseForm">
+                <div class="mb-4">
+                    <textarea name="conteudo" class="form-control" rows="8" id="responseTextarea"
+                              placeholder="Digite sua resposta aqui...
+
+💡 Dicas para uma resposta eficaz:
+• Seja detalhado e explique passo a passo
+• Use exemplos práticos quando possível
+• Cite fontes se necessário
+• Mantenha um tom respeitoso e educativo"
+                              required minlength="20"></textarea>
+                    <div class="form-text text-muted mt-3 d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Respostas detalhadas e bem explicadas recebem mais curtidas e têm mais chances de serem marcadas como solução.
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitResponseBtn">
+                        <i class="bi bi-send me-2"></i>Publicar Resposta
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="response-form text-center">
+            <i class="bi bi-person-plus display-2 text-muted mb-4"></i>
+            <h4 class="mb-3">Faça login para responder</h4>
+            <p class="text-muted mb-4">Você precisa estar logado para poder ajudar outros estudantes.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Fazer Login
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Variáveis globais
+    let isVoting = false;
+    let isSubmitting = false;
+    
+    // Inicializar tooltips
+    initializeTooltips();
+    
+    // Configurar sistema de votação
+    setupVotingSystem();
+    
+    // Configurar formulário de resposta
+    setupResponseForm();
+    
+    // Auto-resize para textarea
+    setupTextareaAutoResize();
+    
+    // Smooth scroll para formulário de resposta
+    setupSmoothScrolling();
+    
+    function initializeTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                delay: { show: 500, hide: 100 },
+                placement: 'top'
+            });
+        });
+    }
+    
+    function setupVotingSystem() {
+        // Botões de like
+        document.querySelectorAll('.vote-btn-like').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (isVoting) return;
+                
+                // Criar animação de corações
+                createFloatingAnimation(this, 'heart');
+                
+                // Submeter formulário após delay
+                submitVoteForm(this);
+            });
+        });
+        
+        // Botões de dislike
+        document.querySelectorAll('.vote-btn-dislike').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (isVoting) return;
+                
+                // Criar animação de X's
+                createFloatingAnimation(this, 'x');
+                
+                // Submeter formulário após delay
+                submitVoteForm(this);
+            });
+        });
+        
+        // Adicionar feedback visual nos botões
+        document.querySelectorAll('.vote-btn-like, .vote-btn-dislike').forEach(button => {
+            button.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            button.addEventListener('mouseup', function() {
+                this.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    }
+    
+    function submitVoteForm(button) {
+        isVoting = true;
+        
+        // Adicionar estado de loading
+        button.classList.add('btn-loading');
+        button.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+            const form = button.closest('form');
+            if (form) {
+                form.submit();
+            }
+        }, 300);
+    }
+    
+    function createFloatingAnimation(button, type) {
+        const animations = {
+            heart: ['❤️', '💖', '💕', '💗', '💝', '💘'],
+            x: ['❌', '✖️', '💔', '😞']
+        };
+        
+        const symbols = animations[type] || animations.heart;
+        const count = type === 'heart' ? 6 : 4;
+        
+        for(let i = 0; i < count; i++) {
+            setTimeout(() => {
+                createFloatingElement(button, symbols);
+            }, i * 100);
+        }
+    }
+    
+    function createFloatingElement(button, symbols) {
+        const element = document.createElement('div');
+        element.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+        element.className = 'floating-heart';
+        
+        // Posicionamento
+        const rect = button.getBoundingClientRect();
+        element.style.position = 'fixed';
+        element.style.left = (rect.left + rect.width/2 + (Math.random() - 0.5) * 40) + 'px';
+        element.style.top = (rect.top + rect.height/2) + 'px';
+        element.style.fontSize = (20 + Math.random() * 10) + 'px';
+        element.style.pointerEvents = 'none';
+        element.style.zIndex = '1000';
+        element.style.userSelect = 'none';
+        
+        document.body.appendChild(element);
+        
+        // Remover após animação
+        setTimeout(() => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }, 2000);
+    }
+    
+    function setupResponseForm() {
+        const form = document.getElementById('responseForm');
+        const submitBtn = document.getElementById('submitResponseBtn');
+        const textarea = document.getElementById('responseTextarea');
+        
+        if (!form || !submitBtn || !textarea) return;
+        
+        form.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+            
+            const content = textarea.value.trim();
+            
+            if (content.length < 20) {
+                e.preventDefault();
+                showNotification('Sua resposta deve ter pelo menos 20 caracteres.', 'warning');
+                textarea.focus();
+                return;
+            }
+            
+            // Estado de loading
+            isSubmitting = true;
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Publicando...';
+            submitBtn.disabled = true;
+            
+            // Permitir submissão após verificações
+            setTimeout(() => {
+                // Form will submit naturally
+            }, 100);
+        });
+        
+        // Contador de caracteres
+        textarea.addEventListener('input', function() {
+            const length = this.value.length;
+            const minLength = 20;
+            
+            // Visual feedback
+            if (length < minLength) {
+                this.style.borderColor = 'rgba(255, 193, 7, 0.5)';
+            } else {
+                this.style.borderColor = 'rgba(76, 175, 80, 0.5)';
+            }
+        });
+    }
+    
+    function setupTextareaAutoResize() {
+        const textarea = document.getElementById('responseTextarea');
+        if (!textarea) return;
+        
+        function autoResize() {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.max(150, textarea.scrollHeight) + 'px';
+        }
+        
+        textarea.addEventListener('input', autoResize);
+        
+        // Resize inicial
+        autoResize();
+    }
+    
+    function setupSmoothScrolling() {
+        // Scroll suave para links internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Criar notificação toast
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove após 5 segundos
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // Lazy loading para imagens
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src || img.src;
+                    img.classList.remove('lazy');
+                    observer.unobserve(img);
+                }
+            });
+        });
+        
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+    
+    // Animação de entrada para cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                entry.target.style.opacity = '1';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.opacity = '0';
+        observer.observe(card);
+    });
+});
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .lazy {
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .lazy.loaded {
+        opacity: 1;
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

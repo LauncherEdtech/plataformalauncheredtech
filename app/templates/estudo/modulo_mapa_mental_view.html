@@ -1,0 +1,267 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ modulo.titulo }} - {{ mapa.titulo }}{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb a {
+        color: {{ mapa.cor or '#ff6b6b' }};
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb span {
+        opacity: 0.6;
+        margin: 0 8px;
+    }
+
+    .modulo-header {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modulo-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(45deg, {{ mapa.cor or '#ff6b6b' }}, rgba(255, 255, 255, 0.3));
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .modulo-icon {
+        width: 60px;
+        height: 60px;
+        background: {{ mapa.cor or '#ff6b6b' }};
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .header-info h1 {
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+        color: white;
+    }
+
+    .header-info p {
+        opacity: 0.8;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .content-section {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .content-section h2 {
+        color: {{ mapa.cor or '#ff6b6b' }};
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mapa-content {
+        background: white;
+        color: #333;
+        padding: 25px;
+        border-radius: 10px;
+        line-height: 1.6;
+        min-height: 200px;
+    }
+
+    .mapa-content h1, .mapa-content h2, .mapa-content h3 {
+        color: {{ mapa.cor or '#ff6b6b' }};
+    }
+
+    .mapa-content ul, .mapa-content ol {
+        padding-left: 20px;
+    }
+
+    .mapa-content blockquote {
+        border-left: 4px solid {{ mapa.cor or '#ff6b6b' }};
+        padding-left: 15px;
+        margin: 20px 0;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-voltar {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-voltar:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, {{ mapa.cor or '#ff6b6b' }}, rgba(255, 255, 255, 0.1));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-content {
+        text-align: center;
+        padding: 40px 20px;
+        opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-info h1 {
+            font-size: 1.6rem;
+        }
+
+        .navigation {
+            flex-direction: column;
+        }
+
+        .content-section {
+            padding: 20px;
+        }
+
+        .breadcrumb {
+            padding: 10px 15px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{{ url_for('estudo.index') }}">Estudos</a>
+        <span>></span>
+        <a href="{{ url_for('estudo.mapas_mentais') }}">Mapas Mentais</a>
+        <span>></span>
+        <a href="{{ url_for('estudo.mapa_mental', mapa_id=mapa.id) }}">{{ mapa.titulo }}</a>
+        <span>></span>
+        <strong>{{ modulo.titulo }}</strong>
+    </div>
+
+    <!-- Header do Módulo -->
+    <div class="modulo-header">
+        <div class="header-content">
+            <div class="modulo-icon">
+                🗺️
+            </div>
+            <div class="header-info">
+                <h1>{{ modulo.titulo }}</h1>
+                {% if modulo.descricao %}
+                <p>{{ modulo.descricao }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="navigation">
+        <a href="{{ url_for('estudo.mapa_mental', mapa_id=mapa.id) }}" class="btn btn-voltar">
+            ⬅️ Voltar ao Mapa Mental
+        </a>
+        <a href="{{ url_for('estudo.mapas_mentais') }}" class="btn btn-primary">
+            🧠 Todos os Mapas Mentais
+        </a>
+    </div>
+
+    <!-- Conteúdo do Mapa Mental -->
+    <div class="content-section">
+        <h2>🗺️ Estrutura do Mapa Mental</h2>
+        <div class="mapa-content">
+            {% if modulo.conteudo %}
+                {{ modulo.conteudo|safe }}
+            {% else %}
+                <div class="empty-content">
+                    <p>Este módulo ainda não possui conteúdo estruturado.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}Nova Apostila{% endblock %}
+{% block content %}
+<div class="container" style="max-width:800px;padding:20px;">
+  <h1>📖 Nova Apostila</h1>
+  <form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label class="form-label">Título</label>
+      <input name="titulo" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Descrição</label>
+      <textarea name="descricao" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Ícone</label>
+      <input name="icone" class="form-control" value="📖">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Cor</label>
+      <input name="cor" class="form-control" value="#4ecdc4">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Ordem</label>
+      <input type="number" name="ordem" class="form-control" value="0">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Capa (imagem)</label>
+      <input type="file" name="capa_imagem" class="form-control">
+    </div>
+    <button class="btn btn-primary" type="submit">Salvar</button>
+    <a class="btn btn-secondary" href="{{ url_for('estudo.admin_apostilas') }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}
+

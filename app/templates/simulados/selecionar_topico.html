@@ -1,0 +1,472 @@
+{% extends "layout.html" %}
+
+{% block title %}Escolher Tópico de {{ materia }} - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 5%, #000 40%, #000 100%);
+        color: var(--text);
+        min-height: 100vh;
+    }
+
+    .topico-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Back Button */
+    .back-button {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .btn-back {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Hero */
+    .hero-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .materia-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 217, 255, 0.1);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        border-radius: 1rem;
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Configuração do Simulado */
+    .configuracao-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .configuracao-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .configuracao-header i {
+        font-size: 1.5rem;
+        color: var(--accent);
+    }
+
+    .configuracao-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .form-control {
+        width: 100%;
+        max-width: 200px;
+        padding: 0.75rem 1rem;
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+
+    /* Tópicos List */
+    .topicos-section {
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    .topicos-list {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .topico-item {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem 2rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.4s + var(--delay, 0s)) both;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .topico-item:hover {
+        transform: translateX(8px);
+        border-color: var(--accent);
+        background: var(--surface-light);
+        box-shadow: 0 8px 25px rgba(0, 217, 255, 0.2);
+    }
+
+    .topico-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .topico-item:hover::before {
+        opacity: 1;
+    }
+
+    .topico-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .topico-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .topico-content {
+        flex: 1;
+    }
+
+    .topico-nome {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .topico-questoes {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .topico-questoes i {
+        color: var(--accent);
+    }
+
+    .topico-action {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: var(--border-light);
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+        color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-section {
+            padding: 2rem 1.5rem;
+        }
+
+        .configuracao-section {
+            padding: 1.5rem;
+        }
+
+        .topico-item {
+            padding: 1.25rem 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .topico-info {
+            width: 100%;
+        }
+
+        .topico-action {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .form-control {
+            max-width: 100%;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="topico-container">
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{{ url_for('simulados.selecionar_materia') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Voltar às Matérias
+        </a>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero-section">
+        <span class="materia-badge">{{ materia }}</span>
+        <h1 class="hero-title">Escolha o Tópico</h1>
+        <p class="hero-subtitle">
+            Selecione um tópico de {{ materia }} para começar seus estudos
+        </p>
+    </div>
+
+    <!-- Configuração do Simulado -->
+    <div class="configuracao-section">
+        <div class="configuracao-header">
+            <i class="bi bi-sliders"></i>
+            <h3>Configurações do Simulado</h3>
+        </div>
+        
+        <form id="formQuantidade">
+            <div class="form-group">
+                <label for="quantidade_questoes" class="form-label">
+                    <i class="bi bi-question-circle"></i>
+                    Quantidade de Questões
+                </label>
+                <input type="number" 
+                       id="quantidade_questoes" 
+                       name="quantidade" 
+                       class="form-control" 
+                       value="10" 
+                       min="5" 
+                       max="50">
+                <small class="text-muted">Entre 5 e 50 questões</small>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tópicos -->
+    <div class="topicos-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-list-ul"></i>
+                Tópicos Disponíveis
+            </h2>
+        </div>
+
+        {% if topicos %}
+        <div class="topicos-list">
+            {% for topico, qtd_questoes in topicos %}
+            <div class="topico-item" 
+                 style="--delay: {{ loop.index0 * 0.05 }}s"
+                 onclick="gerarSimulado('{{ materia }}', '{{ topico }}')">
+                
+                <div class="topico-info">
+                    <div class="topico-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <div class="topico-content">
+                        <div class="topico-nome">{{ topico }}</div>
+                        <div class="topico-questoes">
+                            <i class="bi bi-file-earmark-text"></i>
+                            {{ qtd_questoes }} questões disponíveis
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="topico-action">
+                    <span>Estudar</span>
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox empty-icon"></i>
+            <h4 class="empty-title">Nenhum tópico disponível</h4>
+            <p class="empty-description">
+                Não há tópicos cadastrados para {{ materia }} no momento.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function gerarSimulado(materia, topico) {
+    const quantidade = document.getElementById('quantidade_questoes').value;
+    
+    // Validar quantidade
+    if (quantidade < 5 || quantidade > 50) {
+        alert('A quantidade deve estar entre 5 e 50 questões.');
+        return;
+    }
+    
+    // Mostrar loading
+    const topicoItem = event.currentTarget;
+    topicoItem.style.opacity = '0.6';
+    topicoItem.style.pointerEvents = 'none';
+    
+    // Redirecionar para criação do simulado
+    window.location.href = `/simulados/gerar-individual?materia=${encodeURIComponent(materia)}&topico=${encodeURIComponent(topico)}&quantidade=${quantidade}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,207 @@
+<!-- app/templates/estudo/admin/modulo_form.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Editar' if modulo else 'Novo' }} Módulo - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-header {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 15px;
+    }
+
+    .breadcrumb a {
+        color: #00b4d8;
+        text-decoration: none;
+    }
+
+    .form-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: white;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #00b4d8;
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+    }
+
+    .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #0084ff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .help-text {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> > 
+            <a href="{{ url_for('estudo.materia', materia_id=materia.id) }}">{{ materia.nome }}</a> > 
+            {{ 'Editar Módulo' if modulo else 'Novo Módulo' }}
+        </div>
+        <h1>{{ '✏️ Editar Módulo' if modulo else '➕ Novo Módulo' }}</h1>
+        <p>{{ 'Atualize as informações do módulo' if modulo else 'Crie um novo módulo para' }} <strong>{{ materia.nome }}</strong></p>
+    </div>
+
+    <form method="POST">
+        <div class="form-card">
+            <h3 style="margin-bottom: 20px;">📋 Informações do Módulo</h3>
+            
+            <div class="form-group">
+                <label class="form-label" for="titulo">Título do Módulo *</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="titulo" 
+                       name="titulo" 
+                       value="{{ modulo.titulo if modulo else '' }}"
+                       placeholder="Ex: Funções Quadráticas, Análise Sintática..."
+                       required>
+                <div class="help-text">Nome que identificará o módulo dentro da matéria</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="descricao">Descrição</label>
+                <textarea class="form-control" 
+                          id="descricao" 
+                          name="descricao" 
+                          rows="4"
+                          placeholder="Descreva o que será abordado neste módulo...">{{ modulo.descricao if modulo else '' }}</textarea>
+                <div class="help-text">Descrição que aparecerá no card do módulo</div>
+            </div>
+
+            <div class="two-column">
+                <div class="form-group">
+                    <label class="form-label" for="ordem">Ordem</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="ordem" 
+                           name="ordem" 
+                           value="{{ modulo.ordem if modulo else 1 }}"
+                           min="1">
+                    <div class="help-text">Ordem do módulo na matéria</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="dificuldade">Dificuldade</label>
+                    <select class="form-control form-select" id="dificuldade" name="dificuldade">
+                        <option value="facil" {{ 'selected' if modulo and modulo.dificuldade == 'facil' else '' }}>🟢 Fácil</option>
+                        <option value="medio" {{ 'selected' if not modulo or modulo.dificuldade == 'medio' else '' }}>🟡 Médio</option>
+                        <option value="dificil" {{ 'selected' if modulo and modulo.dificuldade == 'dificil' else '' }}>🔴 Difícil</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="duracao_estimada">Duração Estimada (minutos)</label>
+                <input type="number" 
+                       class="form-control" 
+                       id="duracao_estimada" 
+                       name="duracao_estimada" 
+                       value="{{ modulo.duracao_estimada if modulo else '' }}"
+                       min="1"
+                       placeholder="Ex: 120">
+                <div class="help-text">Tempo estimado para concluir todo o módulo</div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">
+                {{ '💾 Salvar Alterações' if modulo else '✅ Criar Módulo' }}
+            </button>
+            <a href="{{ url_for('estudo.materia', materia_id=materia.id) }}" class="btn btn-secondary">
+                ❌ Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

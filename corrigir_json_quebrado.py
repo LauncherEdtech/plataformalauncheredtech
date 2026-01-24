@@ -1,0 +1,366 @@
+# corrigir_json_quebrado.py
+"""
+Corrige arquivos JSON com quebras de linha problemáticas
+"""
+
+import json
+import re
+import os
+import psycopg2
+from pathlib import Path
+
+def conectar_banco():
+    """Conecta ao PostgreSQL"""
+    return psycopg2.connect(
+        host='34.63.141.69',
+        port=5432,
+        user='postgres',
+        password='22092021Dd$',
+        database='plataforma'
+    )
+
+def corrigir_json_com_quebras(conteudo):
+    """Corrige JSON com quebras de linha dentro das strings"""
+    print("[INFO] Corrigindo quebras de linha no JSON...")
+    
+    # Estratégia: Processar o JSON "pedaço por pedaço"
+    # Identifica arrays JSON e corrige quebras dentro das strings
+    
+    try:
+        # Primeiro, tentar parsing direto (pode funcionar em alguns casos)
+        dados = json.loads(conteudo)
+        print("[OK] JSON já estava válido!")
+        return dados
+    except json.JSONDecodeError:
+        pass
+    
+    # Se falhar, aplicar correções
+    print("[INFO] Aplicando correções...")
+    
+    # Método 1: Substituir quebras de linha dentro de strings por \n
+    conteudo_corrigido = conteudo
+    
+    # Encontrar padrões de "field": "value com quebra
+    # e substituir quebras por \n
+    def corrigir_quebras_em_strings(match):
+        """Corrige quebras dentro de uma string JSON"""
+        campo = match.group(1)
+        valor = match.group(2)
+        
+        # Substituir quebras literais por \n
+        valor_corrigido = valor.replace('\n', '\\n').replace('\r', '\\r')
+        
+        return f'"{campo}": "{valor_corrigido}"'
+    
+    # Padrão para encontrar campos com valores entre aspas que podem ter quebras
+    padrao = r'"([^"]+)"\s*:\s*"([^"]*(?:\n[^"]*)*)"'
+    
+    # Aplicar correção
+    conteudo_corrigido = re.sub(padrao, corrigir_quebras_em_strings, conteudo_corrigido, flags=re.MULTILINE | re.DOTALL)
+    
+    try:
+        dados = json.loads(conteudo_corrigido)
+        print("[OK] JSON corrigido com sucesso!")
+        return dados
+    except json.JSONDecodeError as e:
+        print(f"[INFO] Correção automática falhou: {e}")
+        
+        # Método 2: Processamento linha por linha mais agressivo
+        return corrigir_json_linha_por_linha(conteudo)
+
+def corrigir_json_linha_por_linha(conteudo):
+    """Corrige JSON processando linha por linha"""
+    print("[INFO] Tentando correção linha por linha...")
+    
+    linhas = conteudo.split('\n')
+    linhas_corrigidas = []
+    dentro_string = False
+    string_atual = ""
+    
+    for linha in linhas:
+        linha_limpa = linha.strip()
+        
+        # Se estamos dentro de uma string que continua
+        if dentro_string:
+            # Adicionar à string atual com \n
+            string_atual += "\\n" + linha_limpa
+            
+            # Verificar se a string termina nesta linha
+            if linha_limpa.endswith('"') or linha_limpa.endswith('",'):
+                dentro_string = False
+                linhas_corrigidas.append(string_atual)
+                string_atual = ""
+            continue
+        
+        # Verificar se linha contém início de string que continua
+        if ('"question"' in linha_limpa or '"answer' in linha_limpa or '"correct' in linha_limpa) and linha_limpa.count('"') % 2 == 1:
+            # String começa mas não termina nesta linha
+            dentro_string = True
+            string_atual = linha_limpa
+            continue
+        
+        # Linha normal
+        linhas_corrigidas.append(linha_limpa)
+    
+    conteudo_reconstruido = '\n'.join(linhas_corrigidas)
+    
+    try:
+        dados = json.loads(conteudo_reconstruido)
+        print("[OK] Correção linha por linha funcionou!")
+        return dados
+    except json.JSONDecodeError:
+        print("[INFO] Correção linha por linha falhou, tentando método de regex...")
+        return extrair_com_regex(conteudo)
+
+def extrair_com_regex(conteudo):
+    """Extrai questões usando regex quando JSON está muito quebrado"""
+    print("[INFO] Extraindo questões com regex...")
+    
+    questoes = []
+    
+    # Padrão para encontrar objetos completos (aproximado)
+    # Procura por { até o próximo } que fecha o objeto
+    padrao_objeto = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+    
+    matches = re.findall(padrao_objeto, conteudo, re.DOTALL)
+    
+    for match in matches:
+        # Tentar limpar e parsear cada match
+        try:
+            # Normalizar quebras de linha
+            match_limpo = re.sub(r'\n\s*', ' ', match)
+            
+            # Tentar parsear
+            questao = json.loads(match_limpo)
+            
+            # Validar se tem campos essenciais
+            if 'question' in questao and 'correctAnswer' in questao:
+                questoes.append(questao)
+                
+        except:
+            # Se este objeto específico falhar, continuar
+            continue
+    
+    print(f"[INFO] Extraídas {len(questoes)} questões com regex")
+    return questoes
+
+def processar_arquivo_problemático(arquivo):
+    """Processa um arquivo específico com problemas"""
+    print(f"\n{'='*60}")
+    print(f"PROCESSANDO: {arquivo}")
+    print("="*60)
+    
+    if not os.path.exists(arquivo):
+        print(f"[ERRO] Arquivo {arquivo} não encontrado")
+        return []
+    
+    try:
+        # Ler arquivo com diferentes encodings
+        conteudo = None
+        encodings = ['utf-8', 'latin-1', 'cp1252']
+        
+        for encoding in encodings:
+            try:
+                with open(arquivo, 'r', encoding=encoding) as f:
+                    conteudo = f.read()
+                print(f"[OK] Arquivo lido com encoding {encoding}")
+                break
+            except UnicodeDecodeError:
+                continue
+        
+        if not conteudo:
+            print("[ERRO] Não conseguiu ler arquivo com nenhum encoding")
+            return []
+        
+        print(f"[INFO] Tamanho: {len(conteudo)} caracteres")
+        
+        # Aplicar correção
+        questoes = corrigir_json_com_quebras(conteudo)
+        
+        if questoes:
+            print(f"[SUCESSO] {len(questoes)} questões extraídas!")
+            
+            # Mostrar exemplos
+            print("\n[PREVIEW] Primeiras questões:")
+            for i, q in enumerate(questoes[:3]):
+                texto = q.get('question', 'Sem texto')[:60]
+                resposta = q.get('correctAnswer', 'N/A')
+                print(f"  {i+1}. {texto}... (Resposta: {resposta})")
+            
+            return questoes
+        else:
+            print("[ERRO] Nenhuma questão foi extraída")
+            return []
+            
+    except Exception as e:
+        print(f"[ERRO] Erro geral: {e}")
+        return []
+
+def mapear_materia(nome_arquivo):
+    """Mapeia nome do arquivo para matéria"""
+    mapeamento = {
+        'matematicadata.txt': 'Matemática',
+        'espanholdata.txt': 'Espanhol',
+        'inglesdata.txt': 'Inglês',
+        'literaturadata.txt': 'Literatura'
+    }
+    return mapeamento.get(nome_arquivo.lower(), 'Outras')
+
+def limpar_texto(texto):
+    """Limpa texto removindo escapes desnecessários"""
+    if not texto:
+        return ""
+    
+    texto = str(texto).strip()
+    
+    # Remover aspas extras do início/fim
+    if texto.startswith('"') and texto.endswith('"'):
+        texto = texto[1:-1]
+    
+    # Substituir escapes comuns
+    texto = texto.replace('\\"', '"')
+    texto = texto.replace('\\\\n', '\\n')  # Duplo escape para simples
+    texto = texto.replace('\\\\', '\\')
+    
+    return texto.strip()
+
+def inserir_questoes_corrigidas(questoes, materia):
+    """Insere questões corrigidas no banco"""
+    print(f"\n[INFO] Inserindo {len(questoes)} questões de {materia}...")
+    
+    conn = conectar_banco()
+    cursor = conn.cursor()
+    
+    inseridas = 0
+    duplicatas = 0
+    erros = 0
+    
+    for questao in questoes:
+        try:
+            # Validar campos obrigatórios
+            if not questao.get('question') or not questao.get('correctAnswer'):
+                erros += 1
+                continue
+            
+            # Verificar duplicata
+            sql_verificar = """
+            SELECT id FROM questoes_base 
+            WHERE texto = %s AND materia = %s
+            """
+            
+            cursor.execute(sql_verificar, (limpar_texto(questao['question']), materia))
+            
+            if cursor.fetchone():
+                duplicatas += 1
+                continue
+            
+            # Inserir questão
+            sql_inserir = """
+            INSERT INTO questoes_base (
+                texto, materia, topico, subtopico,
+                opcao_a, opcao_b, opcao_c, opcao_d, opcao_e,
+                resposta_correta, explicacao, imagem_url
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            valores = (
+                limpar_texto(questao['question']),
+                materia,
+                limpar_texto(questao.get('topico', 'Não especificado')),
+                limpar_texto(questao.get('subtopico', '')),
+                limpar_texto(questao.get('answerA', '')),
+                limpar_texto(questao.get('answerB', '')),
+                limpar_texto(questao.get('answerC', '')),
+                limpar_texto(questao.get('answerD', '')),
+                limpar_texto(questao.get('answerE', '')),
+                questao['correctAnswer'].upper(),
+                limpar_texto(questao.get('correctAnswermessage', 
+                            questao.get('correctAnswerMessage', ''))),
+                limpar_texto(questao.get('image', ''))
+            )
+            
+            cursor.execute(sql_inserir, valores)
+            inseridas += 1
+            
+        except Exception as e:
+            print(f"[ERRO] Erro ao inserir questão: {e}")
+            erros += 1
+            conn.rollback()
+            continue
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    print(f"[RESULTADO] {materia}:")
+    print(f"  Inseridas: {inseridas}")
+    print(f"  Duplicatas: {duplicatas}")
+    print(f"  Erros: {erros}")
+    
+    return inseridas
+
+def main():
+    print("CORREÇÃO DE ARQUIVOS JSON QUEBRADOS")
+    print("="*60)
+    
+    # Arquivos problemáticos identificados
+    arquivos_problemáticos = [
+        'MatematicaData.txt',  # MAIS IMPORTANTE - 68 questões
+        'EspanholData.txt',    # 23 questões
+        'InglesData.txt',      # 18 questões
+        'LiteraturaData.txt'   # 10 questões
+    ]
+    
+    total_recuperadas = 0
+    
+    for arquivo in arquivos_problemáticos:
+        materia = mapear_materia(arquivo)
+        
+        # Processar arquivo
+        questoes = processar_arquivo_problemático(arquivo)
+        
+        if questoes:
+            # Inserir no banco
+            inseridas = inserir_questoes_corrigidas(questoes, materia)
+            total_recuperadas += inseridas
+        else:
+            print(f"[FALHA] Não conseguiu processar {arquivo}")
+    
+    # Estatísticas finais
+    print(f"\n{'='*60}")
+    print("RESULTADO FINAL")
+    print("="*60)
+    
+    # Consultar total atual no banco
+    conn = conectar_banco()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM questoes_base")
+    total_atual = cursor.fetchone()[0]
+    
+    cursor.execute("""
+        SELECT materia, COUNT(*) 
+        FROM questoes_base 
+        GROUP BY materia 
+        ORDER BY COUNT(*) DESC
+    """)
+    
+    print(f"Total de questões no banco: {total_atual}")
+    print(f"Questões recuperadas nesta sessão: {total_recuperadas}")
+    print("\nDistribuição por matéria:")
+    
+    for materia, count in cursor.fetchall():
+        print(f"  {materia}: {count} questões")
+    
+    cursor.close()
+    conn.close()
+    
+    if total_recuperadas > 0:
+        print(f"\n🎉 SUCESSO! {total_recuperadas} questões recuperadas!")
+        print(f"🎯 Capacidade total: ~{total_atual // 180} simulados ENEM completos")
+    else:
+        print(f"\n⚠️ Nenhuma questão nova foi recuperada")
+        print("Verifique os logs acima para identificar problemas específicos")
+
+if __name__ == "__main__":
+    main()

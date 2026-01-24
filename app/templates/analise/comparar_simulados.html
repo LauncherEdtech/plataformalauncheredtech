@@ -1,0 +1,1099 @@
+{% extends "layout.html" %}
+
+{% block title %}Comparação de Simulados - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .comparacao-simulados {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+    }
+
+    .back-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-1px);
+    }
+
+    /* Selection Form */
+    .selection-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .selection-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .selection-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .selection-title i {
+        color: var(--primary);
+    }
+
+    .selection-body {
+        padding: 2rem;
+    }
+
+    .selection-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-select {
+        background: #0a0a0a;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-select option {
+        background: #0a0a0a;
+        color: var(--text);
+    }
+
+    .btn-compare {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: fit-content;
+    }
+
+    .btn-compare:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Simulado Cards */
+    .simulados-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .simulado-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.2s + var(--delay, 0s)) both;
+    }
+
+    .simulado-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .simulado-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .simulado-card:first-child::before {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+
+    .simulado-card:last-child::before {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .simulado-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .simulado-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .simulado-date {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .simulado-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .nota-display {
+        margin-bottom: 2rem;
+    }
+
+    .nota-value {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .nota-label {
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.875rem;
+    }
+
+    .simulado-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-item-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-item-label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Evolution Section */
+    .evolution-section {
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 0;
+    }
+
+    .section-title i {
+        color: var(--accent);
+    }
+
+    .evolution-container {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .evolution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .evolution-card {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .evolution-card:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        transform: translateY(-2px);
+    }
+
+    .evolution-indicator {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .evolution-positive {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+    }
+
+    .evolution-negative {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+    }
+
+    .evolution-neutral {
+        background: rgba(107, 114, 128, 0.2);
+        color: var(--secondary);
+    }
+
+    .evolution-card:hover .evolution-indicator {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .evolution-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .comparison-values {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .comparison-arrow {
+        color: var(--text-muted);
+        font-size: 1.25rem;
+    }
+
+    .comparison-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .evolution-diff {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .evolution-diff.positive {
+        color: var(--success);
+    }
+
+    .evolution-diff.negative {
+        color: var(--danger);
+    }
+
+    .evolution-diff.neutral {
+        color: var(--text-muted);
+    }
+
+    /* Comparison Chart Section */
+    .comparison-section {
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .comparison-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .chart-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-title i {
+        color: var(--primary);
+    }
+
+    .chart-body {
+        padding: 2rem;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 350px;
+    }
+
+    /* Evolution List */
+    .evolution-list-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .evolution-list-body {
+        padding: 1.5rem;
+    }
+
+    .evolution-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        transition: all 0.3s ease;
+    }
+
+    .evolution-item:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        transform: translateX(4px);
+    }
+
+    .evolution-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .area-badge {
+        background: var(--secondary);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .change-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    .change-positive {
+        background: var(--success);
+        color: white;
+    }
+
+    .change-negative {
+        background: var(--danger);
+        color: white;
+    }
+
+    .change-neutral {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .evolution-footer {
+        background: #0a0a0a;
+        border-top: 1px solid var(--border);
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer-label {
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .best-improvement {
+        background: var(--success);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    /* Actions */
+    .actions-section {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--danger);
+        color: var(--danger);
+    }
+
+    .btn-outline:hover {
+        background: var(--danger);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .comparacao-simulados {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .selection-form {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .simulados-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .evolution-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .comparison-container {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-body {
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+
+        .actions-section {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .selection-body {
+            padding: 1.5rem;
+        }
+
+        .simulado-body {
+            padding: 1.5rem;
+        }
+
+        .nota-value {
+            font-size: 2.5rem;
+        }
+
+        .simulado-stats {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .evolution-container {
+            padding: 1.5rem;
+        }
+
+        .evolution-card {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="comparacao-simulados">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-graph-up-arrow"></i>
+            Comparação de Simulados
+        </h1>
+        <a href="{{ url_for('analise.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para Análises
+        </a>
+    </div>
+
+    <!-- Formulário de Seleção -->
+    <div class="selection-card">
+        <div class="selection-header">
+            <h4 class="selection-title">
+                <i class="bi bi-sliders"></i>
+                Selecione os Simulados para Comparar
+            </h4>
+        </div>
+        <div class="selection-body">
+            <form action="{{ url_for('analise.comparar_simulados') }}" method="GET" class="selection-form">
+                <div class="form-group">
+                    <label for="simulado1" class="form-label">Simulado Anterior</label>
+                    <select name="simulado1" id="simulado1" class="form-select">
+                        {% for sim in simulados %}
+                            <option value="{{ sim.id }}" {{ 'selected' if sim.id == simulado1.id else '' }}>
+                                {{ sim.titulo }} ({{ sim.data_realizado.strftime('%d/%m/%Y') }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="simulado2" class="form-label">Simulado Posterior</label>
+                    <select name="simulado2" id="simulado2" class="form-select">
+                        {% for sim in simulados %}
+                            <option value="{{ sim.id }}" {{ 'selected' if sim.id == simulado2.id else '' }}>
+                                {{ sim.titulo }} ({{ sim.data_realizado.strftime('%d/%m/%Y') }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-compare">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Comparar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resumo da Comparação -->
+    <div class="simulados-grid">
+        <div class="simulado-card" style="--delay: 0s">
+            <div class="simulado-header">
+                <h5 class="simulado-title">{{ simulado1.titulo }}</h5>
+                <small class="simulado-date">{{ simulado1.data_realizado.strftime('%d/%m/%Y') }}</small>
+            </div>
+            <div class="simulado-body">
+                <div class="nota-display">
+                    <div class="nota-value">{{ simulado1.nota_tri|int }}</div>
+                    <div class="nota-label">Nota TRI</div>
+                </div>
+                <div class="simulado-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado1.acertos_total }}</div>
+                        <div class="stat-item-label">Acertos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado1.questoes.count() }}</div>
+                        <div class="stat-item-label">Questões</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado1.tempo_realizado }}</div>
+                        <div class="stat-item-label">Tempo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulado-card" style="--delay: 0.1s">
+            <div class="simulado-header">
+                <h5 class="simulado-title">{{ simulado2.titulo }}</h5>
+                <small class="simulado-date">{{ simulado2.data_realizado.strftime('%d/%m/%Y') }}</small>
+            </div>
+            <div class="simulado-body">
+                <div class="nota-display">
+                    <div class="nota-value">{{ simulado2.nota_tri|int }}</div>
+                    <div class="nota-label">Nota TRI</div>
+                </div>
+                <div class="simulado-stats">
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado2.acertos_total }}</div>
+                        <div class="stat-item-label">Acertos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado2.questoes.count() }}</div>
+                        <div class="stat-item-label">Questões</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-value">{{ simulado2.tempo_realizado }}</div>
+                        <div class="stat-item-label">Tempo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evolução Geral -->
+    <div class="evolution-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-trending-up"></i>
+                Evolução Geral
+            </h2>
+        </div>
+        <div class="evolution-container">
+            <div class="evolution-grid">
+                <!-- Nota TRI -->
+                <div class="evolution-card">
+                    {% set diff_nota = simulado2.nota_tri - simulado1.nota_tri %}
+                    <div class="evolution-indicator {{ 'evolution-positive' if diff_nota > 0 else ('evolution-negative' if diff_nota < 0 else 'evolution-neutral') }}">
+                        {% if diff_nota > 0 %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif diff_nota < 0 %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="evolution-title">Nota TRI</h5>
+                    <div class="comparison-values">
+                        <div class="comparison-value">{{ simulado1.nota_tri|int }}</div>
+                        <div class="comparison-arrow">→</div>
+                        <div class="comparison-value">{{ simulado2.nota_tri|int }}</div>
+                    </div>
+                    <div class="evolution-diff {{ 'positive' if diff_nota > 0 else ('negative' if diff_nota < 0 else 'neutral') }}">
+                        {% if diff_nota > 0 %}
+                            +{{ diff_nota|round|int }} pontos
+                        {% elif diff_nota < 0 %}
+                            {{ diff_nota|round|int }} pontos
+                        {% else %}
+                            Sem alteração
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Percentual de Acertos -->
+                <div class="evolution-card">
+                    {% set percentual1 = (simulado1.acertos_total / simulado1.questoes.count() * 100)|round|int if simulado1.questoes.count() > 0 else 0 %}
+                    {% set percentual2 = (simulado2.acertos_total / simulado2.questoes.count() * 100)|round|int if simulado2.questoes.count() > 0 else 0 %}
+                    {% set diff_percentual = percentual2 - percentual1 %}
+                    
+                    <div class="evolution-indicator {{ 'evolution-positive' if diff_percentual > 0 else ('evolution-negative' if diff_percentual < 0 else 'evolution-neutral') }}">
+                        {% if diff_percentual > 0 %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif diff_percentual < 0 %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="evolution-title">Percentual de Acertos</h5>
+                    <div class="comparison-values">
+                        <div class="comparison-value">{{ percentual1 }}%</div>
+                        <div class="comparison-arrow">→</div>
+                        <div class="comparison-value">{{ percentual2 }}%</div>
+                    </div>
+                    <div class="evolution-diff {{ 'positive' if diff_percentual > 0 else ('negative' if diff_percentual < 0 else 'neutral') }}">
+                        {% if diff_percentual > 0 %}
+                            +{{ diff_percentual }}%
+                        {% elif diff_percentual < 0 %}
+                            {{ diff_percentual }}%
+                        {% else %}
+                            Sem alteração
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Tempo Total -->
+                <div class="evolution-card">
+                    {% set tempo1 = simulado1.tempo_realizado.split('h') %}
+                    {% set tempo1_min = tempo1[0]|int * 60 + tempo1[1]|int %}
+                    
+                    {% set tempo2 = simulado2.tempo_realizado.split('h') %}
+                    {% set tempo2_min = tempo2[0]|int * 60 + tempo2[1]|int %}
+                    
+                    {% set diff_tempo = tempo2_min - tempo1_min %}
+                    {% set diff_tempo_h = (diff_tempo // 60) %}
+                    {% set diff_tempo_m = (diff_tempo % 60) %}
+                    
+                    <div class="evolution-indicator {{ 'evolution-negative' if diff_tempo > 20 else ('evolution-positive' if diff_tempo < -20 else 'evolution-neutral') }}">
+                        {% if diff_tempo > 20 %}
+                            <i class="bi bi-arrow-up"></i>
+                        {% elif diff_tempo < -20 %}
+                            <i class="bi bi-arrow-down"></i>
+                        {% else %}
+                            <i class="bi bi-dash"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="evolution-title">Tempo Total</h5>
+                    <div class="comparison-values">
+                        <div class="comparison-value">{{ simulado1.tempo_realizado }}</div>
+                        <div class="comparison-arrow">→</div>
+                        <div class="comparison-value">{{ simulado2.tempo_realizado }}</div>
+                    </div>
+                    <div class="evolution-diff {{ 'negative' if diff_tempo > 20 else ('positive' if diff_tempo < -20 else 'neutral') }}">
+                        {% if diff_tempo == 0 %}
+                            Sem alteração
+                        {% elif diff_tempo > 0 %}
+                            +{{ diff_tempo_h }}h{{ diff_tempo_m }}min
+                        {% else %}
+                            -{{ -diff_tempo_h }}h{{ -diff_tempo_m }}min
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparação por Área -->
+    <div class="comparison-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-pie-chart"></i>
+                Comparação por Área
+            </h2>
+        </div>
+        <div class="comparison-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-radar"></i>
+                        Desempenho por Área
+                    </h5>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-container">
+                        <canvas id="chartComparacao"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="evolution-list-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-list-check"></i>
+                        Análise de Evolução
+                    </h5>
+                </div>
+                <div class="evolution-list-body">
+                    {% for area, dados in evolucao.items() %}
+                        <div class="evolution-item">
+                            <span class="area-badge">{{ area }}</span>
+                            {% if dados.status == 'melhorou' %}
+                                <span class="change-badge change-positive">+{{ dados.diff|round|int }}%</span>
+                            {% elif dados.status == 'piorou' %}
+                                <span class="change-badge change-negative">{{ dados.diff|round|int }}%</span>
+                            {% else %}
+                                <span class="change-badge change-neutral">Sem alteração</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="evolution-footer">
+                    <span class="footer-label">Maior melhoria:</span>
+                    {% set melhor_area = evolucao|dictsort(by='value', reverse=true)|first %}
+                    {% if melhor_area[1].diff > 0 %}
+                        <span class="best-improvement">{{ melhor_area[0] }} (+{{ melhor_area[1].diff|round|int }}%)</span>
+                    {% else %}
+                        <span class="change-badge change-neutral">Nenhuma</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="actions-section">
+        <a href="{{ url_for('simulados.index') }}" class="btn btn-primary">
+            <i class="bi bi-journals"></i>
+            Fazer Novo Simulado
+        </a>
+        <a href="{{ url_for('analise.exportar_pdf', simulado_id=simulado2.id) }}" class="btn btn-outline">
+            <i class="bi bi-file-earmark-pdf"></i>
+            Exportar Relatório
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuração de cores para tema escuro
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+
+        // Dados para os gráficos
+        const areas = {{ areas_lista|safe }};
+        const percentuais1 = {{ percentuais1|safe }};
+        const percentuais2 = {{ percentuais2|safe }};
+
+        // Gráfico de comparação por área
+        const ctxComparacao = document.getElementById('chartComparacao');
+        if (ctxComparacao) {
+            new Chart(ctxComparacao, {
+                type: 'radar',
+                data: {
+                    labels: areas,
+                    datasets: [
+                        {
+                            label: '{{ simulado1.titulo }}',
+                            data: percentuais1,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: '{{ simulado2.titulo }}',
+                            data: percentuais2,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: '#10b981',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            pointLabels: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                backdropColor: 'transparent',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

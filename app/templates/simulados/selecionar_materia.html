@@ -1,0 +1,360 @@
+{% extends "layout.html" %}
+
+{% block title %}Escolher Matéria - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 5%, #000 40%, #000 100%);
+        color: var(--text);
+        min-height: 100vh;
+    }
+
+    .materia-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Hero */
+    .hero-section {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Back Button */
+    .back-button {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .btn-back {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Matérias Grid */
+    .materias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .materia-card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.2s + var(--delay, 0s)) both;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .materia-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--accent);
+        box-shadow: 0 25px 50px -12px rgba(0, 217, 255, 0.4);
+        color: inherit;
+    }
+
+    .materia-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .materia-card:hover::before {
+        opacity: 1;
+    }
+
+    /* Ícones coloridos por área */
+    .materia-card[data-area="linguagens"]::before {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    }
+
+    .materia-card[data-area="matematica"]::before {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .materia-card[data-area="humanas"]::before {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .materia-card[data-area="natureza"]::before {
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+
+    .materia-header {
+        background: #0a0a0a;
+        padding: 2rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .materia-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Cores por área */
+    .materia-card[data-area="linguagens"] .materia-icon {
+        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    }
+
+    .materia-card[data-area="matematica"] .materia-icon {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    }
+
+    .materia-card[data-area="humanas"] .materia-icon {
+        background: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .materia-card[data-area="natureza"] .materia-icon {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    }
+
+    .materia-nome {
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .materia-area {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .materia-body {
+        padding: 1.5rem;
+    }
+
+    .materia-stats {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-numero {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--accent);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.25rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: var(--border-light);
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+        color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .materias-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .materias-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .materia-header {
+            padding: 1.5rem;
+        }
+
+        .materia-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.5rem;
+        }
+
+        .materia-nome {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="materia-container">
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{{ url_for('simulados.selecionar_modo') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Voltar
+        </a>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero-section">
+        <h1 class="hero-title">Escolha a Matéria</h1>
+        <p class="hero-subtitle">
+            Selecione a matéria que deseja estudar para ver os tópicos disponíveis
+        </p>
+    </div>
+
+    <!-- Matérias Grid -->
+    {% if materias_disponiveis %}
+    <div class="materias-grid">
+        {% for materia in materias_disponiveis %}
+        <a href="{{ url_for('simulados.selecionar_topico', materia=materia.nome) }}" 
+           class="materia-card" 
+           data-area="{{ materia.area|lower }}"
+           style="--delay: {{ loop.index0 * 0.05 }}s">
+            
+            <div class="materia-header">
+                <div class="materia-icon">
+                    <i class="{{ materia.icone }}"></i>
+                </div>
+                <h3 class="materia-nome">{{ materia.nome }}</h3>
+                <span class="materia-area">{{ materia.area }}</span>
+            </div>
+            
+            <div class="materia-body">
+                <div class="materia-stats">
+                    <div class="stat-item">
+                        <span class="stat-numero">{{ materia.total_questoes }}</span>
+                        <span class="stat-label">Questões</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-numero">{{ materia.topicos_count }}</span>
+                        <span class="stat-label">Tópicos</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox empty-icon"></i>
+        <h4 class="empty-title">Nenhuma matéria disponível</h4>
+        <p class="empty-description">
+            Não há matérias com questões cadastradas no momento.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,642 @@
+{% extends "layout.html" %}
+
+{% block title %}Simulados - Análise de Desempenho - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .analise-simulados {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+    }
+
+    .back-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-1px);
+    }
+
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        margin-bottom: 3rem;
+        line-height: 1.6;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    /* Table Container */
+    .table-container {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .table-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .table-title i {
+        color: var(--primary);
+    }
+
+    /* Table Styles */
+    .simulados-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .simulados-table th,
+    .simulados-table td {
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .simulados-table th {
+        background: #0a0a0a;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .simulados-table td {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .simulados-table tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .simulados-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Simulado Title */
+    .simulado-title {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 1rem;
+    }
+
+    /* Date */
+    .simulado-date {
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Time */
+    .simulado-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+    }
+
+    .simulado-time i {
+        color: var(--accent);
+    }
+
+    /* Score Badge */
+    .score-badge {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        font-size: 1rem;
+        min-width: 60px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    /* Areas */
+    .simulado-areas {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-info {
+        background: var(--accent);
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: var(--accent-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .empty-content {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--border-light);
+        margin-bottom: 1.5rem;
+        opacity: 0.7;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .empty-description {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    /* Tips Section */
+    .tips-section {
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .tips-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .tips-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .tips-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .tips-title i {
+        color: var(--warning);
+    }
+
+    .tips-body {
+        padding: 2rem;
+    }
+
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .tip-item {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        transition: all 0.3s ease;
+    }
+
+    .tip-item:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        transform: translateY(-2px);
+    }
+
+    .tip-icon {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .tip-item:hover .tip-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .tip-content h6 {
+        color: var(--text);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .tip-content p {
+        color: var(--text-muted);
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .analise-simulados {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .table-header,
+        .tips-header {
+            padding: 1rem 1.5rem;
+        }
+
+        .simulados-table th,
+        .simulados-table td {
+            padding: 1rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .tips-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .tip-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .tip-icon {
+            margin: 0 auto;
+        }
+
+        .empty-content {
+            padding: 3rem 1.5rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .simulados-table {
+            font-size: 0.8rem;
+        }
+
+        .simulados-table th,
+        .simulados-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .tips-body {
+            padding: 1.5rem;
+        }
+
+        .tip-item {
+            padding: 1rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Table Responsive Wrapper */
+    @media (max-width: 768px) {
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .simulados-table {
+            min-width: 600px;
+        }
+    }
+</style>
+
+<div class="analise-simulados">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-clipboard-data"></i>
+            Análise de Simulados
+        </h1>
+        <a href="{{ url_for('analise.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para Análise
+        </a>
+    </div>
+    
+    <p class="page-subtitle">
+        Visualize todos seus simulados realizados e acesse análises detalhadas de seu desempenho.
+    </p>
+    
+    {% if simulados %}
+        <div class="table-container">
+            <div class="table-header">
+                <h5 class="table-title">
+                    <i class="bi bi-table"></i>
+                    Histórico de Simulados
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="simulados-table">
+                    <thead>
+                        <tr>
+                            <th>Simulado</th>
+                            <th>Data de Realização</th>
+                            <th>Tempo</th>
+                            <th>Nota TRI</th>
+                            <th>Áreas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for simulado in simulados %}
+                        <tr>
+                            <td>
+                                <div class="simulado-title">{{ simulado.titulo }}</div>
+                            </td>
+                            <td>
+                                <div class="simulado-date">{{ simulado.data_realizado.strftime('%d/%m/%Y') }}</div>
+                            </td>
+                            <td>
+                                <div class="simulado-time">
+                                    <i class="bi bi-clock"></i>
+                                    {{ simulado.tempo_realizado }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="score-badge">{{ simulado.nota_tri|int }}</span>
+                            </td>
+                            <td>
+                                <div class="simulado-areas">{{ simulado.areas }}</div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('analise.desempenho_detalhado', simulado_id=simulado.id) }}" class="btn btn-info">
+                                        <i class="bi bi-bar-chart-fill"></i>
+                                        Análise Detalhada
+                                    </a>
+                                    <a href="{{ url_for('simulados.resultado', simulado_id=simulado.id) }}" class="btn btn-outline">
+                                        <i class="bi bi-eye"></i>
+                                        Ver Gabarito
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-content">
+                <i class="bi bi-clipboard-x empty-icon"></i>
+                <h4 class="empty-title">Nenhum simulado concluído</h4>
+                <p class="empty-description">
+                    Você ainda não completou nenhum simulado. Complete um simulado para ver análises detalhadas de seu desempenho.
+                </p>
+                <a href="{{ url_for('simulados.index') }}" class="btn btn-primary">
+                    <i class="bi bi-play-circle"></i>
+                    Ir para Simulados
+                </a>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Tips Section -->
+    <div class="tips-section">
+        <div class="tips-card">
+            <div class="tips-header">
+                <h5 class="tips-title">
+                    <i class="bi bi-lightbulb"></i>
+                    Dicas para Melhorar seu Desempenho
+                </h5>
+            </div>
+            <div class="tips-body">
+                <div class="tips-grid">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="bi bi-alarm"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h6>Pratique Gerenciamento de Tempo</h6>
+                            <p>Calcule aproximadamente 3 minutos por questão e pratique manter esse ritmo durante os simulados.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h6>Foque nas Suas Fraquezas</h6>
+                            <p>Identifique suas áreas mais fracas através das análises e gaste mais tempo estudando-as.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h6>Acompanhe Seu Progresso</h6>
+                            <p>Faça simulados regularmente e monitore sua evolução ao longo do tempo para identificar melhorias.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

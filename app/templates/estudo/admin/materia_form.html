@@ -1,0 +1,1026 @@
+<!-- app/templates/estudo/admin/materia_form.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Editar' if materia else 'Nova' }} Matéria - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .form-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: #00b4d8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #0084ff;
+        text-decoration: underline;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    /* Indicador de Escopo */
+    .scope-indicator {
+        background: rgba(0, 180, 216, 0.1);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .scope-indicator.secao {
+        background: rgba(255, 193, 7, 0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+
+    .scope-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .scope-info {
+        flex: 1;
+    }
+
+    .scope-title {
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .scope-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.4;
+    }
+
+    /* Form Cards */
+    .form-section {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Form Fields */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: white;
+        font-size: 0.95rem;
+    }
+
+    .form-label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #00b4d8;
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .help-text {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+
+    /* Grid Layouts */
+    .form-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Color Input */
+    .color-input-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .color-preview {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .color-preview:hover {
+        transform: scale(1.1);
+        border-color: #00b4d8;
+    }
+
+    .color-text-input {
+        flex: 1;
+    }
+
+    /* Icon Selector */
+    .icon-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .icon-option {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 1.8rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .icon-option:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(1.1);
+    }
+
+    .icon-option.selected {
+        border-color: #00b4d8;
+        background: rgba(0, 180, 216, 0.3);
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+    }
+
+    .icon-option.selected::after {
+        content: "✓";
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        background: #00b4d8;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    /* Upload Section */
+    .upload-container {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(0, 0, 0, 0.2);
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .upload-container:hover,
+    .upload-container.dragover {
+        border-color: #00b4d8;
+        background: rgba(0, 180, 216, 0.1);
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #00b4d8;
+        margin-bottom: 1rem;
+    }
+
+    .upload-text {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .upload-hint {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .file-input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .current-image {
+        max-width: 300px;
+        max-height: 150px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-top: 1rem;
+    }
+
+    .image-preview {
+        margin-top: 1.5rem;
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+        text-align: center;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    /* Preview Section */
+    .preview-section {
+        background: rgba(0, 180, 216, 0.1);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .preview-title {
+        color: #00b4d8;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .preview-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .preview-info h4 {
+        color: white;
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+    }
+
+    .preview-info p {
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #00b4d8, #0084ff);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0084ff, #0056b3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-remove {
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn-remove:hover {
+        background: #c82333;
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Loading States */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Validation */
+    .form-control.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+    }
+
+    .field-error {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    .field-error.active {
+        display: block;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+
+        .icon-selector {
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        }
+
+        .upload-container {
+            padding: 2rem 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-title {
+            font-size: 1.6rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .form-header {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Header -->
+    <div class="form-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> › 
+            {% if secao %}
+                <a href="{{ url_for('estudo.admin_secoes') }}">Seções</a> › 
+                <a href="{{ url_for('estudo.admin_secao_materias', secao_id=secao.id) }}">{{ secao.titulo }}</a> › 
+            {% endif %}
+            {{ 'Editar Matéria' if materia else 'Nova Matéria' }}
+        </div>
+        <h1 class="form-title">{{ '✏️ Editar Matéria' if materia else '➕ Nova Matéria' }}</h1>
+        <p class="form-subtitle">
+            {% if materia %}
+                Atualize as informações da matéria
+            {% elif secao %}
+                Crie uma nova matéria exclusiva para a seção "{{ secao.titulo }}"
+            {% else %}
+                Crie uma nova matéria para o núcleo global do sistema
+            {% endif %}
+        </p>
+
+        <!-- Indicador de Escopo -->
+        {% if secao %}
+            <div class="scope-indicator secao">
+                <div class="scope-icon" style="background: {{ secao.cor }};">
+                    {{ secao.icone }}
+                </div>
+                <div class="scope-info">
+                    <div class="scope-title">🔒 Matéria Exclusiva da Seção</div>
+                    <div class="scope-description">
+                        Esta matéria pertencerá exclusivamente à seção "<strong>{{ secao.titulo }}</strong>" 
+                        e não poderá ser compartilhada com outras seções.
+                    </div>
+                </div>
+            </div>
+        {% elif not materia or not materia.secao_id %}
+            <div class="scope-indicator">
+                <div class="scope-icon" style="background: #00b4d8;">
+                    🌐
+                </div>
+                <div class="scope-info">
+                    <div class="scope-title">🌐 Matéria do Núcleo Global</div>
+                    <div class="scope-description">
+                        Esta matéria faz parte do núcleo principal do sistema, 
+                        acessível através da página principal de estudos.
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="materiaForm">
+        <!-- Hidden field para seção (se aplicável) -->
+        {% if secao_id %}
+            <input type="hidden" name="secao_id" value="{{ secao_id }}">
+        {% endif %}
+
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>📋</span>
+                Informações Básicas
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label required" for="nome">Nome da Matéria</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="nome" 
+                       name="nome" 
+                       value="{{ materia.nome if materia else '' }}"
+                       placeholder="Ex: Matemática, Português, História..."
+                       required>
+                <div class="help-text">
+                    Nome que aparecerá para os estudantes
+                    {% if secao %}
+                        na seção "{{ secao.titulo }}"
+                    {% else %}
+                        no núcleo global
+                    {% endif %}
+                </div>
+                <div class="field-error" id="nome-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="descricao">Descrição</label>
+                <textarea class="form-control" 
+                          id="descricao" 
+                          name="descricao" 
+                          rows="4"
+                          placeholder="Descreva o conteúdo e objetivos desta matéria...">{{ materia.descricao if materia else '' }}</textarea>
+                <div class="help-text">Descrição opcional que aparecerá no card da matéria</div>
+            </div>
+
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="cor">Cor da Matéria</label>
+                    <div class="color-input-group">
+                        <input type="color" 
+                               class="color-preview" 
+                               id="cor" 
+                               name="cor" 
+                               value="{{ materia.cor if materia else '#00b4d8' }}"
+                               onchange="updatePreview()">
+                        <input type="text" 
+                               class="form-control color-text-input" 
+                               id="cor-text" 
+                               placeholder="#00b4d8"
+                               value="{{ materia.cor if materia else '#00b4d8' }}"
+                               onchange="updateColorPicker()">
+                    </div>
+                    <div class="help-text">Cor que será usada nos elementos visuais</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="ordem">Ordem de Exibição</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="ordem" 
+                           name="ordem" 
+                           value="{{ materia.ordem if materia else 0 }}"
+                           min="0"
+                           onchange="updatePreview()">
+                    <div class="help-text">
+                        Ordem em que aparece na lista
+                        {% if secao %}
+                            da seção
+                        {% else %}
+                            do núcleo global
+                        {% endif %}
+                        (0 = primeiro)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ícone da Matéria</label>
+                <input type="hidden" 
+                       id="icone" 
+                       name="icone" 
+                       value="{{ materia.icone if materia else '📖' }}">
+                <div class="icon-selector">
+                    <!-- Ícones comuns para matérias -->
+                    <div class="icon-option {{ 'selected' if not materia or materia.icone == '📖' else '' }}" onclick="selectIcon('📖')">📖</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '📚' else '' }}" onclick="selectIcon('📚')">📚</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🔢' else '' }}" onclick="selectIcon('🔢')">🔢</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🧪' else '' }}" onclick="selectIcon('🧪')">🧪</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🌍' else '' }}" onclick="selectIcon('🌍')">🌍</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🎨' else '' }}" onclick="selectIcon('🎨')">🎨</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '💡' else '' }}" onclick="selectIcon('💡')">💡</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '⚗️' else '' }}" onclick="selectIcon('⚗️')">⚗️</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '📐' else '' }}" onclick="selectIcon('📐')">📐</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🏛️' else '' }}" onclick="selectIcon('🏛️')">🏛️</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🗺️' else '' }}" onclick="selectIcon('🗺️')">🗺️</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🎭' else '' }}" onclick="selectIcon('🎭')">🎭</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🌱' else '' }}" onclick="selectIcon('🌱')">🌱</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🎯' else '' }}" onclick="selectIcon('🎯')">🎯</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '🚀' else '' }}" onclick="selectIcon('🚀')">🚀</div>
+                    <div class="icon-option {{ 'selected' if materia and materia.icone == '⭐' else '' }}" onclick="selectIcon('⭐')">⭐</div>
+                </div>
+                <div class="help-text">Escolha um ícone que represente a matéria</div>
+            </div>
+        </div>
+
+
+        <!-- Upload de Imagem -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>🖼️</span>
+                Imagem de Capa
+            </h3>
+            
+            <!-- Imagem Atual (se existir) -->
+            {% if materia and materia.capa_url %}
+                <div class="current-image-container" style="text-align: center;">
+                    <p style="margin-bottom: 1rem; color: #00b4d8; font-weight: 600;">📷 Imagem Atual:</p>
+                    <img src="{{ url_for('static', filename=materia.capa_url) }}" 
+                         alt="Capa atual da matéria" 
+                         class="current-image">
+                    <br>
+                    <button type="button" class="btn btn-remove" onclick="removeCurrentImage()">
+                        🗑️ Remover Imagem Atual
+                    </button>
+                </div>
+                <div style="margin: 2rem 0; text-align: center; color: rgba(255,255,255,0.6);">
+                    — OU —
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label">
+                    {% if materia and materia.capa_url %}
+                        Nova Imagem de Capa (opcional)
+                    {% else %}
+                        Imagem de Capa da Matéria
+                    {% endif %}
+                </label>
+                <div class="upload-container" id="imageUpload">
+                    <input type="file" 
+                           class="file-input" 
+                           id="capa_imagem" 
+                           name="capa_imagem" 
+                           accept=".jpg,.jpeg,.png,.webp"
+                           onchange="previewImage(event)">
+                    <div class="upload-content">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">Clique ou arraste uma imagem aqui</div>
+                        <div class="upload-hint">
+                            JPG, PNG ou WEBP • Máximo 5MB<br>
+                            Recomendado: 400x225px (proporção 16:9)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview da nova imagem -->
+                <div class="image-preview" id="imagePreview">
+                    <p style="color: #00b4d8; font-weight: 600; margin-bottom: 1rem;">👁️ Preview da Nova Imagem:</p>
+                    <img class="preview-image" id="previewImg" alt="Preview">
+                    <button type="button" class="btn btn-remove" onclick="clearImagePreview()" style="margin-top: 1rem;">
+                        ❌ Remover Preview
+                    </button>
+                </div>
+                
+                <div class="help-text">
+                    A imagem será redimensionada automaticamente para 400x225 pixels. 
+                    Use imagens com boa qualidade para melhor resultado.
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview da Matéria -->
+        <div class="preview-section">
+            <div class="preview-title">
+                <span>👁️</span>
+                Preview do Card da Matéria
+            </div>
+            <div class="preview-card">
+                <div class="preview-icon" id="preview-icon" style="background: {{ materia.cor if materia else '#00b4d8' }}">
+                    {{ materia.icone if materia else '📖' }}
+                </div>
+                <div class="preview-info">
+                    <h4 id="preview-title">{{ materia.nome if materia else 'Nome da Matéria' }}</h4>
+                    <p id="preview-description">
+                        {{ materia.descricao if materia and materia.descricao else 'Descrição da matéria aparecerá aqui...' }}
+                    </p>
+                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem;">
+                        <strong>Escopo:</strong> 
+                        {% if secao %}
+                            Seção "{{ secao.titulo }}" (exclusiva)
+                        {% else %}
+                            Núcleo Global
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span>{{ '💾' if materia else '✅' }}</span>
+                <span>{{ 'Salvar Alterações' if materia else 'Criar Matéria' }}</span>
+            </button>
+            <a href="{% if secao %}{{ url_for('estudo.admin_secao_materias', secao_id=secao.id) }}{% else %}{{ url_for('estudo.admin') }}{% endif %}" 
+               class="btn btn-secondary">
+                <span>❌</span>
+                <span>Cancelar</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Variáveis globais
+let isSubmitting = false;
+let shouldRemoveCurrentImage = false;
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupValidation();
+    updatePreview();
+    setupDragAndDrop();
+});
+
+// Seleção de ícone
+function selectIcon(emoji) {
+    document.getElementById('icone').value = emoji;
+    
+    // Atualizar seleção visual
+    document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+    event.target.classList.add('selected');
+    
+    updatePreview();
+}
+
+// Atualizar cor
+function updateColorPicker() {
+    const colorText = document.getElementById('cor-text').value;
+    const colorInput = document.getElementById('cor');
+    
+    if (/^#[0-9A-F]{6}$/i.test(colorText)) {
+        colorInput.value = colorText;
+        updatePreview();
+    }
+}
+
+// Atualizar preview
+function updatePreview() {
+    const nome = document.getElementById('nome').value || 'Nome da Matéria';
+    const descricao = document.getElementById('descricao').value || 'Descrição da matéria aparecerá aqui...';
+    const cor = document.getElementById('cor').value;
+    const icone = document.getElementById('icone').value;
+    
+    document.getElementById('preview-title').textContent = nome;
+    document.getElementById('preview-description').textContent = descricao;
+    document.getElementById('preview-icon').style.background = cor;
+    document.getElementById('preview-icon').textContent = icone;
+    
+    // Atualizar cor do texto
+    document.getElementById('cor-text').value = cor;
+}
+
+// Drag and Drop
+function setupDragAndDrop() {
+    const uploadContainer = document.getElementById('imageUpload');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, () => {
+            uploadContainer.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, () => {
+            uploadContainer.classList.remove('dragover');
+        }, false);
+    });
+
+    uploadContainer.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            document.getElementById('capa_imagem').files = files;
+            previewImage({ target: { files } });
+        }
+    }, false);
+}
+
+// Preview de imagem
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block';
+            
+            // Ocultar imagem atual se existir
+            const currentImageContainer = document.querySelector('.current-image-container');
+            if (currentImageContainer) {
+                currentImageContainer.style.opacity = '0.5';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearImagePreview() {
+    const fileInput = document.getElementById('capa_imagem');
+    const previewDiv = document.getElementById('imagePreview');
+    
+    fileInput.value = '';
+    previewDiv.style.display = 'none';
+    
+    // Mostrar imagem atual novamente se existir
+    const currentImageContainer = document.querySelector('.current-image-container');
+    if (currentImageContainer) {
+        currentImageContainer.style.opacity = '1';
+    }
+    
+    shouldRemoveCurrentImage = false;
+}
+
+function removeCurrentImage() {
+    const currentImageContainer = document.querySelector('.current-image-container');
+    if (currentImageContainer) {
+        currentImageContainer.style.display = 'none';
+        shouldRemoveCurrentImage = true;
+        
+        // Adicionar campo hidden para indicar remoção
+        const form = document.getElementById('materiaForm');
+        let removeInput = document.getElementById('remove_current_image');
+        if (!removeInput) {
+            removeInput = document.createElement('input');
+            removeInput.type = 'hidden';
+            removeInput.id = 'remove_current_image';
+            removeInput.name = 'remove_current_image';
+            form.appendChild(removeInput);
+        }
+        removeInput.value = 'true';
+    }
+}
+// Validação
+function setupValidation() {
+    const form = document.getElementById('materiaForm');
+    const nomeInput = document.getElementById('nome');
+    
+    nomeInput.addEventListener('input', function() {
+        updatePreview();
+        clearFieldError('nome');
+    });
+    
+    document.getElementById('descricao').addEventListener('input', updatePreview);
+    document.getElementById('cor').addEventListener('change', updatePreview);
+    document.getElementById('ordem').addEventListener('input', updatePreview);
+    
+    form.addEventListener('submit', handleSubmit);
+}
+
+function handleSubmit(e) {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    const nome = document.getElementById('nome').value.trim();
+    
+    // Validação básica
+    if (!nome) {
+        showFieldError('nome', 'O nome da matéria é obrigatório');
+        return;
+    }
+    
+    if (nome.length < 2) {
+        showFieldError('nome', 'O nome deve ter pelo menos 2 caracteres');
+        return;
+    }
+    
+    // Submeter formulário
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submit-btn');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> <span>Salvando...</span>';
+    
+    e.target.submit();
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`);
+    
+    if (field) {
+        field.classList.add('error');
+        field.focus();
+    }
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('active');
+    }
+}
+
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`);
+    
+    if (field) field.classList.remove('error');
+    if (errorElement) errorElement.classList.remove('active');
+}
+</script>
+{% endblock %}

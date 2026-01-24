@@ -1,0 +1,626 @@
+<!-- app/templates/shop/admin.html -->
+{% extends "layout.html" %}
+
+{% block title %}Administração de Produtos - Shop - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    .admin-header {
+        background: linear-gradient(45deg, #343a40, #495057);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .admin-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-tabs {
+        margin-bottom: 2rem;
+    }
+    
+    .admin-tabs .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        position: relative;
+    }
+    
+    .admin-tabs .nav-link:hover {
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-tabs .nav-link.active {
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: none;
+    }
+    
+    .admin-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .table-dark {
+        background-color: transparent;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .table-dark th {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .table-dark td {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .badge-disponivel {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .badge-esgotado {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+    
+    .badge-pendente {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+    
+    .badge-enviado {
+        background-color: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+    
+    .badge-entregue {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .admin-form label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-form .form-control,
+    .admin-form .form-select {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 0.8rem;
+    }
+    
+    .admin-form .form-control:focus,
+    .admin-form .form-select:focus {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-color: rgba(0, 123, 255, 0.5);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .resgate-details {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+
+        /* Estilo para imagens de produtos na administração */
+    .admin-product-image {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+        object-fit: contain;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    /* Estilo para as imagens na tabela de produtos */
+    .admin-product-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+    
+    /* Container para garantir que a imagem não seja cortada */
+    .product-image-container {
+        width: 100%;
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-shop">
+    <!-- Cabeçalho -->
+    <div class="admin-header">
+        <h1 class="admin-title">Administração da Loja</h1>
+        <p class="mb-0">Gerencie produtos e acompanhe resgates da plataforma.</p>
+    </div>
+    
+    <!-- Tabs de Navegação -->
+    <ul class="nav nav-tabs admin-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="produtos-tab" data-bs-toggle="tab" data-bs-target="#produtos" 
+                    type="button" role="tab" aria-controls="produtos" aria-selected="true">
+                <i class="bi bi-box me-2"></i>Produtos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resgates-tab" data-bs-toggle="tab" data-bs-target="#resgates" 
+                    type="button" role="tab" aria-controls="resgates" aria-selected="false">
+                <i class="bi bi-bag-check me-2"></i>Resgates
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="novo-produto-tab" data-bs-toggle="tab" data-bs-target="#novo-produto" 
+                    type="button" role="tab" aria-controls="novo-produto" aria-selected="false">
+                <i class="bi bi-plus-circle me-2"></i>Novo Produto
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Conteúdo das Tabs -->
+    <div class="tab-content" id="adminTabsContent">
+        <!-- Tab Produtos -->
+        <div class="tab-pane fade show active" id="produtos" role="tabpanel" aria-labelledby="produtos-tab">
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Lista de Produtos</h4>
+                    <div class="d-flex">
+                        <input type="text" class="form-control me-2" id="searchProdutos" placeholder="Buscar produtos...">
+                        <button class="btn btn-primary" id="btnSearchProdutos">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Imagem</th>
+                                <th>Nome</th>
+                                <th>Preço (XP)</th>
+                                <th>Estoque</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for produto in produtos %}
+                            <tr>
+                                <td>{{ produto.id }}</td>
+                                <td>
+                                    <img src="{{ url_for('static', filename='images/produtos/' ~ produto.imagem) }}" 
+                                         alt="{{ produto.nome }}" height="40">
+                                </td>
+                                <td>{{ produto.nome }}</td>
+                                <td>{{ produto.preco_diamantes }}</td>
+                                <td>{{ produto.estoque }}</td>
+                                <td>
+                                    {% if produto.disponivel and produto.estoque > 0 %}
+                                        <span class="badge badge-disponivel">Disponível</span>
+                                    {% else %}
+                                        <span class="badge badge-esgotado">Esgotado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editarProdutoModal{{ produto.id }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#excluirProdutoModal{{ produto.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Resgates -->
+        <div class="tab-pane fade" id="resgates" role="tabpanel" aria-labelledby="resgates-tab">
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Resgates Realizados</h4>
+                    <div class="d-flex">
+                        <select class="form-select me-2" id="filterStatus">
+                            <option value="todos">Todos os Status</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Enviado">Enviado</option>
+                            <option value="Entregue">Entregue</option>
+                        </select>
+                        <input type="text" class="form-control me-2" id="searchResgates" placeholder="Buscar resgates...">
+                        <button class="btn btn-primary" id="btnSearchResgates">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produto</th>
+                                <th>Usuário</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resgate in resgates %}
+                            <tr>
+                                <td>{{ resgate.id }}</td>
+                                <td>{{ resgate.produto.nome }}</td>
+                                <td>{{ resgate.usuario.nome_completo }}</td>
+                                <td>{{ resgate.data_resgate.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if resgate.status == 'Pendente' %}
+                                        <span class="badge badge-pendente">{{ resgate.status }}</span>
+                                    {% elif resgate.status == 'Enviado' %}
+                                        <span class="badge badge-enviado">{{ resgate.status }}</span>
+                                    {% elif resgate.status == 'Entregue' %}
+                                        <span class="badge badge-entregue">{{ resgate.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#verResgateModal{{ resgate.id }}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#atualizarStatusModal{{ resgate.id }}">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Novo Produto -->
+        <div class="tab-pane fade" id="novo-produto" role="tabpanel" aria-labelledby="novo-produto-tab">
+            <div class="admin-card">
+                <h4 class="mb-4">Adicionar Novo Produto</h4>
+                
+                <form action="{{ url_for('shop.admin_add_produto') }}" method="POST" enctype="multipart/form-data" class="admin-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nome" class="form-label">Nome do Produto</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preco_diamantes" class="form-label">Launcher Coin</label>
+                            <input type="number" class="form-control" id="preco_diamantes" name="preco_diamantes" min="1" required>                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="categoria" class="form-label">Categoria</label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="Livros">Livros</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Acessórios">Acessórios</option>
+                                <option value="Cursos">Cursos</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estoque" class="form-label">Quantidade em Estoque</label>
+                            <input type="number" class="form-control" id="estoque" name="estoque" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="imagem" class="form-label">Imagem do Produto</label>
+                        <input type="file" class="form-control" id="imagem" name="imagem" accept="image/*" required>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="disponivel" name="disponivel" checked>
+                        <label class="form-check-label" for="disponivel">
+                            Disponível para resgate
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Adicionar Produto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Edição de Produto -->
+{% for produto in produtos %}
+<div class="modal fade" id="editarProdutoModal{{ produto.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Produto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('shop.admin_edit_produto', produto_id=produto.id) }}" method="POST" enctype="multipart/form-data" class="admin-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nome{{ produto.id }}" class="form-label">Nome do Produto</label>
+                            <input type="text" class="form-control" id="nome{{ produto.id }}" name="nome" value="{{ produto.nome }}" required>
+                        </div>
+                        <div class="col-md-6">
+                        <label for="preco_diamantes{{ produto.id }}" class="form-label">Launcher Coin</label>
+                        <input type="number" class="form-control" id="preco_diamantes{{ produto.id }}" name="preco_diamantes" value="{{ produto.preco_diamantes or produto.preco_display }}" min="1" required>                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="categoria{{ produto.id }}" class="form-label">Categoria</label>
+                            <select class="form-select" id="categoria{{ produto.id }}" name="categoria">
+                                <option value="Livros" {% if produto.categoria == 'Livros' %}selected{% endif %}>Livros</option>
+                                <option value="Eletrônicos" {% if produto.categoria == 'Eletrônicos' %}selected{% endif %}>Eletrônicos</option>
+                                <option value="Acessórios" {% if produto.categoria == 'Acessórios' %}selected{% endif %}>Acessórios</option>
+                                <option value="Cursos" {% if produto.categoria == 'Cursos' %}selected{% endif %}>Cursos</option>
+                                <option value="Outros" {% if produto.categoria == 'Outros' %}selected{% endif %}>Outros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estoque{{ produto.id }}" class="form-label">Quantidade em Estoque</label>
+                            <input type="number" class="form-control" id="estoque{{ produto.id }}" name="estoque" value="{{ produto.estoque }}" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descricao{{ produto.id }}" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao{{ produto.id }}" name="descricao" rows="4" required>{{ produto.descricao }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Imagem Atual</label>
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{{ url_for('static', filename='images/produtos/' ~ produto.imagem) }}" alt="{{ produto.nome }}" height="60" class="me-3">
+                            <span>{{ produto.imagem }}</span>
+                        </div>
+                        <label for="imagem{{ produto.id }}" class="form-label">Nova Imagem (opcional)</label>
+                        <input type="file" class="form-control" id="imagem{{ produto.id }}" name="imagem" accept="image/*">
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="disponivel{{ produto.id }}" name="disponivel" {% if produto.disponivel %}checked{% endif %}>
+                        <label class="form-check-label" for="disponivel{{ produto.id }}">
+                            Disponível para resgate
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modais de Exclusão de Produto -->
+{% for produto in produtos %}
+<div class="modal fade" id="excluirProdutoModal{{ produto.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o produto <strong>{{ produto.nome }}</strong>?</p>
+                <p class="text-danger">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('shop.admin_delete_produto', produto_id=produto.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modais de Visualização de Resgate -->
+{% for resgate in resgates %}
+<div class="modal fade" id="verResgateModal{{ resgate.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Resgate #{{ resgate.id }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                             <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                 alt="{{ resgate.produto.nome }}" class="img-fluid admin-product-image">
+                        </div>
+                        <h5>{{ resgate.produto.nome }}</h5>
+                        <p class="text-muted">{{ resgate.produto.preco_xp }} XP</p>
+                    </div>
+                    <div class="col-md-8">
+                        <h5>Informações do Usuário</h5>
+                        <div class="resgate-details">
+                            <p><strong>Nome:</strong> {{ resgate.nome_contato_display }}</p>
+                            <p><strong>Email:</strong> {{ resgate.usuario.email }}</p>
+                            <p><strong>Data do Resgate:</strong> {{ format_datetime_brasil(resgate.data_resgate).strftime('%d/%m/%Y às %H:%M') }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if resgate.status == 'Pendente' %}
+                                    <span class="badge badge-pendente">{{ resgate.status }}</span>
+                                {% elif resgate.status == 'Enviado' %}
+                                    <span class="badge badge-enviado">{{ resgate.status }}</span>
+                                {% elif resgate.status == 'Entregue' %}
+                                    <span class="badge badge-entregue">{{ resgate.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <h5 class="mt-4">Informações de Contato</h5>
+                            <div class="resgate-details">
+                                {{ resgate.endereco_entrega|safe }}
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#atualizarStatusModal{{ resgate.id }}" data-bs-dismiss="modal">
+                    Atualizar Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modais de Atualização de Status -->
+{% for resgate in resgates %}
+<div class="modal fade" id="atualizarStatusModal{{ resgate.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Atualizar Status do Resgate #{{ resgate.id }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('shop.admin_update_status', resgate_id=resgate.id) }}" method="POST" class="admin-form">
+                    <div class="mb-3">
+                        <label for="status{{ resgate.id }}" class="form-label">Novo Status</label>
+                        <select class="form-select" id="status{{ resgate.id }}" name="status">
+                            <option value="Pendente" {% if resgate.status == 'Pendente' %}selected{% endif %}>Pendente</option>
+                            <option value="Enviado" {% if resgate.status == 'Enviado' %}selected{% endif %}>Enviado</option>
+                            <option value="Entregue" {% if resgate.status == 'Entregue' %}selected{% endif %}>Entregue</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacao{{ resgate.id }}" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="observacao{{ resgate.id }}" name="observacao" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Atualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtro de pesquisa para produtos
+        const searchProdutos = document.getElementById('searchProdutos');
+        const btnSearchProdutos = document.getElementById('btnSearchProdutos');
+        
+        if (searchProdutos && btnSearchProdutos) {
+            btnSearchProdutos.addEventListener('click', function() {
+                const searchTerm = searchProdutos.value.toLowerCase();
+                const rows = document.querySelectorAll('#produtos tbody tr');
+                
+                rows.forEach(row => {
+                    const nome = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    
+                    if (nome.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Pesquisa ao pressionar Enter
+            searchProdutos.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    btnSearchProdutos.click();
+                }
+            });
+        }
+        
+        // Filtro de pesquisa para resgates
+        const searchResgates = document.getElementById('searchResgates');
+        const btnSearchResgates = document.getElementById('btnSearchResgates');
+        const filterStatus = document.getElementById('filterStatus');
+        
+        if (searchResgates && btnSearchResgates && filterStatus) {
+            const filterResgates = function() {
+                const searchTerm = searchResgates.value.toLowerCase();
+                const statusFilter = filterStatus.value;
+                const rows = document.querySelectorAll('#resgates tbody tr');
+                
+                rows.forEach(row => {
+                    const produto = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const usuario = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    const status = row.querySelector('td:nth-child(5) span').textContent;
+                    
+                    const matchesSearch = produto.includes(searchTerm) || usuario.includes(searchTerm);
+                    const matchesStatus = statusFilter === 'todos' || status === statusFilter;
+                    
+                    if (matchesSearch && matchesStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            };
+            
+            btnSearchResgates.addEventListener('click', filterResgates);
+            filterStatus.addEventListener('change', filterResgates);
+            
+            // Pesquisa ao pressionar Enter
+            searchResgates.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    btnSearchResgates.click();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

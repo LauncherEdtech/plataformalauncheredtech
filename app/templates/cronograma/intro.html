@@ -1,0 +1,373 @@
+{% extends "layout.html" %}
+
+{% block title %}Novo Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    /* --- Minimal Design System --- */
+    :root {
+        --primary: #667eea;
+        --secondary: #764ba2;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --bg-card: rgba(255, 255, 255, 0.02);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --card-hover: rgba(255, 255, 255, 0.04);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 40%, #000 100%);
+        color: var(--text-main);
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .container-clean {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 5rem 1.5rem;
+    }
+
+    /* --- Hero Section Simplificado --- */
+    .hero-clean {
+        text-align: center;
+        margin-bottom: 6rem;
+    }
+
+    .pill-status {
+        display: inline-block;
+        padding: 6px 14px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #818cf8;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        letter-spacing: 0.5px;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+        font-size: 1.15rem;
+        color: var(--text-muted);
+        max-width: 550px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.6;
+        font-weight: 300;
+    }
+
+    .btn-primary-clean {
+        background: white;
+        color: black;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-primary-clean:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+    }
+
+    /* --- Grid de Informações --- */
+    .grid-clean {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+        margin-bottom: 6rem;
+        padding-top: 4rem;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .card-clean {
+        padding: 0;
+    }
+
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        color: #a5b4fc;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #f1f5f9;
+    }
+
+    .card-desc {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* --- Steps Section (Colorful Update) --- */
+    .steps-section {
+        margin-bottom: 2rem;
+    }
+
+    .steps-header {
+        text-align: left;
+        margin-bottom: 3rem;
+    }
+
+    .steps-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        position: relative;
+    }
+
+    /* Linha Conectora */
+    .steps-grid::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50px;
+        right: 50px;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1 0%, rgba(255,255,255,0.1) 100%);
+        z-index: 0;
+    }
+
+    .step-card {
+        background: #050a15;
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 1.5rem;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    /* Barra de cor superior */
+    .step-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--step-color);
+        opacity: 0.6;
+        transition: opacity 0.3s;
+    }
+
+    .step-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(255,255,255,0.1);
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    }
+    
+    /* Efeito de brilho colorido no fundo ao passar o mouse */
+    .step-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, var(--step-color), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .step-card:hover::after {
+        opacity: 0.05;
+    }
+
+    .step-card:hover::before {
+        opacity: 1;
+        height: 4px;
+    }
+
+    .step-badge {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        color: var(--step-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-family: monospace;
+        margin-bottom: 1.2rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 0 6px #000; /* Corte da linha */
+    }
+
+    .step-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+        transition: transform 0.3s;
+    }
+    
+    .step-card:hover .step-icon {
+        transform: scale(1.1);
+    }
+
+    .step-heading {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white; /* Título Branco para contraste */
+        margin-bottom: 0.5rem;
+    }
+
+    /* Se quiser o título colorido, use esta regra: */
+    .step-card:hover .step-heading {
+        color: var(--step-color);
+        transition: color 0.3s;
+    }
+
+    .step-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+        .steps-grid { grid-template-columns: repeat(2, 1fr); }
+        .steps-grid::before { display: none; }
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title { font-size: 2.2rem; }
+        .grid-clean { grid-template-columns: 1fr; gap: 3rem; }
+        .steps-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-clean">
+    
+    <!-- Hero Principal -->
+    <div class="hero-clean">
+        <div class="pill-status">Planejamento Inteligente</div>
+        
+        <h1 class="hero-title">
+            Organize seus estudos<br>
+            em segundos.
+        </h1>
+        
+        <p class="hero-sub">
+            Crie um cronograma adaptável que respeita o seu ritmo. 
+            Sem planilhas complexas, apenas o que você precisa fazer hoje.
+        </p>
+
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('cronograma.wizard') }}" class="btn-primary-clean">
+                Começar Agora
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            <!-- Opção secundária discreta -->
+            <span style="display: inline-block; margin-left: 1.5rem; font-size: 0.9rem; color: #52525b;">
+                Leva menos de 2 minutos
+            </span>
+        </div>
+    </div>
+
+    <!-- 3 Pontos Chave -->
+    <div class="grid-clean">
+        <div class="card-clean">
+            <div class="icon-box">⚡</div>
+            <h3 class="card-title">Automático</h3>
+            <p class="card-desc">
+                Defina seus horários e o algoritmo distribui todo o conteúdo programático até a data da prova.
+            </p>
+        </div>
+
+        <div class="card-clean">
+            <div class="icon-box">🔄</div>
+            <h3 class="card-title">Flexível</h3>
+            <p class="card-desc">
+                Imprevistos acontecem. O sistema reajusta as datas futuras automaticamente caso você perca um dia.
+            </p>
+        </div>
+
+        <div class="card-clean">
+            <div class="icon-box">🧠</div>
+            <h3 class="card-title">Estratégico</h3>
+            <p class="card-desc">
+                Alternância inteligente de matérias e ciclos de revisão para maximizar a retenção de conteúdo.
+            </p>
+        </div>
+    </div>
+
+    <!-- Seção: Como Funciona (Com Cores) -->
+    <div class="steps-section">
+        <div class="steps-header">
+            <h2 class="steps-title">O processo é simples</h2>
+        </div>
+        
+        <div class="steps-grid">
+            <!-- Passo 1: Azul (Configuração) -->
+            <div class="step-card" style="--step-color: #6366f1;">
+                <div class="step-badge">01</div>
+                <div class="step-icon">⏱️</div>
+                <h3 class="step-heading">Configure</h3>
+                <p class="step-desc">Informe seus dias e horários livres na semana.</p>
+            </div>
+
+            <!-- Passo 2: Roxo (Seleção) -->
+            <div class="step-card" style="--step-color: #a855f7;">
+                <div class="step-badge">02</div>
+                <div class="step-icon">📚</div>
+                <h3 class="step-heading">Selecione</h3>
+                <p class="step-desc">Marque as matérias prioritárias para o seu curso.</p>
+            </div>
+
+            <!-- Passo 3: Rosa (Ação/IA) -->
+            <div class="step-card" style="--step-color: #ec4899;">
+                <div class="step-badge">03</div>
+                <div class="step-icon">✨</div>
+                <h3 class="step-heading">Gere</h3>
+                <p class="step-desc">A IA processa e cria seu calendário ideal.</p>
+            </div>
+
+            <!-- Passo 4: Verde (Sucesso) -->
+            <div class="step-card" style="--step-color: #10b981;">
+                <div class="step-badge">04</div>
+                <div class="step-icon">🚀</div>
+                <h3 class="step-heading">Estude</h3>
+                <p class="step-desc">Acompanhe seu progresso diário no dashboard.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

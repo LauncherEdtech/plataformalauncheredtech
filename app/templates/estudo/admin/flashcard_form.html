@@ -1,0 +1,595 @@
+<!-- =============================================== -->
+<!-- ARQUIVO: app/templates/estudo/admin/flashcard_form.html -->
+<!-- =============================================== -->
+
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Editar' if flashcard else 'Novo' }} Flashcard - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-section {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #45b7d1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #45b7d1;
+        box-shadow: 0 0 0 3px rgba(69, 183, 209, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .upload-section {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .upload-section:hover,
+    .upload-section.dragover {
+        border-color: #45b7d1;
+        background: rgba(69, 183, 209, 0.1);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.7;
+    }
+
+    .upload-text {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .upload-hint {
+        opacity: 0.7;
+        font-size: 0.9rem;
+    }
+
+    .file-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .preview-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid #28a745;
+        border-radius: 10px;
+    }
+
+    .preview-title {
+        color: #28a745;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .preview-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .preview-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .preview-info h4 {
+        margin: 0 0 5px 0;
+        color: white;
+    }
+
+    .preview-info p {
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .color-picker-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .color-input {
+        width: 60px;
+        height: 40px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .icon-selector {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .icon-option {
+        width: 45px;
+        height: 45px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .icon-option:hover,
+    .icon-option.selected {
+        border-color: #45b7d1;
+        background: rgba(69, 183, 209, 0.2);
+        transform: scale(1.1);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #45b7d1, #6bceed);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(69, 183, 209, 0.4);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+    }
+
+    .current-image-container {
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .current-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .image-info {
+        flex: 1;
+    }
+
+    .image-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-remove {
+        background: #dc3545;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-remove:hover {
+        background: #c82333;
+    }
+
+    #imagePreview {
+        display: none;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    #previewImg {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .preview-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 10px;
+        }
+
+        .form-section {
+            padding: 20px;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .icon-selector {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data" id="flashcardForm">
+        <!-- Cabeçalho -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>{{ '✏️ Editando Flashcard' if flashcard else '➕ Novo Flashcard' }}</span>
+            </div>
+            
+            {% if flashcard %}
+            <p style="opacity: 0.8;">Editando: <strong>{{ flashcard.titulo }}</strong></p>
+            {% else %}
+            <p style="opacity: 0.8;">Crie um novo conjunto de flashcards para facilitar a memorização</p>
+            {% endif %}
+        </div>
+
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>📝 Informações Básicas</span>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="titulo" class="form-label">Título *</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" 
+                           value="{{ flashcard.titulo if flashcard else '' }}" 
+                           placeholder="Ex: Química - Fórmulas" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ordem" class="form-label">Ordem de Exibição</label>
+                    <input type="number" class="form-control" id="ordem" name="ordem" 
+                           value="{{ flashcard.ordem if flashcard else '0' }}" 
+                           placeholder="0" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao" class="form-label">Descrição</label>
+                <textarea class="form-control" id="descricao" name="descricao" 
+                          placeholder="Descreva o conteúdo deste conjunto de flashcards...">{{ flashcard.descricao if flashcard else '' }}</textarea>
+            </div>
+        </div>
+
+        <!-- Personalização Visual -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>🎨 Personalização Visual</span>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="cor" class="form-label">Cor do Tema</label>
+                    <div class="color-picker-group">
+                        <input type="color" class="color-input" id="cor" name="cor" 
+                               value="{{ flashcard.cor if flashcard else '#45b7d1' }}">
+                        <input type="text" class="form-control" id="cor-text" 
+                               value="{{ flashcard.cor if flashcard else '#45b7d1' }}" 
+                               placeholder="#45b7d1" onchange="updateColorPicker()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="icone" class="form-label">Ícone</label>
+                    <input type="hidden" id="icone" name="icone" value="{{ flashcard.icone if flashcard else '🃏' }}">
+                    <div class="icon-selector">
+                        <div class="icon-option {{ 'selected' if (flashcard and flashcard.icone == '🃏') or not flashcard else '' }}" onclick="selectIcon('🃏', this)">🃏</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '🧠' else '' }}" onclick="selectIcon('🧠', this)">🧠</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '💭' else '' }}" onclick="selectIcon('💭', this)">💭</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '🎴' else '' }}" onclick="selectIcon('🎴', this)">🎴</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '📇' else '' }}" onclick="selectIcon('📇', this)">📇</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '🔖' else '' }}" onclick="selectIcon('🔖', this)">🔖</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '🎯' else '' }}" onclick="selectIcon('🎯', this)">🎯</div>
+                        <div class="icon-option {{ 'selected' if flashcard and flashcard.icone == '⚡' else '' }}" onclick="selectIcon('⚡', this)">⚡</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload de Imagem -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>🖼️ Imagem de Capa</span>
+            </div>
+
+            <!-- Imagem Atual (se editando) -->
+            {% if flashcard and flashcard.capa_url %}
+            <div class="current-image-container">
+                <img src="{{ flashcard.capa_url }}" alt="Capa atual" class="current-image">
+                <div class="image-info">
+                    <h4>Imagem Atual</h4>
+                    <p>Faça upload de uma nova imagem para substituir</p>
+                </div>
+                <div class="image-actions">
+                    <button type="button" class="btn-remove" onclick="removeCurrentImage()">
+                        🗑️ Remover
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+
+            <div class="upload-section" id="imageUpload">
+                <input type="file" name="capa_imagem" id="capa_imagem" class="file-input" 
+                       accept="image/*" onchange="previewImage(event)">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Clique ou arraste uma imagem aqui</div>
+                <div class="upload-hint">PNG, JPG até 5MB</div>
+            </div>
+
+            <!-- Preview da nova imagem -->
+            <div id="imagePreview">
+                <img id="previewImg" src="" alt="Preview">
+                <div class="preview-actions">
+                    <button type="button" class="btn btn-secondary btn-small" onclick="clearImagePreview()">
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-section">
+            <div class="preview-title">
+                <span>👁️ Preview</span>
+            </div>
+            <div class="preview-content">
+                <div class="preview-icon" id="preview-icon" style="background: {{ flashcard.cor if flashcard else '#45b7d1' }};">
+                    {{ flashcard.icone if flashcard else '🃏' }}
+                </div>
+                <div class="preview-info">
+                    <h4 id="preview-titulo">{{ flashcard.titulo if flashcard else 'Título do Flashcard' }}</h4>
+                    <p id="preview-descricao">{{ flashcard.descricao if flashcard else 'Descrição do flashcard...' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">
+                <span>{{ '💾 Salvar Alterações' if flashcard else '➕ Criar Flashcard' }}</span>
+            </button>
+            <a href="{{ url_for('estudo.admin_flashcards') }}" class="btn btn-secondary">
+                <span>❌ Cancelar</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+let shouldRemoveCurrentImage = false;
+
+function selectIcon(icone, element) {
+    document.getElementById('icone').value = icone;
+    
+    // Atualizar seleção visual
+    document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    
+    updatePreview();
+}
+
+function updatePreview() {
+    const titulo = document.getElementById('titulo').value || 'Título do Flashcard';
+    const descricao = document.getElementById('descricao').value || 'Descrição do flashcard...';
+    const cor = document.getElementById('cor').value;
+    const icone = document.getElementById('icone').value;
+    
+    document.getElementById('preview-titulo').textContent = titulo;
+    document.getElementById('preview-descricao').textContent = descricao;
+    document.getElementById('preview-icon').style.background = cor;
+    document.getElementById('preview-icon').textContent = icone;
+}
+
+function updateColorPicker() {
+    const colorText = document.getElementById('cor-text').value;
+    document.getElementById('cor').value = colorText;
+    updatePreview();
+}
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block';
+            
+            // Ocultar imagem atual se existir
+            const currentImageContainer = document.querySelector('.current-image-container');
+            if (currentImageContainer) {
+                currentImageContainer.style.opacity = '0.5';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearImagePreview() {
+    const fileInput = document.getElementById('capa_imagem');
+    const previewDiv = document.getElementById('imagePreview');
+    
+    fileInput.value = '';
+    previewDiv.style.display = 'none';
+    
+    // Mostrar imagem atual novamente se existir
+    const currentImageContainer = document.querySelector('.current-image-container');
+    if (currentImageContainer) {
+        currentImageContainer.style.opacity = '1';
+    }
+    
+    shouldRemoveCurrentImage = false;
+}
+
+function removeCurrentImage() {
+    const currentImageContainer = document.querySelector('.current-image-container');
+    if (currentImageContainer) {
+        currentImageContainer.style.display = 'none';
+        shouldRemoveCurrentImage = true;
+        
+        // Adicionar campo hidden para indicar remoção
+        const form = document.querySelector('form');
+        let removeInput = document.getElementById('remove_current_image');
+        if (!removeInput) {
+            removeInput = document.createElement('input');
+            removeInput.type = 'hidden';
+            removeInput.id = 'remove_current_image';
+            removeInput.name = 'remove_current_image';
+            form.appendChild(removeInput);
+        }
+        removeInput.value = 'true';
+    }
+}
+
+// Event listeners
+document.getElementById('titulo').addEventListener('input', updatePreview);
+document.getElementById('descricao').addEventListener('input', updatePreview);
+document.getElementById('cor').addEventListener('change', function() {
+    document.getElementById('cor-text').value = this.value;
+    updatePreview();
+});
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+});
+</script>
+{% endblock %}

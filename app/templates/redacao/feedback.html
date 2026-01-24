@@ -1,0 +1,1047 @@
+<!-- app/templates/redacao/feedback.html -->
+{% extends "layout.html" %}
+
+{% block title %}Feedback da Redação - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .feedback-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Page Header */
+    .feedback-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .header-content h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1.125rem;
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Score Overview Card */
+    .score-overview {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .score-overview::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+        opacity: 0.8;
+    }
+
+    .score-overview-content {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    .score-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, var(--primary) 0%, var(--accent) var(--score-percentage, 75%), var(--border) var(--score-percentage, 75%));
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: rotateIn 1s ease-out 0.5s both;
+    }
+
+    .score-circle-inner {
+        width: 100%;
+        height: 100%;
+        background: var(--surface);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .score-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .score-max {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .score-info {
+        flex: 1;
+    }
+
+    .score-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .score-subtitle {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+    }
+
+    .score-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .score-stat {
+        text-align: center;
+    }
+
+    .score-stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .score-stat-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .score-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .score-badge {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .score-badge-excellent {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .score-badge-good {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .score-badge-needs-improvement {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Essay Preview and Chart Section */
+    .essay-analysis-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .essay-preview-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .essay-preview-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .essay-preview-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .essay-preview-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .essay-preview-header i {
+        color: var(--accent);
+    }
+
+    .essay-preview-content {
+        padding: 2rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .essay-text {
+        color: var(--text-muted);
+        line-height: 1.8;
+        font-size: 0.95rem;
+        white-space: pre-wrap;
+    }
+
+    .essay-text::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .essay-text::-webkit-scrollbar-track {
+        background: var(--surface-light);
+        border-radius: 3px;
+    }
+
+    .essay-text::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 3px;
+    }
+
+    .radar-chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .radar-chart-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .radar-chart-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--warning), #d97706);
+        opacity: 0.8;
+    }
+
+    .radar-chart-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .radar-chart-header i {
+        color: var(--warning);
+    }
+
+    .radar-chart-content {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .radar-chart-container {
+        height: 300px;
+        margin-bottom: 1rem;
+    }
+
+    .radar-description {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    /* Section Header */
+    .section-header {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .section-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-header h2 i {
+        color: var(--accent);
+        font-size: 1.5rem;
+    }
+
+    /* Competencias Grid */
+    .competencias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .competencia-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.4s ease;
+        animation: fadeInUp 0.6s ease-out both;
+        position: relative;
+    }
+
+    .competencia-card:nth-child(1) { 
+        animation-delay: 0.5s;
+        border-left: 4px solid #3b82f6;
+    }
+    .competencia-card:nth-child(2) { 
+        animation-delay: 0.6s;
+        border-left: 4px solid #8b5cf6;
+    }
+    .competencia-card:nth-child(3) { 
+        animation-delay: 0.7s;
+        border-left: 4px solid #ec4899;
+    }
+    .competencia-card:nth-child(4) { 
+        animation-delay: 0.8s;
+        border-left: 4px solid #f97316;
+    }
+    .competencia-card:nth-child(5) { 
+        animation-delay: 0.9s;
+        border-left: 4px solid #10b981;
+    }
+
+    .competencia-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .competencia-header {
+        background: var(--surface-light);
+        padding: 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .competencia-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: inherit;
+        opacity: 0.8;
+    }
+
+    .competencia-card:nth-child(1) .competencia-header::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .competencia-card:nth-child(2) .competencia-header::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .competencia-card:nth-child(3) .competencia-header::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+    .competencia-card:nth-child(4) .competencia-header::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+    .competencia-card:nth-child(5) .competencia-header::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .competencia-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .competencia-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .competencia-number {
+        background: var(--accent);
+        color: var(--surface);
+        font-weight: 800;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius);
+        min-width: 2.5rem;
+        text-align: center;
+    }
+
+    .competencia-description {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .nota-display {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: white;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .competencia-card:hover .nota-display {
+        transform: scale(1.1);
+    }
+
+    .nota-excelente {
+        background: linear-gradient(135deg, var(--success), #059669);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .nota-boa {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .nota-regular {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .competencia-content {
+        padding: 2rem;
+    }
+
+    .feedback-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feedback-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .feedback-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        opacity: 0.8;
+    }
+
+    .feedback-pontos-fortes {
+        background: rgba(16, 185, 129, 0.05);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .feedback-pontos-fortes::before {
+        background: var(--success);
+    }
+
+    .feedback-pontos-fracos {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .feedback-pontos-fracos::before {
+        background: var(--danger);
+    }
+
+    .feedback-sugestoes {
+        background: rgba(245, 158, 11, 0.05);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .feedback-sugestoes::before {
+        background: var(--warning);
+    }
+
+    .feedback-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .feedback-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .feedback-icon {
+        font-size: 1.125rem;
+    }
+
+    .feedback-pontos-fortes .feedback-icon {
+        color: var(--success);
+    }
+
+    .feedback-pontos-fracos .feedback-icon {
+        color: var(--danger);
+    }
+
+    .feedback-sugestoes .feedback-icon {
+        color: var(--warning);
+    }
+
+    .feedback-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-muted);
+    }
+
+    .feedback-list li {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .feedback-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .feedback-text {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Action Section */
+    .action-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 1s both;
+    }
+
+    .action-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .action-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .action-section p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .essay-analysis-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .radar-chart-card {
+            order: -1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .feedback-container {
+            padding: 1rem;
+        }
+
+        .feedback-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+        }
+
+        .score-overview {
+            padding: 2rem;
+        }
+
+        .score-overview-content {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .score-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .competencias-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .competencia-header {
+            padding: 1.5rem;
+        }
+
+        .competencia-content {
+            padding: 1.5rem;
+        }
+
+        .nota-display {
+            position: static;
+            margin: 1rem auto 0;
+        }
+
+        .competencia-title-section {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-section {
+            padding: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .feedback-section {
+            padding: 1rem;
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes rotateIn {
+        from {
+            opacity: 0;
+            transform: rotate(-180deg) scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+    }
+</style>
+
+<div class="feedback-container">
+    <!-- Page Header -->
+    <div class="feedback-header">
+        <div class="header-content">
+            <h1>Feedback da Redação</h1>
+            <p class="page-subtitle">Análise completa por competências do ENEM</p>
+        </div>
+        <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Voltar para Redações
+        </a>
+    </div>
+
+    <!-- Score Overview -->
+    <div class="score-overview" style="--score-percentage: {{ (redacao.nota_final / 1000 * 100)|round }}%">
+        <div class="score-overview-content">
+            <div class="score-circle">
+                <div class="score-circle-inner">
+                    <span class="score-value">{{ redacao.nota_final|int }}</span>
+                    <span class="score-max">/1000</span>
+                </div>
+            </div>
+            
+            <div class="score-info">
+                <h2 class="score-title">{{ redacao.titulo or "Redação sem título" }}</h2>
+                <p class="score-subtitle">Enviada em {{ redacao.data_envio.strftime('%d/%m/%Y às %H:%M') }}</p>
+                
+                <div class="score-stats">
+                    <div class="score-stat">
+                        <span class="score-stat-value">{{ "%.1f"|format(redacao.nota_final / 10) }}</span>
+                        <span class="score-stat-label">Nota Média</span>
+                    </div>
+                    <div class="score-stat">
+                        <span class="score-stat-value">{{ redacao.conteudo|length }}</span>
+                        <span class="score-stat-label">Caracteres</span>
+                    </div>
+                    <div class="score-stat">
+                        <span class="score-stat-value">{{ (redacao.conteudo.split()|length) }}</span>
+                        <span class="score-stat-label">Palavras</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-actions">
+                {% if redacao.nota_final >= 800 %}
+                    <div class="score-badge score-badge-excellent">Excelente</div>
+                {% elif redacao.nota_final >= 600 %}
+                    <div class="score-badge score-badge-good">Boa Redação</div>
+                {% else %}
+                    <div class="score-badge score-badge-needs-improvement">Pode Melhorar</div>
+                {% endif %}
+                
+                <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Nova Redação
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Essay Analysis Section -->
+    <div class="essay-analysis-section">
+        <!-- Essay Preview -->
+        <div class="essay-preview-card">
+            <div class="essay-preview-header">
+                <h3><i class="bi bi-file-earmark-text"></i> Texto Original</h3>
+            </div>
+            <div class="essay-preview-content">
+                <div class="essay-text">{{ redacao.conteudo }}</div>
+            </div>
+        </div>
+
+        <!-- Radar Chart -->
+        <div class="radar-chart-card">
+            <div class="radar-chart-header">
+                <h3><i class="bi bi-radar"></i> Radar de Competências</h3>
+            </div>
+            <div class="radar-chart-content">
+                <div class="radar-chart-container">
+                    {{ radar_div|safe }}
+                </div>
+                <p class="radar-description">
+                    Visualização das suas notas em cada uma das 5 competências do ENEM (escala 0-200)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competencias Section -->
+    <div class="section-header">
+        <h2><i class="bi bi-clipboard-check"></i> Avaliação por Competência</h2>
+    </div>
+
+    <div class="competencias-grid">
+        {% for cf in competence_feedbacks %}
+        <div class="competencia-card">
+            <div class="competencia-header">
+                <div class="competencia-title-section">
+                    <div>
+                        <h3 class="competencia-title">{{ cf.nome }}</h3>
+                        <p class="competencia-description">
+                            {% if cf.numero == 1 %}
+                                Demonstrar domínio da modalidade escrita formal da língua portuguesa
+                            {% elif cf.numero == 2 %}
+                                Compreender a proposta de redação e aplicar conceitos das várias áreas de conhecimento
+                            {% elif cf.numero == 3 %}
+                                Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos
+                            {% elif cf.numero == 4 %}
+                                Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação
+                            {% elif cf.numero == 5 %}
+                                Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="competencia-number">C{{ cf.numero }}</div>
+                </div>
+                
+                {% if cf.nota >= 160 %}
+                    <div class="nota-display nota-excelente">{{ cf.nota }}</div>
+                {% elif cf.nota >= 120 %}
+                    <div class="nota-display nota-boa">{{ cf.nota }}</div>
+                {% else %}
+                    <div class="nota-display nota-regular">{{ cf.nota }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="competencia-content">
+                <!-- Justificativa -->
+                <div class="feedback-section">
+                    <div class="feedback-header">
+                        <i class="bi bi-info-circle feedback-icon" style="color: var(--accent);"></i>
+                        <h4>Justificativa da Avaliação</h4>
+                    </div>
+                    <p class="feedback-text">{{ cf.justificativa }}</p>
+                </div>
+
+                <!-- Pontos Fortes -->
+                <div class="feedback-section feedback-pontos-fortes">
+                    <div class="feedback-header">
+                        <i class="bi bi-check-circle-fill feedback-icon"></i>
+                        <h4>Pontos Fortes</h4>
+                    </div>
+                    {% if cf.pontos_fortes_list %}
+                        <ul class="feedback-list">
+                            {% for ponto in cf.pontos_fortes_list %}
+                                <li>{{ ponto }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="feedback-text">Continue praticando para desenvolver mais pontos fortes nesta competência.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Pontos de Atenção -->
+                <div class="feedback-section feedback-pontos-fracos">
+                    <div class="feedback-header">
+                        <i class="bi bi-exclamation-triangle-fill feedback-icon"></i>
+                        <h4>Pontos de Atenção</h4>
+                    </div>
+                    {% if cf.pontos_fracos_list %}
+                        <ul class="feedback-list">
+                            {% for ponto in cf.pontos_fracos_list %}
+                                <li>{{ ponto }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="feedback-text">Parabéns! Não identificamos pontos críticos nesta competência.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Sugestões de Melhoria -->
+                <div class="feedback-section feedback-sugestoes">
+                    <div class="feedback-header">
+                        <i class="bi bi-lightbulb-fill feedback-icon"></i>
+                        <h4>Sugestões de Melhoria</h4>
+                    </div>
+                    {% if cf.sugestoes_list %}
+                        <ul class="feedback-list">
+                            {% for sugestao in cf.sugestoes_list %}
+                                <li>{{ sugestao }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="feedback-text">Continue estudando e praticando para aprimorar ainda mais esta competência.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-section">
+        <h3>Pronto para o próximo desafio?</h3>
+        <p>Continue praticando para melhorar ainda mais suas habilidades de redação!</p>
+        <div class="action-buttons">
+            <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Escrever Nova Redação
+            </a>
+            <a href="{{ url_for('redacao.temas_sugeridos') }}" class="btn btn-outline-light">
+                <i class="bi bi-lightbulb"></i> Ver Temas Sugeridos
+            </a>
+            <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+                <i class="bi bi-list-ul"></i> Minhas Redações
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll animations
+    const cards = document.querySelectorAll('.competencia-card, .score-overview, .essay-preview-card, .radar-chart-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    cards.forEach(card => {
+        observer.observe(card);
+    });
+
+    // Animate score circle
+    const scoreCircle = document.querySelector('.score-circle');
+    if (scoreCircle) {
+        setTimeout(() => {
+            scoreCircle.style.transform = 'scale(1) rotate(0deg)';
+        }, 500);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,323 @@
+
+<!-- =============================================== -->
+<!-- ARQUIVO: app/templates/estudo/modulo_apostila_view.html -->
+<!-- =============================================== -->
+
+{% extends "layout.html" %}
+
+{% block title %}{{ modulo.titulo }} - {{ apostila.titulo }}{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb a {
+        color: {{ apostila.cor or '#4ecdc4' }};
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb span {
+        opacity: 0.6;
+        margin: 0 8px;
+    }
+
+    .modulo-header {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modulo-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(45deg, {{ apostila.cor or '#4ecdc4' }}, rgba(255, 255, 255, 0.3));
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .modulo-icon {
+        width: 60px;
+        height: 60px;
+        background: {{ apostila.cor or '#4ecdc4' }};
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .header-info h1 {
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+        color: white;
+    }
+
+    .header-info p {
+        opacity: 0.8;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .content-section {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .content-section h2 {
+        color: {{ apostila.cor or '#4ecdc4' }};
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .apostila-content {
+        background: white;
+        color: #333;
+        padding: 25px;
+        border-radius: 10px;
+        line-height: 1.6;
+        min-height: 200px;
+    }
+
+    .apostila-content h1, .apostila-content h2, .apostila-content h3 {
+        color: {{ apostila.cor or '#4ecdc4' }};
+    }
+
+    .apostila-content ul, .apostila-content ol {
+        padding-left: 20px;
+    }
+
+    .apostila-content blockquote {
+        border-left: 4px solid {{ apostila.cor or '#4ecdc4' }};
+        padding-left: 15px;
+        margin: 20px 0;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .pdf-section {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        text-align: center;
+    }
+
+    .pdf-section h2 {
+        color: {{ apostila.cor or '#4ecdc4' }};
+        margin-bottom: 20px;
+    }
+
+    .btn-pdf {
+        background: linear-gradient(45deg, {{ apostila.cor or '#4ecdc4' }}, rgba(255, 255, 255, 0.1));
+        color: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-pdf:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-voltar {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-voltar:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, {{ apostila.cor or '#4ecdc4' }}, rgba(255, 255, 255, 0.1));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-content {
+        text-align: center;
+        padding: 40px 20px;
+        opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-info h1 {
+            font-size: 1.6rem;
+        }
+
+        .navigation {
+            flex-direction: column;
+        }
+
+        .content-section, .pdf-section {
+            padding: 20px;
+        }
+
+        .breadcrumb {
+            padding: 10px 15px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{{ url_for('estudo.index') }}">Estudos</a>
+        <span>></span>
+        <a href="{{ url_for('estudo.apostilas') }}">Apostilas</a>
+        <span>></span>
+        <a href="{{ url_for('estudo.apostila', apostila_id=apostila.id) }}">{{ apostila.titulo }}</a>
+        <span>></span>
+        <strong>{{ modulo.titulo }}</strong>
+    </div>
+
+    <!-- Header do Módulo -->
+    <div class="modulo-header">
+        <div class="header-content">
+            <div class="modulo-icon">
+                📖
+            </div>
+            <div class="header-info">
+                <h1>{{ modulo.titulo }}</h1>
+                {% if modulo.descricao %}
+                <p>{{ modulo.descricao }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="navigation">
+        <a href="{{ url_for('estudo.apostila', apostila_id=apostila.id) }}" class="btn btn-voltar">
+            ⬅️ Voltar à Apostila
+        </a>
+        <a href="{{ url_for('estudo.apostilas') }}" class="btn btn-primary">
+            📖 Todas as Apostilas
+        </a>
+    </div>
+
+    <!-- Arquivo PDF (se disponível) -->
+    {% if modulo.url_pdf %}
+    <div class="pdf-section">
+        <h2>📄 Arquivo PDF</h2>
+        <p style="opacity: 0.8; margin-bottom: 20px;">Baixe ou visualize o arquivo PDF completo deste módulo</p>
+        <a href="{{ modulo.url_pdf }}" target="_blank" class="btn-pdf">
+            📄 Abrir PDF
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Conteúdo da Apostila -->
+    <div class="content-section">
+        <h2>📖 Conteúdo</h2>
+        <div class="apostila-content">
+            {% if modulo.conteudo %}
+                {{ modulo.conteudo|safe }}
+            {% else %}
+                <div class="empty-content">
+                    <p>Este módulo ainda não possui conteúdo textual.</p>
+                    {% if modulo.url_pdf %}
+                    <p>Consulte o arquivo PDF acima para ver o material completo.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %>

@@ -1,0 +1,1419 @@
+<!-- app/templates/helpzone/index.html -->
+<!-- Autor: Desenvolvimento Plataforma Launcher -->
+
+{% extends "layout.html" %}
+
+{% block title %}Help Zone - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #800000;
+        --secondary-color: #500000;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --hover-color: #a00000;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), #a00000);
+        --gradient-success: linear-gradient(135deg, #28a745, #20c997);
+        --gradient-warning: linear-gradient(135deg, #ffc107, #fd7e14);
+        --gradient-card: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+        --gradient-hero: linear-gradient(135deg, rgba(128, 0, 0, 0.2), rgba(160, 0, 0, 0.1));
+    }
+    
+    .helpzone {
+        max-width: 1400px;
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    body {
+        background: linear-gradient(to bottom, #800000 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        overflow-x: hidden;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        background: var(--gradient-hero);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+    
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(128, 0, 0, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+        z-index: -1;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 2.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .action-btn {
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 2px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+    
+    .action-btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-action {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    .btn-primary-action:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(128, 0, 0, 0.5);
+        color: white;
+    }
+    
+    .btn-outline-action {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-outline-action:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(128, 0, 0, 0.4);
+        color: white;
+    }
+    
+    .btn-warning-action {
+        background: var(--gradient-warning);
+        color: #000;
+        border-color: var(--warning-color);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+    }
+    
+    .btn-warning-action:hover {
+        background: linear-gradient(135deg, #fd7e14, #ffc107);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(255, 193, 7, 0.4);
+        color: #000;
+    }
+
+    /* Search and Filters */
+    .search-section {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .search-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .search-bar {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-input-group {
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 15px;
+        padding: 0.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .search-input-group:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .search-input-group .input-group-text {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .search-input-group input {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        padding: 0.75rem;
+    }
+    
+    .search-input-group input:focus {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        color: white;
+    }
+    
+    .search-input-group input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .search-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .filter-group {
+        position: relative;
+    }
+    
+    .filter-select {
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        width: 100%;
+    }
+    
+    .filter-select:focus {
+        background: rgba(0, 0, 0, 0.8);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .filter-select option {
+        background: #1a1a1a;
+        color: white;
+        padding: 0.5rem;
+    }
+    
+    /* Main Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+    
+    /* Question Cards */
+    .questions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .question-card {
+        background: var(--gradient-card);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .question-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .question-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .question-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .question-card.resolved {
+        border-color: var(--success-color);
+        background: linear-gradient(145deg, rgba(40, 167, 69, 0.1), rgba(30, 30, 30, 0.95));
+    }
+    
+    .question-card.resolved::before {
+        background: var(--gradient-success);
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .question-header {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-avatar-container {
+        flex-shrink: 0;
+        text-align: center;
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(128, 0, 0, 0.5);
+        transition: all 0.3s ease;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    
+    .user-avatar:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 20px rgba(128, 0, 0, 0.5);
+    }
+    
+    .user-name {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .question-content {
+        flex: 1;
+    }
+    
+    .question-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        line-height: 1.3;
+    }
+    
+    .question-title a {
+        color: var(--text-color);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .question-title a:hover {
+        color: var(--warning-color);
+        text-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+    }
+    
+    .question-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .area-badge {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .area-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s;
+    }
+    
+    .area-badge:hover::before {
+        left: 100%;
+    }
+    
+    .time-info {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-resolved {
+        background: var(--gradient-success);
+        color: white;
+    }
+    
+    .status-open {
+        background: var(--gradient-warning);
+        color: #000;
+    }
+    
+    .question-text {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        font-size: 1.05rem;
+    }
+    
+    .question-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .action-buttons-card {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .action-btn-card {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary-card {
+        background: var(--gradient-primary);
+        color: white;
+    }
+    
+    .btn-primary-card:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+        color: white;
+    }
+    
+    .btn-outline-card {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-outline-card:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .question-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .stat-item i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    /* Top Helpers Card */
+    .top-helpers-card {
+        background: var(--gradient-card);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .top-helpers-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-warning);
+        opacity: 0.9;
+    }
+    
+    .card-header-custom {
+        background: rgba(128, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(128, 0, 0, 0.3);
+        padding: 1.5rem;
+    }
+    
+    .top-helpers-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .top-helpers-title i {
+        color: var(--warning-color);
+        font-size: 1.4rem;
+    }
+    
+    .helpers-list {
+        padding: 1.5rem;
+    }
+    
+    .helper-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .helper-item:last-child {
+        border-bottom: none;
+    }
+    
+    .helper-item:hover {
+        background: rgba(128, 0, 0, 0.1);
+        transform: translateX(8px);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    
+    .helper-rank {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    
+    .helper-rank.rank-1 {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #000;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .helper-rank.rank-2 {
+        background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        color: #000;
+        box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
+    }
+    
+    .helper-rank.rank-3 {
+        background: linear-gradient(135deg, #cd7f32, #daa520);
+        color: #000;
+        box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
+    }
+    
+    .helper-rank.rank-other {
+        background: var(--gradient-primary);
+        color: white;
+    }
+    
+    .helper-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        object-fit: cover;
+    }
+    
+    .helper-avatar:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-color);
+    }
+    
+    .helper-name {
+        font-weight: 600;
+        color: var(--text-color);
+        flex: 1;
+        font-size: 1rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        text-align: center;
+        border: 2px dashed rgba(128, 0, 0, 0.3);
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: rgba(128, 0, 0, 0.5);
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+    
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    /* Responsiveness */
+    @media (max-width: 1200px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .sidebar {
+            order: -1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .helpzone {
+            padding: 0 0.5rem;
+        }
+        
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .action-btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+        
+        .search-section {
+            padding: 1.5rem;
+        }
+        
+        .filters-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .question-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .question-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .question-title {
+            font-size: 1.2rem;
+        }
+        
+        .question-meta {
+            justify-content: center;
+        }
+        
+        .question-actions {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .action-buttons-card {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .question-stats {
+            justify-content: center;
+        }
+        
+        .helper-item {
+            padding: 0.75rem;
+        }
+        
+        .helper-avatar {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .helper-rank {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .action-btn {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .question-card .card-body {
+            padding: 1rem;
+        }
+        
+        .question-title {
+            font-size: 1.1rem;
+        }
+        
+        .action-btn-card {
+            padding: 0.625rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .top-helpers-title {
+            font-size: 1.1rem;
+        }
+        
+        .helper-name {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Loading States */
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>
+
+<div class="helpzone">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">
+            Help Zone
+        </h1>
+        <p class="hero-subtitle">
+            Aqui um ajuda o outro a decolar! 🚀<br>
+            Poste suas dúvidas ou escolha ajudar alguém. Juntos, vamos mais longe!
+        </p>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('helpzone.nova_duvida') }}" class="action-btn btn-primary-action">
+                <i class="bi bi-plus-circle"></i>
+                Nova Dúvida
+            </a>
+            <a href="{{ url_for('helpzone.index') }}" class="action-btn btn-outline-action">
+                <i class="bi bi-list-ul"></i>
+                Ver Dúvidas Abertas
+            </a>
+            <a href="{{ url_for('helpzone.ranking') }}" class="action-btn btn-warning-action">
+                <i class="bi bi-trophy"></i>
+                Ranking de Ajudantes
+            </a>
+        </div>
+    </section>
+    
+    <!-- Search and Filters Section -->
+    <section class="search-section">
+        <div class="search-bar">
+            <form action="{{ url_for('helpzone.index') }}" method="GET" class="d-flex">
+                <div class="input-group search-input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Pesquisar dúvidas por palavra-chave..." 
+                           value="{{ palavrachave or '' }}">
+                    <button type="submit" class="search-btn">
+                        <i class="bi bi-search me-2"></i>
+                        Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="filters-grid">
+            <div class="filter-group">
+                <select name="area" class="filter-select" 
+                        onchange="this.form.submit()" form="filtros">
+                    <option value="">📚 Filtrar por Área</option>
+                    {% for area in areas_disponiveis %}
+                        <option value="{{ area }}" {% if area == area_selecionada %}selected{% endif %}>
+                            {{ area|capitalize }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="ordenar" class="filter-select" 
+                        onchange="this.form.submit()" form="filtros">
+                    <option value="recentes" {% if ordenar == 'recentes' %}selected{% endif %}>
+                        🕒 Mais Recentes
+                    </option>
+                    <option value="populares" {% if ordenar == 'populares' %}selected{% endif %}>
+                        🔥 Mais Populares
+                    </option>
+                </select>
+            </div>
+        </div>
+        
+        <form id="filtros" action="{{ url_for('helpzone.index') }}" method="GET">
+            <input type="hidden" name="q" value="{{ palavrachave or '' }}">
+        </form>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="content-grid">
+        <!-- Questions List -->
+        <section class="questions-container">
+            {% if duvidas %}
+                {% for duvida in duvidas %}
+                    <article class="question-card {{ 'resolved' if duvida.resolvida }}" 
+                             onclick="window.location.href='{{ url_for('helpzone.duvida', duvida_id=duvida.id) }}'">
+                        <div class="card-body">
+                            <div class="question-header">
+                                <div class="user-avatar-container">
+                                    <img src="{{ url_for('static', filename='images/avatars/' ~ duvida.user_id ~ '.jpg', _external=True) }}" 
+                                         class="user-avatar" alt="Avatar de {{ User.query.get(duvida.user_id).username }}"
+                                         onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                                    <div class="user-name">
+                                        {{ User.query.get(duvida.user_id).username }}
+                                    </div>
+                                </div>
+                                
+                                <div class="question-content">
+                                    <h3 class="question-title">
+                                        <a href="{{ url_for('helpzone.duvida', duvida_id=duvida.id) }}" 
+                                           onclick="event.stopPropagation();">
+                                            {{ duvida.titulo }}
+                                        </a>
+                                    </h3>
+                                    
+                                    <div class="question-meta">
+                                        <span class="area-badge">{{ duvida.area }}</span>
+                                        <div class="time-info">
+                                            <i class="bi bi-clock"></i>
+                                            {% set tempo = (now - duvida.data_criacao).total_seconds() %}
+                                            {% if tempo < 60 %}
+                                                agora mesmo
+                                            {% elif tempo < 3600 %}
+                                                há {{ (tempo // 60)|int }} minutos
+                                            {% elif tempo < 86400 %}
+                                                há {{ (tempo // 3600)|int }} horas
+                                            {% else %}
+                                                {{ duvida.data_criacao.strftime('%d/%m/%Y') }}
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <span class="status-badge {{ 'status-resolved' if duvida.resolvida else 'status-open' }}">
+                                            <i class="bi bi-{{ 'check-circle-fill' if duvida.resolvida else 'clock-fill' }}"></i>
+                                            {{ 'Resolvida' if duvida.resolvida else 'Aberta' }}
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="question-text">
+                                        {{ duvida.conteudo|truncate(200) }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="question-actions">
+                                <div class="action-buttons-card">
+                                    <a href="{{ url_for('helpzone.duvida', duvida_id=duvida.id) }}" 
+                                       class="action-btn-card btn-primary-card"
+                                       onclick="event.stopPropagation();">
+                                        <i class="bi bi-chat-square-text"></i>
+                                        Responder
+                                    </a>
+                                    
+                                    {% if current_user.is_authenticated %}
+                                        <form action="{{ url_for('helpzone.mesma_duvida', duvida_id=duvida.id) }}" 
+                                              method="POST" class="d-inline"
+                                              onclick="event.stopPropagation();">
+                                            <button type="submit" class="action-btn-card btn-outline-card">
+                                                <i class="bi bi-plus-circle"></i>
+                                                Mesma Dúvida
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <a href="{{ url_for('auth.login') }}" 
+                                           class="action-btn-card btn-outline-card"
+                                           onclick="event.stopPropagation();">
+                                            <i class="bi bi-plus-circle"></i>
+                                            Mesma Dúvida
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="question-stats">
+                                    <div class="stat-item">
+                                        <i class="bi bi-chat-dots"></i>
+                                        <span>{{ duvida.respostas.count() }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="bi bi-heart"></i>
+                                        <span>{{ duvida.total_votos() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-question-circle"></i>
+                    <h3>Nenhuma dúvida encontrada</h3>
+                    <p>{{ 'Nenhuma dúvida encontrada com os filtros atuais.' if palavrachave or area_selecionada else 'Ainda não há dúvidas postadas.' }}</p>
+                    <a href="{{ url_for('helpzone.nova_duvida') }}" class="action-btn btn-primary-action">
+                        <i class="bi bi-plus-circle"></i>
+                        Seja o primeiro a fazer uma pergunta!
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Top Helpers -->
+            <div class="top-helpers-card">
+                <div class="card-header-custom">
+                    <h4 class="top-helpers-title">
+                        <i class="bi bi-trophy-fill"></i>
+                        Top Ajudantes da Semana
+                    </h4>
+                </div>
+                <div class="helpers-list">
+                    {% if top_ajudantes %}
+                        {% for ajudante in top_ajudantes %}
+                            <div class="helper-item" onclick="window.location.href='{{ url_for('helpzone.user_profile', user_id=ajudante.id) }}'">
+                                <div class="helper-rank rank-{{ loop.index if loop.index <= 3 else 'other' }}">
+                                    {% if loop.index == 1 %}🥇
+                                    {% elif loop.index == 2 %}🥈
+                                    {% elif loop.index == 3 %}🥉
+                                    {% else %}{{ loop.index }}º{% endif %}
+                                </div>
+                                <img src="{{ url_for('static', filename='images/avatars/' ~ ajudante.id ~ '.jpg', _external=True) }}" 
+                                     class="helper-avatar" alt="Avatar de {{ ajudante.username }}"
+                                     onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                                <span class="helper-name">{{ ajudante.username }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-people display-4 mb-3"></i>
+                            <p>Nenhum ajudante esta semana</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicialização
+    initializeFilters();
+    setupCardAnimations();
+    setupSearchEnhancements();
+    setupResponsiveFeatures();
+    
+    function initializeFilters() {
+        // Auto-submit nos filtros
+        const filterSelects = document.querySelectorAll('.filter-select');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                const form = document.getElementById('filtros');
+                form.submit();
+            });
+        });
+        
+        // Fechar dropdowns ao clicar fora
+        document.addEventListener('click', function(event) {
+            filterSelects.forEach(dropdown => {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.blur();
+                }
+            });
+        });
+    }
+    
+    function setupCardAnimations() {
+        // Animação de entrada para cards
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.question-card').forEach(card => {
+            observer.observe(card);
+        });
+        
+        // Efeito parallax sutil nos cards
+        document.querySelectorAll('.question-card').forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 50;
+                const rotateY = (centerX - x) / 50;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+            });
+        });
+    }
+    
+    function setupSearchEnhancements() {
+        const searchInput = document.querySelector('input[name="q"]');
+        const searchForm = document.querySelector('.search-input-group').closest('form');
+        
+        if (searchInput && searchForm) {
+            // Debounce para busca automática
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    if (this.value.length >= 3 || this.value.length === 0) {
+                        // Auto-search pode ser implementado aqui
+                    }
+                }, 500);
+            });
+            
+            // Melhorar feedback visual
+            searchForm.addEventListener('submit', function() {
+                const button = this.querySelector('.search-btn');
+                button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Buscando...';
+                button.disabled = true;
+            });
+        }
+    }
+    
+    function setupResponsiveFeatures() {
+        // Melhorar cliques em dispositivos móveis
+        if ('ontouchstart' in window) {
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                card.addEventListener('touchend', function() {
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        }
+        
+        // Lazy loading para avatares
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            });
+            
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    }
+    
+    // Função para mostrar notificações
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // Easter egg: Confete quando clicar 5x no título
+    let titleClicks = 0;
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
+        heroTitle.addEventListener('click', function() {
+            titleClicks++;
+            if (titleClicks === 5) {
+                createConfetti();
+                showNotification('🎉 Você descobriu o easter egg da Help Zone!', 'success');
+                titleClicks = 0;
+            }
+        });
+    }
+    
+    function createConfetti() {
+        const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+        
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }, i * 100);
+        }
+    }
+    
+    // Smooth scroll para links internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes confettiFall {
+        to {
+            transform: translateY(${window.innerHeight + 50}px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    .question-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .lazy {
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .lazy.loaded {
+        opacity: 1;
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

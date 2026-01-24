@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+
+{% block title %}Plano de Estudos - Dados Insuficientes - Plataforma Launcher{% endblock %}
+
+{% block content %}
+
+<div class="sem-dados"> <div class="d-flex justify-content-between align-items-center mb-4"> <h1>Plano de Estudos Personalizado</h1> <div> <a href="{{ url_for('simulados.index') }}" class="btn btn-outline-light"> <i class="bi bi-arrow-left"></i> Voltar para Simulados </a> </div> </div>
+<div class="card bg-dark mb-5">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-journal-x fs-1 mb-3 text-muted"></i>
+        <h3 class="mb-3">Dados insuficientes para gerar um plano de estudos</h3>
+        <p class="mb-4">Para criar um plano de estudos personalizado, precisamos analisar seu desempenho em pelo menos um simulado completo.</p>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="alert alert-primary">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="bi bi-info-circle-fill fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <p class="mb-1">
+                                <strong>Próximos passos:</strong>
+                            </p>
+                            <ol class="mb-0">
+                                <li>Complete pelo menos um simulado para que possamos analisar seu desempenho</li>
+                                <li>Volte para esta página para verificar seu plano de estudos personalizado</li>
+                                <li>Siga as recomendações para melhorar nas áreas que precisam de atenção</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('simulados.index') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-journals"></i> Ver Simulados Disponíveis
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Seção de Orientação Geral -->
+<h2 class="mb-4">Orientações Gerais de Estudo</h2>
+
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Planejamento</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-calendar-check text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Crie um cronograma realista, considerando o tempo disponível até o ENEM.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-check2-square text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Defina metas semanais específicas e mensuráveis.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Priorize as áreas de conhecimento com maior peso para seu curso desejado.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Técnicas de Estudo</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-clock-history text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Técnica Pomodoro: 25 minutos de foco, 5 minutos de pausa.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-card-text text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Resumos ativos: escreva com suas palavras o que entendeu.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="bi bi-calendar3 text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Revisão espaçada: reveja o conteúdo em intervalos crescentes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Autocuidado</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-cup-hot text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Durma bem: 7-8 horas diárias para melhor memorização.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-lightning-charge text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Exercite-se regularmente para aumentar a concentração.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="bi bi-trophy text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0">Recompense-se após completar tarefas para manter a motivação.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div> {% endblock %}

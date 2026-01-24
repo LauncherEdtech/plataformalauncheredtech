@@ -1,0 +1,720 @@
+<!-- app/templates/estudo/admin/index.html -->
+{% extends "layout.html" %}
+
+{% block title %}Painel Administrativo - Estudos{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .admin-header {
+        background: rgba(220, 53, 69, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .admin-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .action-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+
+    .action-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .action-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .action-button {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-button:hover {
+        background: linear-gradient(135deg, #218838, #1ca085);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+
+    .action-button.secondary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .action-button.secondary:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+    }
+
+    /* Stats Grid */
+    .stats-section {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .stats-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #00b4d8;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+
+    .stat-sublabel {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 0.25rem;
+    }
+
+    /* Content Areas */
+    .content-section {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    /* Materias Grid */
+    .materias-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .materia-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .materia-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .materia-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .materia-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .materia-details h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        color: white;
+    }
+
+    .materia-meta {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .materia-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .btn-primary { background: #0084ff; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: #333; }
+    .btn-danger { background: #dc3545; color: white; }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .btn-primary:hover { background: #0056b3; color: white; }
+    .btn-success:hover { background: #218838; color: white; }
+    .btn-warning:hover { background: #e0a800; color: #333; }
+    .btn-danger:hover { background: #c82333; color: white; }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-subtitle {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Scope Indicators */
+    .scope-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .scope-global {
+        background: rgba(0, 180, 216, 0.2);
+        color: #00b4d8;
+        border: 1px solid rgba(0, 180, 216, 0.3);
+    }
+
+    .scope-secao {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .admin-header {
+            padding: 1.5rem;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .content-section {
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .materia-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .materia-actions {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .materia-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .materia-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1 class="admin-title">🔧 Painel Administrativo - Sistema de Estudos</h1>
+        <p class="admin-subtitle">Gerencie todo o conteúdo educacional da plataforma</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                🧩
+            </div>
+            <h3 class="action-title">Gerenciar Seções</h3>
+            <p class="action-description">
+                Organize o conteúdo em seções independentes com matérias exclusivas
+            </p>
+            <a href="{{ url_for('estudo.admin_secoes') }}" class="action-button">
+                <span>🚀</span>
+                <span>Ir para Seções</span>
+            </a>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                📚
+            </div>
+            <h3 class="action-title">Nova Matéria Global</h3>
+            <p class="action-description">
+                Criar matéria no núcleo principal, acessível na página de estudos
+            </p>
+            <a href="{{ url_for('estudo.nova_materia') }}" class="action-button secondary">
+                <span>➕</span>
+                <span>Criar Matéria</span>
+            </a>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
+                📊
+            </div>
+            <h3 class="action-title">Relatórios</h3>
+            <p class="action-description">
+                Visualizar estatísticas de uso, progresso dos usuários e métricas
+            </p>
+            <a href="#" class="action-button" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
+                <span>📈</span>
+                <span>Ver Relatórios</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-section">
+        <h2 class="stats-title">
+            <span>📊</span>
+            Estatísticas Gerais
+        </h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ materias|length }}</div>
+                <div class="stat-label">Matérias Globais</div>
+                <div class="stat-sublabel">Núcleo principal</div>
+            </div>
+            <div class="stat-card">
+                {% set total_modulos = 0 %}
+                {% for materia in materias %}
+                    {% set total_modulos = total_modulos + materia.modulos.count() %}
+                {% endfor %}
+                <div class="stat-number">{{ total_modulos }}</div>
+                <div class="stat-label">Módulos</div>
+                <div class="stat-sublabel">Em todas as matérias</div>
+            </div>
+            <div class="stat-card">
+                {% set total_aulas = 0 %}
+                {% for materia in materias %}
+                    {% for modulo in materia.modulos %}
+                        {% set total_aulas = total_aulas + modulo.aulas.count() %}
+                    {% endfor %}
+                {% endfor %}
+                <div class="stat-number">{{ total_aulas }}</div>
+                <div class="stat-label">Aulas</div>
+                <div class="stat-sublabel">Conteúdo disponível</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ usuarios_ativos or 0 }}</div>
+                <div class="stat-label">Usuários Ativos</div>
+                <div class="stat-sublabel">Na plataforma</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matérias do Núcleo Global -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>🌐</span>
+                Matérias do Núcleo Global
+            </h2>
+            <div class="section-actions">
+                <a href="{{ url_for('estudo.nova_materia') }}" class="action-button">
+                    <span>➕</span>
+                    <span>Nova Matéria</span>
+                </a>
+                <a href="{{ url_for('estudo.admin_secoes') }}" class="action-button secondary">
+                    <span>🧩</span>
+                    <span>Gerenciar Seções</span>
+                </a>
+            </div>
+        </div>
+
+        {% if materias %}
+            <div class="materias-grid">
+                {% for materia in materias %}
+                    <!-- Só exibe matérias do núcleo global (secao_id IS NULL) -->
+                    {% if not materia.secao_id %}
+                        <div class="materia-card">
+                            <div class="materia-info">
+                                <div class="materia-icon" style="background: {{ materia.cor or '#0084ff' }};">
+                                    {{ materia.icone or '📖' }}
+                                </div>
+                                <div class="materia-details">
+                                    <h4>{{ materia.nome }}</h4>
+                                    <div class="materia-meta">
+                                        <div class="meta-item">
+                                            <span>📖</span>
+                                            <span>{{ materia.modulos.count() }} módulos</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>🎓</span>
+                                            {% set total_aulas_materia = 0 %}
+                                            {% for modulo in materia.modulos %}
+                                                {% set total_aulas_materia = total_aulas_materia + modulo.aulas.count() %}
+                                            {% endfor %}
+                                            <span>{{ total_aulas_materia }} aulas</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span>📊</span>
+                                            <span>Ordem: {{ materia.ordem }}</span>
+                                        </div>
+                                        <div class="scope-badge scope-global">
+                                            <span>🌐</span>
+                                            <span>Global</span>
+                                        </div>
+                                        <div class="scope-badge {{ 'scope-global' if materia.ativa else 'scope-secao' }}">
+                                            <span>{{ '✅' if materia.ativa else '❌' }}</span>
+                                            <span>{{ 'Ativa' if materia.ativa else 'Inativa' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="materia-actions">
+                                <a href="{{ url_for('estudo.materia', materia_id=materia.id) }}" 
+                                   class="btn btn-primary" 
+                                   title="Visualizar matéria">
+                                    <span>👁️</span>
+                                    <span>Ver</span>
+                                </a>
+                                <a href="{{ url_for('estudo.novo_modulo', materia_id=materia.id) }}" 
+                                   class="btn btn-success" 
+                                   title="Adicionar módulo">
+                                    <span>➕</span>
+                                    <span>Módulo</span>
+                                </a>
+
+
+    <!-- 🔥 NOVO BOTÃO: Ativar/Desativar -->
+    <form action="{{ url_for('estudo.toggle_materia_ativa', materia_id=materia.id) }}" 
+          method="POST" 
+          style="display: inline;" 
+          onsubmit="return confirm('{{ 'Desativar' if materia.ativa else 'Ativar' }} a matéria \"{{ materia.nome }}\"?')">
+        <button type="submit" 
+                class="btn {{ 'btn-warning' if materia.ativa else 'btn-success' }}" 
+                title="{{ 'Desativar matéria' if materia.ativa else 'Ativar matéria' }}">
+            <span>{{ '⏸️' if materia.ativa else '▶️' }}</span>
+            <span>{{ 'Desativar' if materia.ativa else 'Ativar' }}</span>
+        </button>
+    </form>
+
+
+                                <a href="{{ url_for('estudo.editar_materia', materia_id=materia.id) }}" 
+                                   class="btn btn-warning" 
+                                   title="Editar matéria">
+                                    <span>✏️</span>
+                                    <span>Editar</span>
+                                </a>
+                                <form action="{{ url_for('estudo.excluir_materia', materia_id=materia.id) }}" 
+                                      method="POST" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('⚠️ ATENÇÃO: Excluir a matéria \"{{ materia.nome }}\" irá remover permanentemente todos os seus módulos e aulas. Esta ação NÃO pode ser desfeita. Tem certeza?')">
+                                    <button type="submit" class="btn btn-danger" title="Excluir matéria">
+                                        <span>🗑️</span>
+                                        <span>Excluir</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h3 class="empty-title">Nenhuma matéria no núcleo global</h3>
+                <p class="empty-subtitle">
+                    Comece criando sua primeira matéria global, que ficará acessível 
+                    na página principal de estudos para todos os usuários.
+                </p>
+                <a href="{{ url_for('estudo.nova_materia') }}" class="action-button">
+                    <span>🚀</span>
+                    <span>Criar Primeira Matéria</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Informações do Sistema -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>ℹ️</span>
+                Como Funciona o Sistema
+            </h2>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div style="background: rgba(0, 180, 216, 0.1); border: 1px solid rgba(0, 180, 216, 0.3); border-radius: 12px; padding: 1.5rem;">
+                <h4 style="color: #00b4d8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🌐</span>
+                    Núcleo Global
+                </h4>
+                <p style="color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0;">
+                    Matérias criadas aqui ficam disponíveis na página principal de estudos (/estudo) 
+                    e são acessíveis por todos os usuários da plataforma.
+                </p>
+            </div>
+            
+            <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.5rem;">
+                <h4 style="color: #ffc107; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🧩</span>
+                    Seções Independentes
+                </h4>
+                <p style="color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0;">
+                    Cada seção possui suas próprias matérias exclusivas, completamente independentes 
+                    do núcleo global e de outras seções. Ideal para diferentes cursos ou categorias.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Animações e interações
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de entrada para os cards
+    const cards = document.querySelectorAll('.stat-card, .materia-card, .action-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Tooltip informativo
+    const scopeBadges = document.querySelectorAll('.scope-badge');
+    scopeBadges.forEach(badge => {
+        if (badge.classList.contains('scope-global')) {
+            badge.title = 'Esta matéria faz parte do núcleo global da plataforma';
+        } else if (badge.classList.contains('scope-secao')) {
+            badge.title = 'Esta matéria pertence exclusivamente a uma seção';
+        }
+    });
+});
+
+// Confirmação melhorada para exclusão
+function confirmarExclusao(materiaId, nomeMateria, totalModulos, totalAulas) {
+    const mensagem = `⚠️ ATENÇÃO: Excluir a matéria "${nomeMateria}" irá remover permanentemente:\n\n` +
+                    `• ${totalModulos} módulos\n` +
+                    `• ${totalAulas} aulas\n` +
+                    `• Todo o progresso dos estudantes nesta matéria\n\n` +
+                    `Esta ação NÃO pode ser desfeita.\n\n` +
+                    `Tem certeza que deseja continuar?`;
+    
+    return confirm(mensagem);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,611 @@
+{% extends "layout.html" %}
+
+{% block title %}Shop - Desbloquear Descontos{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-purple: #8b5cf6;
+        --primary-purple-dark: #7c3aed;
+        --secondary-purple: #a78bfa;
+        --bg-dark: #0f0f23;
+        --bg-card: #1a1a2e;
+        --bg-card-hover: #252540;
+        --text-primary: #e0e0ff;
+        --text-secondary: #9ca3af;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    body {
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Header */
+    .shop-header {
+        background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%);
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-bottom: 3px solid var(--secondary-purple);
+    }
+
+    .diamantes-display {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1rem 2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .diamantes-icon {
+        font-size: 2rem;
+        animation: pulse-diamond 2s infinite;
+    }
+
+    @keyframes pulse-diamond {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .diamantes-count {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    /* Produtos Grid */
+    .produtos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .produto-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid var(--border-color);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .produto-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-purple);
+        box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+    }
+
+    .produto-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+    }
+
+    .produto-content {
+        padding: 1.5rem;
+    }
+
+    .produto-nome {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .produto-descricao {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Preços */
+    .preco-container {
+        background: rgba(139, 92, 246, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .preco-original {
+        text-decoration: line-through;
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .preco-desconto {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--success);
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+    }
+
+    .desconto-badge {
+        background: var(--danger);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .economia-info {
+        color: var(--success);
+        font-weight: 600;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    /* Custo em diamantes */
+    .custo-diamantes {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+        border: 2px solid var(--primary-purple);
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin: 1rem 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    /* Botões */
+    .btn-desbloquear {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-desbloquear:hover:not(:disabled) {
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5);
+    }
+
+    .btn-desbloquear:disabled {
+        background: var(--text-secondary);
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-desbloquear.desbloqueado {
+        background: var(--success);
+    }
+
+    /* Status badges */
+    .status-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .status-badge.bloqueado {
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+    }
+
+    .status-badge.disponivel {
+        background: rgba(16, 185, 129, 0.9);
+        color: white;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        border: 2px solid var(--primary-purple);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+    }
+
+    .modal-body {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-left: 4px solid var(--warning);
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-buttons button {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-confirmar {
+        background: var(--primary-purple);
+        color: white;
+    }
+
+    .btn-cancelar {
+        background: var(--text-secondary);
+        color: white;
+    }
+
+    /* Loading */
+    .loading-spinner {
+        border: 3px solid rgba(139, 92, 246, 0.3);
+        border-top: 3px solid var(--primary-purple);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Descontos Ativos */
+    .descontos-ativos {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 2px solid var(--success);
+    }
+
+    .desconto-ativo-item {
+        background: rgba(16, 185, 129, 0.1);
+        border-left: 4px solid var(--success);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tempo-restante {
+        color: var(--warning);
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .produtos-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .shop-header {
+            padding: 2rem 0;
+        }
+        
+        .diamantes-display {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header com saldo de diamantes -->
+<div class="shop-header">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="mb-4" style="font-size: 2.5rem; font-weight: 800;">
+                🛍️ Shop Launcher - Descontos Exclusivos
+            </h1>
+            <p class="mb-4" style="font-size: 1.1rem; color: rgba(255,255,255,0.8);">
+                Use seus diamantes para desbloquear descontos incríveis!
+            </p>
+            <div class="diamantes-display">
+                <span class="diamantes-icon">💎</span>
+                <div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;">Seus Diamantes</div>
+                    <div class="diamantes-count">{{ user_diamantes|default(0) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Descontos Ativos -->
+    {% if descontos_ativos %}
+    <div class="descontos-ativos">
+        <h3 style="color: var(--success); margin-bottom: 1.5rem;">
+            ✅ Seus Descontos Desbloqueados
+        </h3>
+        {% for desconto in descontos_ativos %}
+        <div class="desconto-ativo-item">
+            <div>
+                <strong>{{ desconto.produto.nome }}</strong><br>
+                <small>{{ desconto.percentual_desconto }}% de desconto</small>
+            </div>
+            <div class="text-end">
+                <div class="tempo-restante">⏰ {{ desconto.tempo_restante }}min restantes</div>
+                <a href="{{ desconto.link_checkout }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                    Finalizar Compra
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Grid de Produtos -->
+    <div class="produtos-grid" id="produtosGrid">
+        {% if produtos %}
+            {% for produto in produtos %}
+            <div class="produto-card" data-produto-id="{{ produto.id }}">
+                <!-- Status Badge -->
+                <div class="status-badge {{ 'disponivel' if produto.pode_desbloquear else 'bloqueado' }}">
+                    {{ '✓ Disponível' if produto.pode_desbloquear else '🔒 Bloqueado' }}
+                </div>
+
+                <!-- Imagem -->
+                <img src="{{ produto.imagem_url or '/static/images/produto-placeholder.jpg' }}" 
+                     alt="{{ produto.nome }}" 
+                     class="produto-image"
+                     onerror="this.src='/static/images/produto-placeholder.jpg'">
+
+                <!-- Conteúdo -->
+                <div class="produto-content">
+                    <h3 class="produto-nome">{{ produto.nome }}</h3>
+                    
+                    {% if produto.descricao %}
+                    <p class="produto-descricao">{{ produto.descricao }}</p>
+                    {% endif %}
+
+                    <!-- Preços -->
+                    <div class="preco-container">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="preco-original">R$ {{ "%.2f"|format(produto.preco_original) }}</span>
+                            <span class="desconto-badge">-{{ produto.percentual_desconto }}%</span>
+                        </div>
+                        <div class="preco-desconto">
+                            <span>R$ {{ "%.2f"|format(produto.preco_com_desconto) }}</span>
+                        </div>
+                        <div class="economia-info">
+                            💰 Economize R$ {{ "%.2f"|format(produto.valor_economia) }}
+                        </div>
+                    </div>
+
+                    <!-- Custo em Diamantes -->
+                    <div class="custo-diamantes">
+                        <span>💎</span>
+                        <span>{{ produto.diamantes_necessarios }} diamantes</span>
+                    </div>
+
+                    <!-- Botão de Desbloquear -->
+                    <button 
+                        class="btn-desbloquear"
+                        onclick="abrirModalDesbloquear({{ produto.id }}, '{{ produto.nome }}', {{ produto.diamantes_necessarios }})"
+                        {% if not produto.pode_desbloquear %}disabled{% endif %}>
+                        {% if produto.pode_desbloquear %}
+                            🔓 Desbloquear Desconto
+                        {% else %}
+                            {{ produto.mensagem_status }}
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p style="font-size: 1.2rem; color: var(--text-secondary);">
+                    Nenhum produto disponível no momento.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal-overlay" id="modalConfirmacao">
+    <div class="modal-content">
+        <h2 class="modal-header">🔓 Desbloquear Desconto</h2>
+        <div class="modal-body">
+            <p>Você está prestes a desbloquear o desconto para:</p>
+            <p style="font-weight: 700; color: white; font-size: 1.2rem;" id="modalProdutoNome"></p>
+            
+            <div class="modal-warning">
+                <strong>⚠️ Atenção:</strong>
+                <ul style="margin: 0.5rem 0 0 1.2rem;">
+                    <li>Você gastará <strong id="modalDiamantes"></strong> 💎 diamantes</li>
+                    <li>Esta ação não pode ser desfeita</li>
+                    <li>O desconto expira em 24 horas</li>
+                </ul>
+            </div>
+
+            <p>Deseja continuar?</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-confirmar" onclick="confirmarDesbloqueio()" id="btnConfirmar">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Loading -->
+<div class="modal-overlay" id="modalLoading">
+    <div class="modal-content text-center">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 1rem;">Processando...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let produtoSelecionado = null;
+
+function abrirModalDesbloquear(produtoId, produtoNome, diamantes) {
+    produtoSelecionado = produtoId;
+    document.getElementById('modalProdutoNome').textContent = produtoNome;
+    document.getElementById('modalDiamantes').textContent = diamantes;
+    document.getElementById('modalConfirmacao').classList.add('active');
+}
+
+function fecharModal() {
+    document.getElementById('modalConfirmacao').classList.remove('active');
+    produtoSelecionado = null;
+}
+
+function mostrarLoading(show) {
+    const modal = document.getElementById('modalLoading');
+    if (show) {
+        modal.classList.add('active');
+    } else {
+        modal.classList.remove('active');
+    }
+}
+
+async function confirmarDesbloqueio() {
+    if (!produtoSelecionado) return;
+
+    fecharModal();
+    mostrarLoading(true);
+
+    try {
+        const response = await fetch(`/shop/yampi/desbloquear/${produtoSelecionado}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+        
+        mostrarLoading(false);
+
+        if (data.success) {
+            // Sucesso! Redirecionar para checkout
+            Swal.fire({
+                title: 'Desconto Desbloqueado! 🎉',
+                html: `
+                    <p>Você desbloqueou o desconto com sucesso!</p>
+                    <p><strong>Diamantes restantes:</strong> ${data.diamantes_restantes} 💎</p>
+                    <p style="margin-top: 1rem; color: #f59e0b;">
+                        ⏰ O desconto expira em 24 horas
+                    </p>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Ir para Checkout',
+                confirmButtonColor: '#8b5cf6',
+                showCancelButton: true,
+                cancelButtonText: 'Ver Produtos'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(data.link_checkout, '_blank');
+                }
+                // Recarregar página para atualizar saldo
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Erro',
+                text: data.message,
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        mostrarLoading(false);
+        Swal.fire({
+            title: 'Erro',
+            text: 'Erro ao processar desbloqueio. Tente novamente.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}
+
+// Fechar modal ao clicar fora
+document.getElementById('modalConfirmacao').addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
+</script>
+{% endblock %}

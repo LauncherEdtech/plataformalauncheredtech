@@ -1,0 +1,762 @@
+{% extends "layout.html" %}
+
+{% block title %}Resultado do Simulado - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .resultado-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .resultado-header {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .resultado-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .resultado-titulo {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .resultado-titulo i {
+        color: var(--primary);
+    }
+
+    .resultado-subtitulo {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Statistics Grid */
+    .estatisticas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .estatistica-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out calc(0.1s + var(--delay, 0s)) both;
+    }
+
+    .estatistica-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-light);
+    }
+
+    .estatistica-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .estatistica-card:nth-child(1)::before {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .estatistica-card:nth-child(2)::before {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+
+    .estatistica-card:nth-child(3)::before {
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    }
+
+    .estatistica-card:nth-child(4)::before {
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+
+    .estatistica-numero {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .estatistica-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Questions Analysis */
+    .questoes-analise {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .analise-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 2rem;
+    }
+
+    .analise-titulo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .analise-titulo i {
+        color: var(--primary);
+    }
+
+    .questoes-container {
+        padding: 2rem;
+    }
+
+    /* Question Items */
+    .questao-item {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out calc(0.4s + var(--delay, 0s)) both;
+    }
+
+    .questao-item:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        transform: translateY(-2px);
+    }
+
+    .questao-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .questao-item.acertou {
+        border-left: 4px solid var(--success);
+    }
+
+    .questao-item.errou {
+        border-left: 4px solid var(--danger);
+    }
+
+    .questao-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .questao-numero {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .questao-status {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-acerto {
+        background: var(--success);
+        color: white;
+    }
+
+    .status-erro {
+        background: var(--danger);
+        color: white;
+    }
+
+    .questao-texto {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    .questao-respostas {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .resposta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .resposta-label {
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .resposta-valor {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .resposta-correta {
+        color: var(--success);
+    }
+
+    .resposta-errada {
+        color: var(--danger);
+    }
+
+    .resposta-neutra {
+        color: var(--text-muted);
+    }
+
+    /* Explanation */
+    .explicacao {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .explicacao::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary);
+        border-radius: 2px 0 0 2px;
+    }
+
+    .explicacao.sem-explicacao::before {
+        background: var(--secondary);
+    }
+
+    .explicacao-label {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .explicacao-label i {
+        color: var(--primary);
+    }
+
+    .explicacao-texto {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .explicacao-info {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .explicacao-materia,
+    .explicacao-topico {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-style: italic;
+    }
+
+    .explicacao-materia i,
+    .explicacao-topico i {
+        color: var(--accent);
+    }
+
+    .sem-explicacao {
+        background: var(--surface);
+        border-color: var(--border);
+    }
+
+    .sem-explicacao .explicacao-label {
+        color: var(--text-muted);
+    }
+
+    .sem-explicacao .explicacao-label i {
+        color: var(--secondary);
+    }
+
+    /* Actions */
+    .acoes-container {
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .acoes-grid {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-acao {
+        padding: 1rem 2rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    .btn-primario {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primario:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-secundario {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .btn-secundario:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .resultado-container {
+            padding: 1rem;
+        }
+
+        .resultado-titulo {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .resultado-header {
+            padding: 2rem;
+        }
+
+        .estatisticas-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .estatistica-card {
+            padding: 1.5rem;
+        }
+
+        .estatistica-numero {
+            font-size: 2.5rem;
+        }
+
+        .analise-header {
+            padding: 1.5rem;
+        }
+
+        .questoes-container {
+            padding: 1.5rem;
+        }
+
+        .questao-item {
+            padding: 1.5rem;
+        }
+
+        .questao-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .questao-respostas {
+            grid-template-columns: 1fr;
+        }
+
+        .explicacao-info {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .acoes-grid {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-acao {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .resultado-titulo {
+            font-size: 1.75rem;
+        }
+
+        .estatisticas-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .estatistica-numero {
+            font-size: 2rem;
+        }
+
+        .questao-item {
+            padding: 1rem;
+        }
+
+        .questao-respostas {
+            padding: 1rem;
+        }
+
+        .explicacao {
+            padding: 1rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Loading Animation for Numbers */
+    .numero-animado {
+        display: inline-block;
+        opacity: 0;
+        transform: scale(0.8);
+        animation: numberPop 0.8s ease-out 0.5s both;
+    }
+
+    @keyframes numberPop {
+        0% {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<div class="resultado-container">
+    <!-- Header do Resultado -->
+    <div class="resultado-header">
+        <h1 class="resultado-titulo">
+            <i class="bi bi-clipboard-check"></i>
+            Resultado do Simulado
+        </h1>
+        <p class="resultado-subtitulo">
+            Confira seu desempenho detalhado e analise cada questão para otimizar seus estudos
+        </p>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="estatisticas-grid">
+        <div class="estatistica-card" style="--delay: 0s">
+            <div class="estatistica-numero numero-animado">{{ acertos }}</div>
+            <div class="estatistica-label">Questões Corretas</div>
+        </div>
+        
+        <div class="estatistica-card" style="--delay: 0.1s">
+            <div class="estatistica-numero numero-animado">{{ total_questoes }}</div>
+            <div class="estatistica-label">Total de Questões</div>
+        </div>
+        
+        <div class="estatistica-card" style="--delay: 0.2s">
+            <div class="estatistica-numero numero-animado">{{ "%.1f"|format(percentual) }}%</div>
+            <div class="estatistica-label">Percentual de Acerto</div>
+        </div>
+        
+        <div class="estatistica-card" style="--delay: 0.3s">
+            <div class="estatistica-numero numero-animado">
+                {% if simulado.tempo_realizado %}
+                    {{ simulado.tempo_realizado }}
+                {% else %}
+                    --:--
+                {% endif %}
+            </div>
+            <div class="estatistica-label">Tempo Total</div>
+        </div>
+    </div>
+
+    <!-- Análise das Questões -->
+    <div class="questoes-analise">
+        <div class="analise-header">
+            <h2 class="analise-titulo">
+                <i class="bi bi-list-check"></i>
+                Análise Detalhada das Questões
+            </h2>
+        </div>
+        
+        <div class="questoes-container">
+            {% for questao in questoes %}
+            <div class="questao-item {{ 'acertou' if questao.resposta_usuario == questao.resposta_correta else 'errou' }}" style="--delay: {{ loop.index0 * 0.05 }}s">
+                
+                <div class="questao-header">
+                    <span class="questao-numero">{{ questao.numero }}</span>
+                    <span class="questao-status {{ 'status-acerto' if questao.resposta_usuario == questao.resposta_correta else 'status-erro' }}">
+                        {% if questao.resposta_usuario == questao.resposta_correta %}
+                            <i class="bi bi-check-circle"></i>
+                            Acertou
+                        {% else %}
+                            <i class="bi bi-x-circle"></i>
+                            Errou
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="questao-texto">
+                    {{ questao.texto[:150] }}{% if questao.texto|length > 150 %}...{% endif %}
+                </div>
+
+                <div class="questao-respostas">
+                    <div class="resposta-item">
+                        <span class="resposta-label">Sua resposta</span>
+                        <span class="resposta-valor {{ 'resposta-correta' if questao.resposta_usuario == questao.resposta_correta else ('resposta-errada' if questao.resposta_usuario else 'resposta-neutra') }}">
+                            {{ questao.resposta_usuario or "Não respondida" }}
+                        </span>
+                    </div>
+                    
+                    <div class="resposta-item">
+                        <span class="resposta-label">Resposta correta</span>
+                        <span class="resposta-valor resposta-correta">{{ questao.resposta_correta }}</span>
+                    </div>
+                </div>
+
+                <!-- Seção de Explicação -->
+                {% if explicacoes and explicacoes.get(questao.id) %}
+                <div class="explicacao">
+                    <div class="explicacao-label">
+                        <i class="bi bi-lightbulb"></i>
+                        Explicação da Resposta
+                    </div>
+                    <div class="explicacao-texto">
+                        {{ explicacoes[questao.id]['explicacao']|safe }}
+                    </div>
+                    {% if explicacoes[questao.id].get('materia') or explicacoes[questao.id].get('topico') %}
+                    <div class="explicacao-info">
+                        {% if explicacoes[questao.id].get('materia') %}
+                        <div class="explicacao-materia">
+                            <i class="bi bi-book"></i>
+                            Matéria: {{ explicacoes[questao.id]['materia'] }}
+                        </div>
+                        {% endif %}
+                        {% if explicacoes[questao.id].get('topico') %}
+                        <div class="explicacao-topico">
+                            <i class="bi bi-bullseye"></i>
+                            Tópico: {{ explicacoes[questao.id]['topico'] }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="explicacao sem-explicacao">
+                    <div class="explicacao-label">
+                        <i class="bi bi-info-circle"></i>
+                        Explicação
+                    </div>
+                    <div class="explicacao-texto">
+                        Explicação não disponível para esta questão.
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="acoes-container">
+        <div class="acoes-grid">
+            <a href="{{ url_for('simulados.index') }}" class="btn-acao btn-primario">
+                <i class="bi bi-house"></i>
+                Voltar aos Simulados
+            </a>
+            
+            <a href="{{ url_for('agendar_simulado.index') }}" class="btn-acao btn-secundario">
+                <i class="bi bi-plus-circle"></i>
+                Novo Simulado
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Script para animações suaves
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Template carregado. Verificando explicações...');
+    
+    // Verificar quantas explicações foram carregadas
+    const explicacoes = document.querySelectorAll('.explicacao:not(.sem-explicacao)');
+    const semExplicacao = document.querySelectorAll('.sem-explicacao');
+    
+    console.log('✅ ' + explicacoes.length + ' questões com explicação');
+    console.log('⚠️ ' + semExplicacao.length + ' questões sem explicação');
+    
+    if (explicacoes.length === 0) {
+        console.warn('⚠️ NENHUMA EXPLICAÇÃO CARREGADA - Verifique se a função resultado() está retornando o dicionário explicacoes');
+    }
+
+    // Animação de entrada para questões
+    const questoes = document.querySelectorAll('.questao-item');
+    questoes.forEach(function(questao, index) {
+        questao.style.setProperty('--delay', (index * 0.05) + 's');
+    });
+
+    // Scroll suave para questões quando clicadas
+    const questaoHeaders = document.querySelectorAll('.questao-header');
+    questaoHeaders.forEach(function(header) {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const questaoItem = this.closest('.questao-item');
+            const explicacao = questaoItem.querySelector('.explicacao');
+            if (explicacao) {
+                explicacao.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

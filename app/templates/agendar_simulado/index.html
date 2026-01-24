@@ -1,0 +1,1534 @@
+{% extends "layout.html" %}
+
+{% block title %}Simulado Personalizado - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #00205B;
+        --secondary-blue: #001233;
+        --accent-cyan: #00b4d8;
+        --accent-purple: #6c13d3;
+        --success-color: #28a745;
+        --text-color: #ffffff;
+        --card-bg: rgba(13, 17, 23, 0.95);
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --gradient-primary: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        --gradient-accent: linear-gradient(135deg, var(--accent-cyan), #0077b6);
+        --gradient-purple: linear-gradient(135deg, var(--accent-purple), #7e25e3);
+        --gradient-success: linear-gradient(135deg, var(--success-color), #20c997);
+        --gradient-card: linear-gradient(145deg, rgba(13, 17, 23, 0.95), rgba(8, 12, 18, 0.9));
+        --gradient-hero: linear-gradient(135deg, rgba(0, 32, 91, 0.2), rgba(0, 18, 51, 0.1));
+    }
+
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+        color: white;
+        overflow-x: hidden;
+    }
+    
+    .agendar-simulado {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        min-height: 100vh;
+    }
+    
+    /* Header Section */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+        border-bottom: 2px solid rgba(0, 180, 216, 0.3);
+        animation: slideInDown 0.8s ease-out;
+        position: relative;
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: var(--gradient-accent);
+        border-radius: 2px;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .page-title i {
+        color: var(--accent-cyan);
+        animation: pulse 2s infinite;
+    }
+    
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .back-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+    
+    .back-btn:hover::before {
+        left: 100%;
+    }
+    
+    .back-btn:hover {
+        background: var(--gradient-accent);
+        border-color: var(--accent-cyan);
+        color: white;
+        transform: translateX(-8px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(0, 180, 216, 0.4);
+    }
+    
+    .page-subtitle {
+        font-size: 1.3rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 3rem;
+        text-align: center;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    /* Progress Indicator */
+    .progress-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 3rem;
+        gap: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .progress-step {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        transition: all 0.4s ease;
+        position: relative;
+    }
+    
+    .progress-step::after {
+        content: '';
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.8rem;
+        white-space: nowrap;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-step:nth-child(1)::after { content: 'Áreas'; }
+    .progress-step:nth-child(2)::after { content: 'Questões'; }
+    .progress-step:nth-child(3)::after { content: 'Duração'; }
+    
+    .progress-step.active {
+        background: var(--gradient-accent);
+        border-color: var(--accent-cyan);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(0, 180, 216, 0.5);
+    }
+    
+    .progress-step.completed {
+        background: var(--gradient-accent);
+        border-color: var(--accent-cyan);
+        color: white;
+    }
+    
+    /* Form Container */
+    .form-container {
+        background: var(--gradient-card);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        position: relative;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-accent);
+        opacity: 0.9;
+    }
+    
+    .form-body {
+        padding: 3rem;
+    }
+    
+    /* Form Sections */
+    .form-section {
+        margin-bottom: 4rem;
+        position: relative;
+    }
+    
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .section-title i {
+        color: var(--accent-cyan);
+        font-size: 1.4rem;
+    }
+    
+    .section-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 2rem;
+        font-size: 1.05rem;
+    }
+    
+    /* Areas Selection */
+    .areas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .area-card {
+        background: rgba(0, 0, 0, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .area-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-accent);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .area-card:hover {
+        border-color: var(--accent-cyan);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 180, 216, 0.3);
+    }
+    
+    .area-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .area-card.selected {
+        background: linear-gradient(145deg, rgba(0, 180, 216, 0.2), rgba(0, 119, 182, 0.1));
+        border-color: var(--accent-cyan);
+        box-shadow: 0 15px 35px rgba(0, 180, 216, 0.4);
+    }
+    
+    .area-card.selected::before {
+        transform: scaleX(1);
+    }
+    
+    .area-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--accent-cyan);
+        transition: all 0.3s ease;
+    }
+    
+    .area-card:hover .area-icon,
+    .area-card.selected .area-icon {
+        transform: scale(1.1) rotate(5deg);
+        color: #ffffff;
+    }
+    
+    .area-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .area-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.4;
+    }
+    
+    .area-checkbox {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    /* Custom Range Sliders */
+    .slider-container {
+        margin-bottom: 2rem;
+    }
+    
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .slider-value {
+        background: var(--gradient-accent);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .custom-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+        appearance: none;
+        margin-bottom: 1rem;
+    }
+    
+    .custom-slider:hover {
+        opacity: 1;
+    }
+    
+    .custom-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--gradient-accent);
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .custom-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 6px 20px rgba(0, 180, 216, 0.6);
+    }
+    
+    .custom-slider::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--gradient-accent);
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4);
+    }
+    
+    .slider-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+    }
+    
+    .slider-info i {
+        color: var(--accent-cyan);
+    }
+    
+    /* Seção de Opções */
+    .options-section {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .options-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .option-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .option-card {
+        background: rgba(0, 0, 0, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .option-card.selected {
+        border-color: var(--accent-cyan);
+        background: linear-gradient(145deg, rgba(0, 180, 216, 0.2), rgba(0, 119, 182, 0.1));
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 180, 216, 0.3);
+    }
+    
+    .option-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent-cyan);
+    }
+    
+    .option-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .option-card.selected .option-icon,
+    .option-card:hover .option-icon {
+        transform: scale(1.1);
+    }
+    
+    .option-now .option-icon {
+        color: var(--success-color);
+    }
+    
+    .option-schedule .option-icon {
+        color: var(--accent-purple);
+    }
+    
+    .option-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-description {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    /* DateTime Input */
+    .datetime-container {
+        position: relative;
+        margin-top: 1.5rem;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+    }
+    
+    .datetime-container.active {
+        opacity: 1;
+        max-height: 200px;
+    }
+    
+    .datetime-input {
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .datetime-input:focus {
+        background: rgba(0, 0, 0, 0.8);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.2);
+        outline: none;
+    }
+    
+    .datetime-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .datetime-info i {
+        color: var(--accent-cyan);
+    }
+    
+    /* Action Buttons */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 3rem;
+        gap: 2rem;
+    }
+    
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(220, 53, 69, 0.2);
+        border-color: var(--danger-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-submit {
+        border: none;
+        color: white;
+        padding: 1rem 3rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+
+    .btn-submit.now-mode {
+        background: var(--gradient-success);
+    }
+    
+    .btn-submit.schedule-mode {
+        background: var(--gradient-purple);
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s;
+    }
+    
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+    
+    .btn-submit.now-mode:hover {
+        background: linear-gradient(135deg, #20c997, #28a745);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(40, 167, 69, 0.5);
+    }
+    
+    .btn-submit.schedule-mode:hover {
+        background: linear-gradient(135deg, #7e25e3, #9b59b6);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(108, 19, 211, 0.5);
+    }
+    
+    .btn-submit:disabled {
+        background: rgba(108, 19, 211, 0.5) !important;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    /* Tips Section */
+    .tips-section {
+        background: var(--gradient-card);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+        position: relative;
+    }
+    
+    .tips-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-purple);
+        opacity: 0.9;
+    }
+    
+    .tips-header {
+        background: rgba(108, 19, 211, 0.2);
+        border-bottom: 1px solid rgba(108, 19, 211, 0.3);
+        padding: 2rem;
+    }
+    
+    .tips-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .tips-title i {
+        color: var(--accent-purple);
+        font-size: 1.6rem;
+    }
+    
+    .tips-content {
+        padding: 2rem;
+    }
+    
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    
+    .tip-card {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .tip-card:hover {
+        background: rgba(108, 19, 211, 0.1);
+        transform: translateY(-3px);
+    }
+    
+    .tip-icon {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        background: var(--gradient-purple);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .tip-card:hover .tip-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .tip-content {
+        flex: 1;
+    }
+    
+    .tip-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .tip-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+    
+    /* Animations */
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+    
+    /* Responsiveness */
+    @media (max-width: 768px) {
+        .agendar-simulado {
+            padding: 0 0.5rem;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .form-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .areas-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .option-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .progress-indicator {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .progress-step {
+            width: 40px;
+            height: 40px;
+            font-size: 0.9rem;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn-submit,
+        .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .tip-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .tips-header,
+        .tips-content {
+            padding: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.75rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .form-body {
+            padding: 1.5rem 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+        }
+        
+        .area-card {
+            padding: 1.5rem;
+        }
+        
+        .area-icon {
+            font-size: 2.5rem;
+        }
+    }
+    
+    /* Loading States */
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: var(--accent-cyan);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Alert feedback */
+    .alert-feedback {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        border-radius: 15px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 180, 216, 0.3);
+        animation: slideInRight 0.3s ease-out;
+    }
+</style>
+
+<div class="agendar-simulado">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-calendar-plus"></i>
+            Simulado Personalizado
+        </h1>
+        <a href="{{ url_for('simulados.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para Simulados
+        </a>
+    </div>
+    
+    <p class="page-subtitle">
+        🎯 Configure seu simulado personalizado escolhendo áreas, quantidade de questões e duração.<br>
+        Você pode começar imediatamente ou agendar para mais tarde!
+    </p>
+    
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-body">
+            <form method="POST" action="{{ url_for('agendar_simulado.index') }}" id="simuladoForm">
+                <!-- Input oculto para indicar a ação -->
+                <input type="hidden" name="action" id="actionInput" value="">
+                
+                <!-- Áreas do Conhecimento -->
+                <div class="form-section" data-section="1">
+                    <h3 class="section-title">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                        Áreas do Conhecimento
+                    </h3>
+                    <p class="section-subtitle">
+                        Selecione uma ou mais áreas para seu simulado personalizado
+                    </p>
+                    
+                    <div class="areas-grid">
+                        <div class="area-card" data-area="Linguagens">
+                            <input type="checkbox" name="areas" value="Linguagens" class="area-checkbox" id="area-linguagens">
+                            <div class="area-icon">📚</div>
+                            <h4 class="area-title">Linguagens</h4>
+                            <p class="area-description">
+                                Português, Literatura, Língua Estrangeira, Artes e Educação Física
+                            </p>
+                        </div>
+                        
+                        <div class="area-card" data-area="Matemática">
+                            <input type="checkbox" name="areas" value="Matemática" class="area-checkbox" id="area-matematica">
+                            <div class="area-icon">🧮</div>
+                            <h4 class="area-title">Matemática</h4>
+                            <p class="area-description">
+                                Álgebra, Geometria, Estatística, Probabilidade e suas Tecnologias
+                            </p>
+                        </div>
+                        
+                        <div class="area-card" data-area="Humanas">
+                            <input type="checkbox" name="areas" value="Humanas" class="area-checkbox" id="area-humanas">
+                            <div class="area-icon">🌍</div>
+                            <h4 class="area-title">Ciências Humanas</h4>
+                            <p class="area-description">
+                                História, Geografia, Filosofia, Sociologia e suas Tecnologias
+                            </p>
+                        </div>
+                        
+                        <div class="area-card" data-area="Natureza">
+                            <input type="checkbox" name="areas" value="Natureza" class="area-checkbox" id="area-natureza">
+                            <div class="area-icon">🔬</div>
+                            <h4 class="area-title">Ciências da Natureza</h4>
+                            <p class="area-description">
+                                Física, Química, Biologia e suas Tecnologias
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quantidade de Questões -->
+                <div class="form-section" data-section="2">
+                    <h3 class="section-title">
+                        <i class="bi bi-list-ol"></i>
+                        Quantidade de Questões
+                    </h3>
+                    <p class="section-subtitle">
+                        Escolha quantas questões deseja resolver
+                    </p>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Número de questões:</span>
+                            <span class="slider-value" id="questoesValue">45 questões</span>
+                        </div>
+                        <input type="range" name="num_questoes" id="numQuestoes" class="custom-slider" 
+                               min="10" max="90" value="45" step="5">
+                        <div class="slider-info">
+                            <i class="bi bi-info-circle"></i>
+                            <span id="questoesInfo">Tempo estimado: 2h 15min (3 min por questão)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Duração do Simulado -->
+                <div class="form-section" data-section="3">
+                    <h3 class="section-title">
+                        <i class="bi bi-stopwatch"></i>
+                        Duração do Simulado
+                    </h3>
+                    <p class="section-subtitle">
+                        Defina quanto tempo você tem disponível
+                    </p>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Tempo disponível:</span>
+                            <span class="slider-value" id="duracaoValue">2 horas</span>
+                        </div>
+                        <input type="range" name="duracao" id="duracao" class="custom-slider" 
+                               min="30" max="300" value="120" step="30">
+                        <div class="slider-info">
+                            <i class="bi bi-clock"></i>
+                            <span>O tempo médio por questão no ENEM é de aproximadamente 3 minutos</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seção de Opções -->
+                <div class="options-section">
+                    <h3 class="options-title">
+                        <i class="bi bi-lightning-charge"></i>
+                        Como deseja prosseguir?
+                    </h3>
+                    
+                    <div class="option-buttons">
+                        <div class="option-card option-now" data-option="now">
+                            <div class="option-icon">
+                                <i class="bi bi-play-circle"></i>
+                            </div>
+                            <h4 class="option-title">Fazer Agora</h4>
+                            <p class="option-description">
+                                Comece seu simulado imediatamente com as configurações escolhidas
+                            </p>
+                        </div>
+                        
+                        <div class="option-card option-schedule" data-option="schedule">
+                            <div class="option-icon">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <h4 class="option-title">Agendar</h4>
+                            <p class="option-description">
+                                Programe uma data e horário para realizar o simulado mais tarde
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Campo de agendamento (aparece apenas quando "Agendar" é selecionado) -->
+                    <div class="datetime-container" id="datetimeContainer">
+                        <input type="datetime-local" name="data_agendada" id="dataAgendada" class="datetime-input" placeholder="Selecione data e horário">
+                        <div class="datetime-info">
+                            <i class="bi bi-bell"></i>
+                            <span>Você receberá uma notificação quando chegar o horário agendado</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <a href="{{ url_for('simulados.index') }}" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-submit now-mode" id="submitBtn" disabled>
+                        <i class="bi bi-play-circle"></i>
+                        <span id="submitText">Selecione uma opção</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tips Section -->
+    <div class="tips-section">
+        <div class="tips-header">
+            <h4 class="tips-title">
+                <i class="bi bi-lightbulb"></i>
+                Dicas para um Simulado Eficiente
+            </h4>
+        </div>
+        <div class="tips-content">
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Planeje seu Tempo</h5>
+                        <p class="tip-description">
+                            Divida o tempo total pelo número de questões para não ficar preso em uma única pergunta. Mantenha o ritmo!
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-skip-forward"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Pule Questões Difíceis</h5>
+                        <p class="tip-description">
+                            Se uma questão estiver muito difícil, pule e volte depois. Priorize pontos mais fáceis primeiro.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Ambiente Adequado</h5>
+                        <p class="tip-description">
+                            Escolha um local tranquilo e sem distrações, simulando o ambiente real da prova do ENEM.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Análise de Performance</h5>
+                        <p class="tip-description">
+                            Após o simulado, revise seus erros e acertos para identificar pontos de melhoria nos estudos.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-battery-charging"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Mantenha a Energia</h5>
+                        <p class="tip-description">
+                            Faça uma refeição leve antes, mantenha-se hidratado e faça pausas estratégicas se necessário.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="bi bi-target"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h5 class="tip-title">Foque na Qualidade</h5>
+                        <p class="tip-description">
+                            É melhor resolver menos questões com atenção do que muitas questões de forma descuidada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do formulário
+    const form = document.getElementById('simuladoForm');
+    const areaCards = document.querySelectorAll('.area-card');
+    const numQuestoesSlider = document.getElementById('numQuestoes');
+    const duracaoSlider = document.getElementById('duracao');
+    const dataAgendadaInput = document.getElementById('dataAgendada');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const actionInput = document.getElementById('actionInput');
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const optionCards = document.querySelectorAll('.option-card');
+    const datetimeContainer = document.getElementById('datetimeContainer');
+    
+    // Estado da aplicação
+    let selectedOption = null;
+    
+    // Inicializar
+    initializeForm();
+    setupAreaCards();
+    setupSliders();
+    setupDateTime();
+    setupOptions();
+    setupValidation();
+    setupProgressIndicator();
+    
+    function initializeForm() {
+        // Configurar data mínima
+        const now = new Date();
+        const minDate = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hora no futuro
+        dataAgendadaInput.min = minDate.toISOString().slice(0, 16);
+        
+        // Valores iniciais
+        updateQuestoesDisplay();
+        updateDuracaoDisplay();
+    }
+
+    function setupAreaCards() {
+        areaCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const checkbox = this.querySelector('.area-checkbox');
+                const isSelected = checkbox.checked;
+                
+                // Toggle selection
+                checkbox.checked = !isSelected;
+                
+                // Update visual state
+                if (checkbox.checked) {
+                    this.classList.add('selected');
+                    createSparkles(this);
+                } else {
+                    this.classList.remove('selected');
+                }
+                
+                // Update progress
+                updateProgressStep(1, getSelectedAreas().length > 0);
+                validateForm();
+            });
+        });
+    }
+    
+    function setupSliders() {
+        numQuestoesSlider.addEventListener('input', function() {
+            updateQuestoesDisplay();
+            updateProgressStep(2, true);
+            syncDuracaoWithQuestoes();
+            validateForm();
+        });
+        
+        duracaoSlider.addEventListener('input', function() {
+            updateDuracaoDisplay();
+            updateProgressStep(3, true);
+            validateForm();
+        });
+    }
+    
+    function setupDateTime() {
+        dataAgendadaInput.addEventListener('change', function() {
+            validateForm();
+        });
+    }
+    
+    function setupOptions() {
+        optionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const option = this.dataset.option;
+                
+                // Remover seleção anterior
+                optionCards.forEach(c => c.classList.remove('selected'));
+                
+                // Selecionar nova opção
+                this.classList.add('selected');
+                selectedOption = option;
+                
+                // Mostrar/esconder campo de agendamento
+                if (option === 'schedule') {
+                    datetimeContainer.classList.add('active');
+                    dataAgendadaInput.required = true;
+                } else {
+                    datetimeContainer.classList.remove('active');
+                    dataAgendadaInput.required = false;
+                    dataAgendadaInput.value = '';
+                }
+                
+                // Atualizar botão
+                updateSubmitButton(option);
+                validateForm();
+            });
+        });
+    }
+    
+    function setupValidation() {
+        form.addEventListener('submit', function(e) {
+            const selectedAreas = getSelectedAreas();
+            
+            if (selectedAreas.length === 0) {
+                e.preventDefault();
+                showNotification('Selecione pelo menos uma área de conhecimento', 'warning');
+                scrollToSection(1);
+                return;
+            }
+            
+            if (!selectedOption) {
+                e.preventDefault();
+                showNotification('Escolha se deseja fazer o simulado agora ou agendar', 'warning');
+                document.querySelector('.options-section').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            if (selectedOption === 'schedule' && !dataAgendadaInput.value) {
+                e.preventDefault();
+                showNotification('Selecione uma data e horário para o agendamento', 'warning');
+                dataAgendadaInput.focus();
+                return;
+            }
+            
+            // Definir ação no formulário
+            actionInput.value = selectedOption;
+            
+            // Loading state
+            submitBtn.classList.add('loading');
+            if (selectedOption === 'now') {
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Iniciando...';
+            } else {
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Agendando...';
+            }
+            submitBtn.disabled = true;
+        });
+    }
+    
+    function setupProgressIndicator() {
+        // Inicializar primeiro step como ativo
+        updateProgressStep(1, false);
+    }
+    
+    function updateSubmitButton(option) {
+        const icon = submitBtn.querySelector('i');
+        
+        if (option === 'now') {
+            submitBtn.className = 'btn-submit now-mode';
+            icon.className = 'bi bi-play-circle';
+            submitText.textContent = 'Começar Simulado';
+        } else if (option === 'schedule') {
+            submitBtn.className = 'btn-submit schedule-mode';
+            icon.className = 'bi bi-calendar-event';
+            submitText.textContent = 'Agendar Simulado';
+        }
+    }
+    
+    function updateQuestoesDisplay() {
+        const value = parseInt(numQuestoesSlider.value);
+        const tempoEstimado = Math.ceil(value * 3 / 60 * 4) / 4; // Arredondar para quartos de hora
+        
+        document.getElementById('questoesValue').textContent = `${value} questões`;
+        
+        let tempoText;
+        if (tempoEstimado < 1) {
+            tempoText = `${Math.round(tempoEstimado * 60)} min`;
+        } else {
+            const horas = Math.floor(tempoEstimado);
+            const minutos = Math.round((tempoEstimado - horas) * 60);
+            tempoText = minutos > 0 ? `${horas}h ${minutos}min` : `${horas}h`;
+        }
+        
+        document.getElementById('questoesInfo').textContent = `Tempo estimado: ${tempoText} (3 min por questão)`;
+    }
+    
+    function updateDuracaoDisplay() {
+        const value = parseInt(duracaoSlider.value);
+        let displayValue;
+        
+        if (value < 60) {
+            displayValue = `${value} minutos`;
+        } else {
+            const horas = Math.floor(value / 60);
+            const minutos = value % 60;
+            displayValue = minutos > 0 ? `${horas}h ${minutos}min` : `${horas} horas`;
+        }
+        
+        document.getElementById('duracaoValue').textContent = displayValue;
+    }
+    
+    function syncDuracaoWithQuestoes() {
+        const numQuestoes = parseInt(numQuestoesSlider.value);
+        const tempoRecomendado = Math.max(30, Math.ceil(numQuestoes * 3 / 30) * 30); // Múltiplo de 30
+        
+        // Não forçar mudança se o usuário já ajustou manualmente
+        if (Math.abs(parseInt(duracaoSlider.value) - tempoRecomendado) > 60) {
+            return;
+        }
+        
+        duracaoSlider.value = Math.min(300, tempoRecomendado);
+        updateDuracaoDisplay();
+        updateProgressStep(3, true);
+    }
+    
+    function getSelectedAreas() {
+        return Array.from(document.querySelectorAll('input[name="areas"]:checked')).map(cb => cb.value);
+    }
+    
+    function updateProgressStep(step, completed) {
+        const stepElement = document.querySelector(`[data-step="${step}"]`);
+        
+        if (completed) {
+            stepElement.classList.add('completed');
+            stepElement.classList.remove('active');
+        } else {
+            stepElement.classList.add('active');
+            stepElement.classList.remove('completed');
+        }
+        
+        // Ativar próximo step se atual estiver completo
+        if (completed && step < 3) {
+            const nextStep = document.querySelector(`[data-step="${step + 1}"]`);
+            if (nextStep && !nextStep.classList.contains('completed')) {
+                nextStep.classList.add('active');
+            }
+        }
+    }
+    
+    function validateForm() {
+        const selectedAreas = getSelectedAreas();
+        const hasAreas = selectedAreas.length > 0;
+        const hasOption = selectedOption !== null;
+        const hasDateIfNeeded = selectedOption !== 'schedule' || dataAgendadaInput.value !== '';
+        
+        const isValid = hasAreas && hasOption && hasDateIfNeeded;
+        
+        submitBtn.disabled = !isValid;
+        
+        if (!hasOption) {
+            submitText.textContent = 'Selecione uma opção';
+        } else if (selectedOption === 'schedule' && !hasDateIfNeeded) {
+            submitText.textContent = 'Informe data e horário';
+        }
+    }
+    
+    function scrollToSection(sectionNumber) {
+        const section = document.querySelector(`[data-section="${sectionNumber}"]`);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+    
+    function createSparkles(element) {
+        const colors = ['#00b4d8', '#6c13d3', '#28a745', '#ffc107'];
+        
+        for (let i = 0; i < 6; i++) {
+            setTimeout(() => {
+                const sparkle = document.createElement('div');
+                sparkle.style.position = 'absolute';
+                sparkle.style.left = Math.random() * element.offsetWidth + 'px';
+                sparkle.style.top = Math.random() * element.offsetHeight + 'px';
+                sparkle.style.width = '6px';
+                sparkle.style.height = '6px';
+                sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.borderRadius = '50%';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '9999';
+                sparkle.style.animation = `sparkleFade ${Math.random() * 1 + 1}s ease-out forwards`;
+                
+                element.style.position = 'relative';
+                element.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 2000);
+            }, i * 50);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-feedback`;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 4000);
+    }
+    
+    // Inicializar validação
+    validateForm();
+});
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes sparkleFade {
+        0% {
+            opacity: 1;
+            transform: scale(0) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1) rotate(180deg);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0) rotate(360deg);
+        }
+    }
+    
+    .area-card, .tip-card, .option-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .custom-slider {
+        background: linear-gradient(to right, rgba(0, 180, 216, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

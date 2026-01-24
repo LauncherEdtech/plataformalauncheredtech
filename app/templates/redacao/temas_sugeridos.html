@@ -1,0 +1,588 @@
+<!-- app/templates/redacao/temas_sugeridos.html -->
+{% extends "layout.html" %}
+
+{% block title %}Temas Sugeridos - Redação{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --accent: #00d9ff;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 10px 25px -5px rgb(0 0 0 / 0.2);
+        --radius: 12px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .temas-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Simple Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius);
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        color: var(--text);
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* Info Banner */
+    .info-banner {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--primary));
+        opacity: 0.8;
+    }
+
+    .info-banner h3 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .info-banner p {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Search Section */
+    .search-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .search-header {
+        background: var(--surface-light);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .search-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--warning), #d97706);
+        opacity: 0.8;
+    }
+
+    .search-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-header i {
+        color: var(--warning);
+    }
+
+    .search-content {
+        padding: 1.5rem;
+    }
+
+    .search-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1rem;
+    }
+
+    .input-group {
+        display: flex;
+    }
+
+    .form-control {
+        flex: 1;
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-right: none;
+        border-radius: var(--radius) 0 0 var(--radius);
+        background: #0a0a0a;
+        color: var(--text);
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #0a0a0a;
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    .input-group .btn {
+        border-radius: 0 var(--radius) var(--radius) 0;
+        border: 2px solid var(--primary);
+        border-left: none;
+    }
+
+    .form-select {
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        background: #0a0a0a;
+        color: var(--text);
+        transition: border-color 0.2s ease;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #0a0a0a;
+    }
+
+    /* Themes Grid */
+    .themes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .theme-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .theme-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px -5px rgb(0 0 0 / 0.3);
+        border-color: var(--border-light);
+    }
+
+    .theme-header {
+        background: var(--surface-light);
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .theme-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .theme-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.3;
+    }
+
+    .theme-content {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .theme-description {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        flex: 1;
+    }
+
+    .theme-tags {
+        margin-bottom: 1.25rem;
+    }
+
+    .theme-tag {
+        display: inline-block;
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--primary);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .theme-tag:nth-child(2) {
+        background: rgba(0, 217, 255, 0.2);
+        color: var(--accent);
+        border-color: rgba(0, 217, 255, 0.3);
+    }
+
+    .theme-tag:nth-child(3) {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Tips Section */
+    .tips-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .tips-header {
+        background: var(--surface-light);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .tips-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .tips-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tips-header i {
+        color: var(--success);
+    }
+
+    .tips-content {
+        padding: 1.5rem;
+    }
+
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .tip-item:last-child {
+        border-bottom: none;
+    }
+
+    .tip-icon {
+        color: var(--warning);
+        font-size: 1.1rem;
+        margin-top: 0.125rem;
+        flex-shrink: 0;
+    }
+
+    .tip-text {
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .temas-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .themes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-row {
+            grid-template-columns: 1fr;
+        }
+
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-banner {
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .theme-content,
+        .search-content,
+        .tips-content {
+            padding: 1rem;
+        }
+
+        .input-group {
+            flex-direction: column;
+        }
+
+        .form-control {
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group .btn {
+            border-radius: var(--radius);
+            border: 2px solid var(--primary);
+        }
+    }
+</style>
+
+<div class="temas-container">
+    <!-- Simple Header -->
+    <div class="page-header">
+        <div>
+            <h1>Temas Sugeridos para Redação</h1>
+            <p class="page-subtitle">Encontre inspiração para sua próxima redação</p>
+        </div>
+        <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left"></i> Voltar para Redações
+        </a>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <h3>Como escolher um bom tema?</h3>
+        <p>
+            Um bom tema de redação deve ser atual, relevante e permitir uma discussão rica de ideias.
+            Escolha temas que você conheça ou tenha interesse em pesquisar, e que permitam desenvolver
+            argumentos consistentes e propor soluções viáveis.
+        </p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="search-header">
+            <h5><i class="fas fa-search"></i>Procurar outros temas</h5>
+        </div>
+        <div class="search-content">
+            <div class="search-row">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Digite uma palavra-chave...">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+                <select class="form-select">
+                    <option selected>Selecione uma categoria</option>
+                    <option value="meio-ambiente">Meio Ambiente</option>
+                    <option value="tecnologia">Tecnologia</option>
+                    <option value="saude">Saúde</option>
+                    <option value="educacao">Educação</option>
+                    <option value="sociedade">Sociedade</option>
+                    <option value="politica">Política</option>
+                    <option value="economia">Economia</option>
+                    <option value="cultura">Cultura</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Themes Grid -->
+    <div class="themes-grid">
+        {% for tema in temas %}
+            <div class="theme-card">
+                <div class="theme-header">
+                    <h4 class="theme-title">{{ tema.titulo }}</h4>
+                </div>
+                <div class="theme-content">
+                    <p class="theme-description">{{ tema.descricao }}</p>
+                    
+                    <div class="theme-tags">
+                        <span class="theme-tag">Atualidades</span>
+                     <!--   <span class="theme-tag">{{ tema.titulo.split()[0] }}</span> -->
+                        <span class="theme-tag">ENEM</span>
+                    </div>
+                    
+                    <a href="{{ url_for('redacao.nova_redacao') }}?tema={{ tema.titulo }}" class="btn btn-primary">
+                        <i class="fas fa-pencil-alt"></i> Escrever sobre este tema
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Tips Section -->
+    <div class="tips-section">
+        <div class="tips-header">
+            <h5><i class="fas fa-lightbulb"></i>Dicas para desenvolver seu tema</h5>
+        </div>
+        <div class="tips-content">
+            <div class="tips-grid">
+                <div>
+                    <div class="tip-item">
+                        <i class="fas fa-chart-line tip-icon"></i>
+                        <p class="tip-text">Pesquise dados e estatísticas atuais</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-users tip-icon"></i>
+                        <p class="tip-text">Busque diferentes pontos de vista</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-map tip-icon"></i>
+                        <p class="tip-text">Faça um mapa mental antes de começar a escrever</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-book tip-icon"></i>
+                        <p class="tip-text">Utilize exemplos e citações relevantes</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="tip-item">
+                        <i class="fas fa-align-left tip-icon"></i>
+                        <p class="tip-text">Organize sua redação em parágrafos bem definidos</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-bullseye tip-icon"></i>
+                        <p class="tip-text">Crie uma conclusão com proposta de intervenção</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-clock tip-icon"></i>
+                        <p class="tip-text">Pratique a gestão do tempo</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-spell-check tip-icon"></i>
+                        <p class="tip-text">Sempre revise seu texto antes de finalizar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

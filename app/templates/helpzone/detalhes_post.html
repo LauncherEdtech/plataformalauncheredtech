@@ -1,0 +1,341 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ post.user.nome_completo }} - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-primary: #000000;
+    --text-main: #ffffff;
+    --text-muted: #737373;
+    --border: #262626;
+    --accent: #8b5cf6;
+}
+
+body {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ================================================
+   LAYOUT BASE
+   ================================================ */
+.app-container {
+    max-width: 935px; /* Padrão desktop limpo */
+    margin: 0 auto;
+    padding-bottom: 70px; /* Espaço para o input fixo */
+}
+
+/* Barra Superior Mobile */
+.top-nav {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 100;
+}
+
+.top-nav h2 {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ================================================
+   POST ESTRUTURA (PC)
+   ================================================ */
+@media (min-width: 768px) {
+    .post-view {
+        display: flex;
+        border: 1px solid var(--border);
+        margin-top: 30px;
+        height: 600px;
+        background: #050505;
+    }
+
+    .post-media {
+        flex: 1.2;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .post-details {
+        flex: 0.8;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--border);
+    }
+}
+
+/* Estilo Mobile (Padrão) */
+@media (max-width: 767px) {
+    .post-view {
+        display: block;
+    }
+    .post-media img, .post-media video {
+        width: 100%;
+        max-height: 500px;
+        object-fit: cover;
+    }
+    .post-details {
+        padding: 0;
+    }
+}
+
+/* ================================================
+   COMPONENTES INTERNOS
+   ================================================ */
+
+/* Mídia */
+.post-media img, .post-media video {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Cabeçalho do Usuário */
+.user-header {
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #333;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Área de Comentários */
+.comments-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.comment-block {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.comment-content {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.comment-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: flex;
+    gap: 10px;
+}
+
+/* Barra de Ações */
+.post-actions {
+    padding: 12px 15px;
+    border-top: 1px solid var(--border);
+}
+
+.action-icons {
+    display: flex;
+    gap: 16px;
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.action-icons i { cursor: pointer; }
+.fa-heart.active { color: #ed4956; }
+.fa-bookmark.active { color: #ffca28; }
+
+.likes-count {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Input Fixo de Comentário */
+.comment-input-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border);
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .comment-input-bar {
+        position: relative;
+        border-top: 1px solid var(--border);
+    }
+}
+
+.comment-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    font-size: 14px;
+}
+
+.btn-submit {
+    color: var(--accent);
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Utilidades */
+.d-mobile { display: none; }
+@media (max-width: 767px) { .d-mobile { display: flex; } .app-container { padding-top: 0; } }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    
+    <!-- Topo Mobile -->
+    <div class="top-nav d-mobile">
+        <a href="{{ url_for('helpzone.feed') }}" style="color: white;"><i class="fas fa-arrow-left"></i></a>
+        <h2>Publicação</h2>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div class="post-view">
+        
+        <!-- Mídia -->
+        <div class="post-media">
+            {% if post.midia and post.midia.url %}
+                {% if post.midia.tipo == 'imagem' %}
+                    <img src="{{ post.midia.url }}" alt="Post">
+                {% else %}
+                    <video src="{{ post.midia.url }}" controls></video>
+                {% endif %}
+            {% else %}
+                <div style="padding: 40px; color: var(--text-muted);">{{ post.texto }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Detalhes e Comentários -->
+        <div class="post-details">
+            
+            <div class="user-header">
+                {% if post.user.perfil_social.foto_perfil %}
+                    <img src="{{ post.user.perfil_social.foto_perfil }}" class="avatar">
+                {% else %}
+                    <div class="avatar" style="display: flex; align-items: center; justify-content: center; font-size: 12px; background: #262626;">{{ post.user.nome_completo[0] }}</div>
+                {% endif %}
+                <span class="username">{{ post.user.nome_completo }}</span>
+            </div>
+
+            <div class="comments-area">
+                <!-- Descrição do Autor -->
+                <div class="comment-block">
+                    <div class="comment-content">
+                        <span class="username">{{ post.user.nome_completo }}</span>
+                        {{ post.texto }}
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+
+                <!-- Lista de Comentários -->
+                {% if comentarios %}
+                    {% for c in comentarios %}
+                    <div class="comment-block">
+                        <div class="comment-content">
+                            <span class="username">{{ c.user.nome_completo }}</span>
+                            {{ c.texto }}
+                            <div class="comment-meta">
+                                <span>{{ c.data_criacao.strftime('%d/%m') }}</span>
+                                <span style="cursor:pointer">Curtir</span>
+                                {% if c.user.id == current_user.id %}
+                                    <span style="color: #ed4956; cursor:pointer">Excluir</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-muted); text-align: center; font-size: 13px; margin-top: 20px;">Sem comentários ainda.</p>
+                {% endif %}
+            </div>
+
+            <!-- Ações e Curtidas (Fixo abaixo no PC) -->
+            <div class="post-actions">
+                <div class="action-icons">
+                    <i class="{% if post.user_liked(current_user.id) %}fas active{% else %}far{% endif %} fa-heart" onclick="handleLike({{ post.id }}, this)"></i>
+                    <i class="far fa-comment" onclick="document.querySelector('.comment-field').focus()"></i>
+                    <i class="far fa-paper-plane"></i>
+                    <i class="{% if post.user_saved(current_user.id) %}fas active{% else %}far{% endif %} fa-bookmark" style="margin-left: auto;" onclick="handleSave({{ post.id }}, this)"></i>
+                </div>
+                <div class="likes-count"><span id="count">{{ post.total_likes or 0 }}</span> curtidas</div>
+                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-top: 5px;">
+                    {{ post.data_criacao.strftime('%d DE %B') }}
+                </div>
+            </div>
+
+            <!-- Input de Comentário -->
+            <form action="{{ url_for('helpzone.comentar_post', post_id=post.id) }}" method="POST" class="comment-input-bar">
+                <input type="text" name="texto" class="comment-field" placeholder="Escreva um comentário..." required>
+                <button type="submit" class="btn-submit">Publicar</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function handleLike(postId, el) {
+    const res = await fetch(`/helpzone/api/post/${postId}/like`, { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tipo: 'like'})
+    });
+    const data = await res.json();
+    if (data.success) {
+        document.getElementById('count').textContent = data.total_likes;
+        el.classList.toggle('fas');
+        el.classList.toggle('far');
+        el.classList.toggle('active');
+    }
+}
+
+async function handleSave(postId, el) {
+    const res = await fetch(`/helpzone/api/post/${postId}/save`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+        el.classList.toggle('fas');
+        el.classList.toggle('far');
+        el.classList.toggle('active');
+    }
+}
+</script>
+{% endblock %}

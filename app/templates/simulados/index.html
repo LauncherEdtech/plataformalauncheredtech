@@ -1,0 +1,805 @@
+{% extends "layout.html" %}
+
+{% block title %}Simulados - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+
+    body {
+        background: linear-gradient(to bottom, #00205B 0%, #001233 5%, #000 40%, #000 100%);
+        color: white;
+    }
+
+    .simulados {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 4rem auto;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+    }
+
+    .hero-cta {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        border: none;
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: var(--radius-lg);
+        font-weight: 700;
+        font-size: 1.125rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .hero-cta:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
+        color: white;
+    }
+
+    .hero-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .hero-link:hover {
+        color: var(--accent);
+    }
+
+    /* Section Headers */
+    .section-header {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 0;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    /* Performance Grid */
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .performance-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.3s + var(--delay, 0s)) both;
+    }
+
+    .performance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+
+    .performance-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.8;
+    }
+
+    .performance-card:nth-child(1)::before {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+
+    .performance-card:nth-child(2)::before {
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    }
+
+    .performance-card:nth-child(3)::before {
+        background: linear-gradient(90deg, var(--warning), #d97706);
+    }
+
+    .card-header {
+        background: #0a0a0a;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-title i {
+        color: var(--primary);
+    }
+
+    .card-subtitle {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-left: 2rem;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* Progress Bars for Areas */
+    .area-progress {
+        margin-bottom: 1.5rem;
+    }
+
+    .area-progress:last-child {
+        margin-bottom: 0;
+    }
+
+    .area-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .area-name {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .area-percentage {
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .progress-bar-custom {
+        width: 100%;
+        height: 10px;
+        background: var(--border);
+        border-radius: 5px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        border-radius: 5px;
+        transition: width 1.5s ease-out;
+        position: relative;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    /* TRI Info Card */
+    .tri-info {
+        line-height: 1.7;
+        color: var(--text-muted);
+    }
+
+    /* Simulados List */
+    .simulados-section {
+        margin-bottom: 4rem;
+    }
+
+    .simulado-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out calc(0.4s + var(--delay, 0s)) both;
+    }
+
+    .simulado-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-light);
+    }
+
+    .simulado-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--accent);
+        opacity: 0.8;
+    }
+
+    .simulado-body {
+        padding: 2rem;
+    }
+
+    .simulado-content {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .simulado-info-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .simulado-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+    }
+
+    .simulado-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .simulado-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 217, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+    }
+
+    .simulado-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1rem;
+    }
+
+    .simulado-status {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pendente {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-concluido {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-simulado {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+    .btn-simulado:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Empty States */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: var(--border-light);
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+
+    .empty-title {
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .simulados {
+            padding: 1rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+        }
+
+        .performance-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .simulado-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .simulado-actions {
+            align-items: center;
+        }
+
+        .simulado-meta {
+            justify-content: center;
+        }
+
+        .empty-state {
+            padding: 2rem 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-cta {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1rem 1.5rem;
+        }
+
+        .simulado-body {
+            padding: 1.5rem;
+        }
+
+        .simulado-title {
+            font-size: 1.125rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="simulados">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">Simulados Inteligentes com Correção TRI</h1>
+        <p class="hero-subtitle">Prepare-se de verdade com a experiência mais próxima do ENEM.</p>
+<a href="{{ url_for('agendar_simulado.index') }}" class="hero-cta">        
+<!-- <a href="{{ url_for('simulados.selecionar_modo') }}" class="hero-cta">-->
+
+            <i class="bi bi-rocket-takeoff"></i>
+            Fazer meu próximo Simulado
+        </a>
+        <div>
+            <a href="{{ url_for('analise.index') }}" class="hero-link">
+                <i class="bi bi-graph-up-arrow"></i>
+                Ver desempenho anterior
+            </a>
+        </div>
+    </div>
+    
+    <!-- Performance Section -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="bi bi-trophy"></i>
+            Seu Desempenho
+        </h2>
+    </div>
+    
+    <div class="performance-grid">
+        <!-- Acertos por Área -->
+        <div class="performance-card" style="--delay: 0s">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-pie-chart"></i>
+                    Acertos por Área
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for area, percentual in desempenho_areas.items() %}
+                <div class="area-progress">
+                    <div class="area-header">
+                        <span class="area-name">{{ area }}</span>
+                        <span class="area-percentage">{{ percentual }}%</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: {{ percentual }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Evolução TRI -->
+        <div class="performance-card" style="--delay: 0.1s">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-graph-up"></i>
+                    Evolução TRI
+                </h5>
+                <small class="card-subtitle">últimos simulados</small>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="chartTRI"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- O que é TRI? -->
+        <div class="performance-card" style="--delay: 0.2s">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle"></i>
+                    O que é TRI?
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="tri-info">
+                    A TRI, ou Teoria de Resposta ao Item, é um método estatístico usado pelo ENEM para calcular a nota dos candidatos de forma mais precisa e justa, levando em consideração a dificuldade de cada questão e a coerência do padrão de respostas.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulados Pendentes -->
+    <div class="simulados-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-calendar-event"></i>
+                Agenda de Simulados
+            </h2>
+        </div>
+        
+        {% if simulados_pendentes %}
+            {% for simulado in simulados_pendentes %}
+            <div class="simulado-card" style="--delay: {{ loop.index0 * 0.1 }}s">
+                <div class="simulado-body">
+                    <div class="simulado-content">
+                        <div class="simulado-info-group">
+                            <h5 class="simulado-title">{{ simulado.titulo }}</h5>
+                            <div class="simulado-meta">
+                                <div class="simulado-icon">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <span>
+                                    Tempo: {{ simulado.duracao_minutos // 60 }}{% if simulado.duracao_minutos % 60 > 0 %}:{{ '{:02d}'.format(simulado.duracao_minutos % 60) }}{% endif %} horas
+                                    {% if simulado.data_agendada %}
+                                    • Agendado: {{ simulado.data_agendada.strftime('%d/%m/%Y') }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="simulado-actions">
+                            <span class="simulado-status status-pendente">
+                                <i class="bi bi-clock-history"></i>
+                                Pendente
+                            </span>
+                            <a href="{{ url_for('simulados.iniciar_simulado', simulado_id=simulado.id) }}" class="btn-simulado">
+                                <i class="bi bi-play-circle"></i>
+                                Fazer Simulado
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-calendar-x empty-icon"></i>
+                <h4 class="empty-title">Não há simulados pendentes</h4>
+                <p class="empty-description">Não há simulados pendentes no momento.</p>
+                <a href="{{ url_for('agendar_simulado.index') }}" class="btn-simulado">
+                    <i class="bi bi-plus-circle"></i>
+                    Agendar Novo Simulado
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Histórico de Simulados -->
+    <div class="simulados-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-clock-history"></i>
+                Histórico de Simulados
+            </h2>
+        </div>
+        
+        {% if simulados_concluidos %}
+            {% for simulado in simulados_concluidos %}
+            <div class="simulado-card" style="--delay: {{ loop.index0 * 0.1 }}s">
+                <div class="simulado-body">
+                    <div class="simulado-content">
+                        <div class="simulado-info-group">
+                            <h5 class="simulado-title">{{ simulado.titulo }}</h5>
+                            <div class="simulado-meta">
+                                <div class="simulado-icon">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <span>
+                                    Feito no dia {{ simulado.data_realizado.strftime('%d/%m/%Y') }} em {{ simulado.tempo_realizado }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="simulado-actions">
+                            <span class="simulado-status status-concluido">
+                                <i class="bi bi-check-circle"></i>
+                                Concluído
+                            </span>
+                            <a href="{{ url_for('simulados.resultado', simulado_id=simulado.id) }}" class="btn-simulado">
+                                <i class="bi bi-eye"></i>
+                                Ver Gabarito
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-clipboard-x empty-icon"></i>
+                <h4 class="empty-title">Nenhum simulado concluído</h4>
+                <p class="empty-description">Você ainda não concluiu nenhum simulado.</p>
+                <a href="{{ url_for('agendar_simulado.index') }}" class="btn-simulado">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    Fazer Primeiro Simulado
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuração de cores para tema escuro
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+
+        // Gráfico de evolução TRI
+        const ctx = document.getElementById('chartTRI');
+        if (ctx) {
+            const chartTRI = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ datas_grafico|tojson }},
+                    datasets: [{
+                        label: 'Nota TRI',
+                        data: {{ notas_grafico|tojson }},
+                        backgroundColor: 'rgba(0, 217, 255, 0.1)',
+                        borderColor: '#00d9ff',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00d9ff',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 800,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                padding: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Animação das barras de progresso
+        const progressBars = document.querySelectorAll('.progress-fill');
+        setTimeout(() => {
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 800);
+    });
+</script>
+{% endblock %}

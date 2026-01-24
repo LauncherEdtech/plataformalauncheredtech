@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Página Não Encontrada - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 100px 20px; color: white; min-height: 80vh;">
+    <div style="font-size: 120px; margin-bottom: 30px;">🚀</div>
+    <h1 style="font-size: 48px; color: #00b4d8; margin-bottom: 20px;">404</h1>
+    <h2 style="margin-bottom: 30px;">Página Não Encontrada</h2>
+    <p style="font-size: 18px; opacity: 0.8; margin-bottom: 40px;">
+        A página que você está procurando não foi encontrada.
+    </p>
+    
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('main.index') }}" 
+           style="background: #0084ff; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            🏠 Página Inicial
+        </a>
+        <a href="javascript:history.back()" 
+           style="background: #6c757d; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            ← Voltar
+        </a>
+    </div>
+</div>
+{% endblock %}

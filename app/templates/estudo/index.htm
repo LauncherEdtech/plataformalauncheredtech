@@ -1,0 +1,41 @@
+{# ======== SEÇÕES CRIADAS NO ADMIN (DINÂMICO) ======== #}
+{% if secoes_materias and secoes_materias|length %}
+  {% for secao, itens in secoes_materias %}
+    <section class="home-section" style="margin-top:40px;">
+      <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h2 style="margin:0;">
+            {{ secao.icone or '🧩' }} {{ secao.titulo }}
+          </h2>
+          {% if secao.subtitulo %}
+            <div style="opacity:.75;margin-top:4px;">{{ secao.subtitulo }}</div>
+          {% endif %}
+        </div>
+        {# opcional: link "ver todos" dessa seção #}
+        <a href="{{ url_for('estudo.index') }}" style="opacity:.75;font-size:14px;">Ver todos ›</a>
+      </div>
+
+      {% if itens and itens|length %}
+        <div class="subjects-grid" style="display:grid; gap:16px; grid-template-columns: repeat({{ secao.grid_cols or 4 }}, minmax(0,1fr)); margin-top:16px;">
+          {% for item in itens %}
+            {% set m = item.materia %}
+            <a href="{{ url_for('estudo.materia', materia_id=m.id) }}" class="subject-card" style="position:relative; display:block; overflow:hidden; border-radius:12px; background:#111;">
+              <img src="{{ item.imagem_url or m.imagem_url }}" alt="{{ m.nome }}" style="width:100%; height:170px; object-fit:cover; display:block;">
+              {% if item.badge %}
+                <span style="position:absolute;top:10px;left:10px;background:#e00;color:#fff;font-weight:700;border-radius:999px;padding:4px 10px;font-size:12px;">
+                  {{ item.badge }}
+                </span>
+              {% endif %}
+              <div style="padding:12px;">
+                <div style="font-weight:700;">{{ item.titulo_override or m.nome }}</div>
+                {# opcional: status/progresso #}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="opacity:.7;margin-top:8px;">Nenhuma matéria atribuída a esta seção.</div>
+      {% endif %}
+    </section>
+  {% endfor %}
+{% endif %}

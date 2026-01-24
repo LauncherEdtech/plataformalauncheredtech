@@ -1,0 +1,1840 @@
+{% extends "layout.html" %}
+
+{% block title %}Feed - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ================================================
+   VARIÁVEIS GLOBAIS
+   ================================================ */
+:root {
+    --bg-body: #000000;
+    --bg-surface-1: #0a0a0a;
+    --bg-surface-2: #141414;
+    --bg-surface-3: #1f1f1f;
+    --border-subtle: #1a1a1a;
+    --border-medium: #2a2a2a;
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --primary-dark: #6d28d9;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --xp-gold: #fbbf24;
+    --streak-orange: #fb923c;
+    --diamond-cyan: #06b6d4;
+    --like-red: #ef4444;
+    --save-yellow: #fbbf24;
+    --transition-fast: 0.2s ease;
+    --sidebar-width: 240px;
+    --mobile-nav-height: 56px;
+}
+
+/* ================================================
+   ESCONDER NAVBAR DO LAYOUT.HTML APENAS NO MOBILE
+   ================================================ */
+@media (max-width: 768px) {
+    body > nav.navbar,
+    header > nav.navbar,
+    .navbar.navbar-expand-lg.bg-black {
+        display: none !important;
+    }
+    
+    body {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    main {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+}
+
+/* ================================================
+   MODAL DE COMENTÁRIOS (MANTIDO DO ORIGINAL)
+   ================================================ */
+.comments-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.comments-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.comments-modal-container {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    max-height: 90vh;
+    background: var(--bg-body);
+    border-radius: 0;
+    overflow: hidden;
+    display: flex;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.comments-modal-overlay.active .comments-modal-container {
+    transform: scale(1);
+}
+
+/* Desktop Layout */
+@media (min-width: 769px) {
+    .comments-modal-container {
+        border-radius: 12px;
+        max-height: 85vh;
+    }
+    
+    .modal-media-section {
+        flex: 1.3;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .modal-comments-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--border-subtle);
+    }
+}
+
+/* Mobile Layout */
+@media (max-width: 768px) {
+    .comments-modal-container {
+        flex-direction: column;
+        border-radius: 20px 20px 0 0;
+        max-height: 90vh;
+        align-self: flex-end;
+        transform: translateY(100%);
+    }
+    
+    .comments-modal-overlay.active .comments-modal-container {
+        transform: translateY(0);
+    }
+    
+    .modal-media-section {
+        display: none;
+    }
+    
+    .modal-comments-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .modal-close-btn {
+        display: none;
+    }
+}
+
+.modal-media-section img,
+.modal-media-section video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.modal-post-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    overflow: hidden;
+}
+
+.modal-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-username {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.modal-drag-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-medium);
+    border-radius: 2px;
+    margin: 8px auto 12px;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .modal-drag-handle {
+        display: block;
+    }
+}
+
+.modal-comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg-body);
+}
+
+.modal-comment-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.modal-comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.modal-comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-comment-content {
+    flex: 1;
+}
+
+.modal-comment-username {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-right: 6px;
+}
+
+.modal-comment-text {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.modal-comment-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.modal-comment-meta span {
+    cursor: pointer;
+}
+
+.modal-comment-meta span:hover {
+    color: var(--text-secondary);
+}
+
+.modal-comment-input-section {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-body);
+}
+
+.modal-comment-emoji {
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-comment-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.modal-comment-field::placeholder {
+    color: var(--text-tertiary);
+}
+
+.modal-comment-submit {
+    color: var(--primary);
+    font-weight: 700;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.modal-comment-submit:hover {
+    color: var(--primary-hover);
+}
+
+.modal-comment-submit:disabled {
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+.modal-comments-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-tertiary);
+}
+
+.modal-comments-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-tertiary);
+}
+
+.modal-comments-empty i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+    opacity: 0.5;
+}
+
+/* ================================================
+   NAVBAR MOBILE
+   ================================================ */
+.helpzone-navbar-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #000000;
+    border-bottom: 1px solid var(--border-subtle);
+    z-index: 90;
+    display: none;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .helpzone-navbar-mobile {
+        display: flex;
+    }
+}
+
+.helpzone-navbar-mobile .mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.helpzone-navbar-mobile .mobile-logo img {
+    height: 24px;
+}
+
+.helpzone-navbar-mobile .hamburger-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.helpzone-navbar-mobile .hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* XP e Moedas */
+.currency-badges {
+    display: flex !important;
+    gap: 0.5rem !important;
+    margin-left: auto;
+}
+
+.xp-badge {
+    background: linear-gradient(45deg, #ffc107, #fd7e14) !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 20px !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3) !important;
+}
+
+.xp-badge:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5) !important;
+    color: #000 !important;
+}
+
+.diamond-badge {
+    background: linear-gradient(45deg, #ffd700, #f59e0b) !important;
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 20px !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+}
+
+.diamond-badge:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5) !important;
+    color: #1a1a1a !important;
+}
+
+@media (max-width: 768px) {
+    .xp-badge, .diamond-badge {
+        font-size: 0.85rem !important;
+        padding: 0.45rem 0.7rem !important;
+    }
+    
+    .xp-badge i, .diamond-badge i {
+        font-size: 1rem !important;
+    }
+}
+
+/* ================================================
+   SIDEBAR DESKTOP
+   ================================================ */
+.helpzone-sidebar {
+    width: var(--sidebar-width);
+    height: calc(100vh - 60px);
+    position: fixed;
+    left: 0;
+    top: 60px;
+    background: var(--bg-body);
+    border-right: 1px solid var(--border-subtle);
+    padding: 20px 12px;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 90;
+}
+
+@media (min-width: 769px) {
+    .helpzone-sidebar {
+        display: flex;
+    }
+}
+
+.sidebar-profile {
+    padding: 16px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.sidebar-profile:hover {
+    background: var(--bg-surface-1);
+}
+
+.sidebar-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-profile-avatar {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 1.2rem;
+    overflow: hidden;
+}
+
+.sidebar-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sidebar-profile-avatar .level-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--primary);
+    border: 2px solid var(--bg-body);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.sidebar-profile-info {
+    flex: 1;
+}
+
+.sidebar-profile-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.sidebar-profile-streak {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.sidebar-profile-streak i {
+    color: var(--streak-orange);
+}
+
+.sidebar-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    position: relative;
+    cursor: pointer;
+}
+
+.sidebar-nav-link:hover {
+    background: var(--bg-surface-1);
+}
+
+.sidebar-nav-link.active {
+    font-weight: 700;
+}
+
+.sidebar-nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background: var(--primary);
+    border-radius: 0 3px 3px 0;
+}
+
+.sidebar-nav-link i {
+    font-size: 1.4rem;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-create-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.sidebar-create-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.sidebar-ranking {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar-ranking-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+}
+
+.sidebar-ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.sidebar-ranking-item:hover {
+    background: var(--bg-surface-1);
+}
+
+.sidebar-ranking-position {
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-ranking-position.top {
+    color: var(--xp-gold);
+}
+
+.sidebar-ranking-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 0.8rem;
+    overflow: hidden;
+}
+
+.sidebar-ranking-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sidebar-ranking-info {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.sidebar-ranking-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-ranking-xp {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+/* ================================================
+   SIDEBAR MOBILE (OVERLAY)
+   ================================================ */
+.mobile-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.60);
+    z-index: 150;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    backdrop-filter: blur(2px);
+}
+
+.mobile-sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(320px, 86vw);
+    height: 100vh;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(18px);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 200;
+    transform: translateX(110%);
+    transition: transform 0.28s ease;
+    overflow-y: auto;
+    padding: 18px 16px 24px;
+    box-shadow: -16px 0 40px rgba(0,0,0,0.55);
+}
+
+.mobile-sidebar.active {
+    transform: translateX(0);
+}
+
+.mobile-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.mobile-sidebar-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-sidebar-close:hover {
+    background: rgba(255,255,255,0.16);
+}
+
+.mobile-sidebar-profile {
+    margin: 10px 0 14px;
+}
+
+.mobile-sidebar-profile .sidebar-profile {
+    padding: 12px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.mobile-sidebar-profile .sidebar-profile-avatar {
+    width: 44px;
+    height: 44px;
+}
+
+.mobile-sidebar-profile .sidebar-profile-title {
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 6px;
+}
+
+.mobile-sidebar-profile .sidebar-profile-streak {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.mobile-sidebar-profile .sidebar-profile-streak i {
+    color: var(--streak-orange);
+}
+
+.mobile-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.mobile-sidebar-nav a,
+.mobile-sidebar-nav button {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.mobile-sidebar-nav a:hover,
+.mobile-sidebar-nav a.active,
+.mobile-sidebar-nav button:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.mobile-sidebar-nav a i,
+.mobile-sidebar-nav button i {
+    font-size: 1.25rem;
+    width: 22px;
+    text-align: center;
+    opacity: 0.95;
+}
+
+.mobile-sidebar .sidebar-ranking {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ================================================
+   MAIN CONTENT
+   ================================================ */
+.helpzone-main-content {
+    margin-left: 0;
+    margin-top: 56px;
+    padding: 16px;
+    min-height: calc(100vh - 56px);
+}
+
+@media (min-width: 769px) {
+    .helpzone-main-content {
+        margin-left: var(--sidebar-width);
+        margin-top: 60px;
+        padding: 24px;
+        min-height: calc(100vh - 60px);
+    }
+}
+
+.helpzone-feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ================================================
+   STORIES
+   ================================================ */
+.feed-stories {
+    margin-bottom: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.stories-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 5px 0 15px;
+    scrollbar-width: none;
+}
+
+.stories-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 72px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.story-item:hover {
+    transform: scale(1.05);
+}
+
+.story-ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    position: relative;
+}
+
+.story-ring.no-story {
+    background: var(--border-medium);
+}
+
+.story-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--bg-body);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.6rem;
+    overflow: hidden;
+}
+
+.story-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.story-add-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    border-radius: 50%;
+    border: 3px solid var(--bg-body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.story-username {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    max-width: 72px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+/* ================================================
+   POST CARD
+   ================================================ */
+.post-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .post-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+}
+
+.post-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.post-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.post-username {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.post-username:hover {
+    color: var(--primary);
+}
+
+.post-time {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.post-options-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.post-content {
+    padding: 0 16px 12px;
+}
+
+.post-text {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.post-media {
+    margin: 12px 0;
+    background: var(--bg-surface-1);
+}
+
+.post-media img,
+.post-media video {
+    width: 100%;
+    display: block;
+}
+
+.post-stats {
+    display: flex;
+    padding: 12px 16px 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.post-likes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.post-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.post-action-btn:hover {
+    background: var(--bg-surface-1);
+}
+
+.post-action-btn i {
+    font-size: 1.3rem;
+}
+
+.post-action-btn.liked {
+    color: var(--like-red);
+}
+
+.post-action-btn.saved {
+    color: var(--save-yellow);
+}
+
+/* ================================================
+   TOAST
+   ================================================ */
+.toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    background: var(--bg-surface-3);
+    color: var(--text-primary);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 3000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+.toast.success {
+    background: var(--success);
+    color: white;
+}
+
+@media (max-width: 768px) {
+  .mobile-sidebar-profile {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin: 10px 0 14px !important;
+  }
+
+  .mobile-sidebar-profile .sidebar-profile {
+    display: block !important;
+  }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<!-- CSS dos Overlays -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/helpzone-overlays.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<!-- Navbar Mobile -->
+<nav class="helpzone-navbar-mobile">
+    <a href="{{ url_for('helpzone.feed') }}" class="mobile-logo">
+        <img src="{{ url_for('static', filename='img/logo_launcher.png') }}" alt="Launcher">
+    </a>
+    
+    <div class="d-flex currency-badges gap-2">
+        <a href="{{ url_for('progresso.index') }}" class="xp-badge" title="Experiência Total">
+            <i class="bi bi-lightning-fill"></i>
+            <span>{{ current_user.xp_total or 0 }}</span>
+        </a>
+        <a href="{{ url_for('yampi.listar_produtos') }}" class="diamond-badge" title="Launcher Coins">
+            <i class="bi bi-coin"></i>
+            <span>{{ current_user.diamantes or 0 }}</span>
+        </a>
+    </div>
+    
+    <button class="hamburger-btn" onclick="toggleMobileSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+</nav>
+
+<!-- Sidebar Desktop -->
+<div class="helpzone-sidebar">
+    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
+        <div class="sidebar-profile-header">
+            <div class="sidebar-profile-avatar">
+                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% else %}
+                {{ current_user.nome_completo[0].upper() }}
+                {% endif %}
+                <div class="level-badge">{{ current_user.nivel or 1 }}</div>
+            </div>
+            <div class="sidebar-profile-info">
+                <div class="sidebar-profile-title">FOGUINHO</div>
+                <div class="sidebar-profile-streak">
+                    <i class="fas fa-fire" style="color: {{ 'var(--streak-orange)' if current_user.sequencia_dias > 0 else 'var(--text-tertiary)' }}"></i>
+                    <span>
+                        {% if current_user.sequencia_dias > 0 %}
+                            {{ current_user.sequencia_dias }} dia{{ 's' if current_user.sequencia_dias != 1 else '' }} 
+                        {% else %}
+                            Comece sua sequência!
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <nav class="sidebar-nav-links">
+        <a href="{{ url_for('helpzone.feed') }}" class="sidebar-nav-link active">
+            <i class="fas fa-home"></i>
+            <span>Feed</span>
+        </a>
+        <div class="sidebar-nav-link" onclick="openSearchModal()">
+            <i class="fas fa-search"></i>
+            <span>Explorar</span>
+        </div>
+        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="#" class="sidebar-nav-link">
+            <i class="fas fa-bookmark"></i>
+            <span>Salvos</span>
+        </a>
+        <div class="sidebar-nav-link" onclick="openNotificationsPanel()">
+            <i class="far fa-bell"></i>
+            <span>Notificações</span>
+        </div>
+    </nav>
+    
+    <button class="sidebar-create-btn" onclick="openCreatePostModal()">
+        <i class="fas fa-plus"></i>
+        <span>Criar Post</span>
+    </button>
+    
+    <div class="sidebar-ranking">
+        <div class="sidebar-ranking-title">RANKING ENTRE SEGUIDORES</div>
+        <div class="sidebar-ranking-list" id="rankingList">
+            <div style="text-align: center; padding: 20px; color: var(--text-tertiary); font-size: 0.85rem;">
+                <i class="fas fa-trophy" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+                Carregando...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+<!-- Mobile Sidebar -->
+<div class="mobile-sidebar" id="mobileSidebar">
+    <div class="mobile-sidebar-header">
+        <button class="mobile-sidebar-close" onclick="toggleMobileSidebar()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="mobile-sidebar-profile">
+        <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
+            <div class="sidebar-profile-header">
+                <div class="sidebar-profile-avatar">
+                    {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                        <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                    {% else %}
+                        {{ current_user.nome_completo[0].upper() }}
+                    {% endif %}
+                    <div class="level-badge">{{ current_user.nivel or 1 }}</div>
+                </div>
+                <div class="sidebar-profile-info">
+                    <div class="sidebar-profile-title">FOGUINHO</div>
+                    <div class="sidebar-profile-streak">
+                        <i class="fas fa-fire"></i>
+                        <span>
+                            {{ current_user.sequencia_dias or 0 }} dia{{ 's' if (current_user.sequencia_dias or 0) != 1 else '' }}
+                        </span>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    
+    <nav class="mobile-sidebar-nav">
+        <a href="{{ url_for('helpzone.feed') }}" class="active">
+            <i class="fas fa-home"></i>
+            <span>Feed</span>
+        </a>
+        <button onclick="openSearchModal(); toggleMobileSidebar();">
+            <i class="fas fa-search"></i>
+            <span>Explorar</span>
+        </button>
+        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="#">
+            <i class="fas fa-bookmark"></i>
+            <span>Salvos</span>
+        </a>
+        <button onclick="openNotificationsPanel(); toggleMobileSidebar();">
+            <i class="far fa-bell"></i>
+            <span>Notificações</span>
+        </button>
+        <button onclick="openCreatePostModal(); toggleMobileSidebar();">
+            <i class="fas fa-plus-circle"></i>
+            <span>Criar Post</span>
+        </button>
+    </nav>
+</div>
+
+<!-- Main Content -->
+<div class="helpzone-main-content">
+    <div class="helpzone-feed-container">
+        
+        <!-- Stories -->
+        <div class="feed-stories">
+            <div class="stories-scroll" id="storiesContainer">
+                <div class="story-item" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
+                    <div class="story-ring no-story">
+                        <div class="story-avatar">
+                            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                            <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Você">
+                            {% else %}
+                            {{ current_user.nome_completo[0].upper() }}
+                            {% endif %}
+                        </div>
+                        <div class="story-add-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="story-username">Criar story</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posts -->
+        <div id="postsContainer">
+            {% if posts.items %}
+                {% for post in posts.items %}
+                <div class="post-card" data-post-id="{{ post.id }}">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <div class="post-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}'">
+                                {% if post.user.perfil_social and post.user.perfil_social.foto_perfil %}
+                                <img src="{{ post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
+                                {% else %}
+                                {{ post.user.nome_completo[0].upper() }}
+                                {% endif %}
+                            </div>
+                            <div class="post-user-details">
+                                <a href="{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}" class="post-username">
+                                    {{ post.user.nome_completo }}
+                                </a>
+                                <div class="post-time">{{ post.data_criacao.strftime('%d/%m às %H:%M') }}</div>
+                            </div>
+                        </div>
+                        <button class="post-options-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="post-content">
+                        <div class="post-text">{{ post.texto }}</div>
+                    </div>
+                    
+                    {% if post.midia and post.midia.url %}
+                    <div class="post-media">
+                        {% if post.midia.tipo == 'imagem' %}
+                        <img src="{{ post.midia.url }}" alt="Post">
+                        {% elif post.midia.tipo == 'video' %}
+                        <video src="{{ post.midia.url }}" controls></video>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="post-stats">
+                        <div class="post-likes">
+                            <i class="fas fa-heart" style="color: var(--like-red);"></i>
+                            <span>{{ post.total_likes or 0 }} curtidas</span>
+                        </div>
+                    </div>
+
+                    <div class="post-actions">
+                        <button class="post-action-btn {% if post.user_liked(current_user.id) %}liked{% endif %}" 
+                                onclick="toggleLike({{ post.id }})">
+                            <i class="{% if post.user_liked(current_user.id) %}fas{% else %}far{% endif %} fa-heart"></i>
+                            <span>Curtir</span>
+                        </button>
+                        <button class="post-action-btn" onclick="openCommentsModal({{ post.id }})">
+                            <i class="far fa-comment"></i>
+                            <span>Comentar</span>
+                        </button>
+                        <button class="post-action-btn" onclick="sharePost({{ post.id }})">
+                            <i class="far fa-paper-plane"></i>
+                            <span>Compartilhar</span>
+                        </button>
+                        <button class="post-action-btn {% if post.user_saved(current_user.id) %}saved{% endif %}" 
+                                onclick="toggleSave({{ post.id }}, this)" style="margin-left: auto;">
+                            <i class="{% if post.user_saved(current_user.id) %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 60px 20px;">
+                    <i class="fas fa-comments" style="font-size: 4rem; color: var(--text-tertiary); margin-bottom: 20px;"></i>
+                    <h3>Seu feed está vazio</h3>
+                    <p style="color: var(--text-secondary); margin: 10px 0 20px;">
+                        Comece seguindo outros estudantes!
+                    </p>
+                    <button onclick="openSearchModal()" 
+                            style="padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                        Explorar Pessoas
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Comentários (MANTIDO DO ORIGINAL) -->
+<div class="comments-modal-overlay" id="commentsModal" onclick="closeCommentsModal(event)">
+    <div class="comments-modal-container" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="closeCommentsModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="modal-media-section" id="modalMediaSection"></div>
+        
+        <div class="modal-comments-section">
+            <div class="modal-drag-handle"></div>
+            <div class="modal-post-header" id="modalPostHeader"></div>
+            <div class="modal-comments-list" id="modalCommentsList">
+                <div class="modal-comments-loading">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 12px;">Carregando comentários...</p>
+                </div>
+            </div>
+            
+            <div class="modal-comment-input-section">
+                <span class="modal-comment-emoji">😊</span>
+                <input type="text" 
+                       class="modal-comment-field" 
+                       id="modalCommentInput"
+                       placeholder="Adicione um comentário...">
+                <button class="modal-comment-submit" 
+                        id="modalCommentSubmit"
+                        onclick="submitComment()">
+                    Publicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INCLUIR OS OVERLAYS (criar post, notificações, busca) -->
+{% include 'helpzone/overlays.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- JS dos Overlays -->
+<script src="{{ url_for('static', filename='js/helpzone-overlays.js') }}"></script>
+
+<script>
+let currentPostId = null;
+
+// Mobile Sidebar Toggle
+function toggleMobileSidebar() {
+    const overlay = document.getElementById('mobileSidebarOverlay');
+    const sidebar = document.getElementById('mobileSidebar');
+    
+    overlay.classList.toggle('active');
+    sidebar.classList.toggle('active');
+    
+    if (overlay.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+}
+
+// Abrir Modal de Comentários (MANTIDO DO ORIGINAL)
+async function openCommentsModal(postId) {
+    currentPostId = postId;
+    const modal = document.getElementById('commentsModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    await loadPostDetails(postId);
+}
+
+// Fechar Modal de Comentários
+function closeCommentsModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('commentsModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    currentPostId = null;
+}
+
+async function loadPostDetails(postId) {
+    console.log('🔍 Carregando post ID:', postId);
+    
+    try {
+        const url = `/helpzone/api/post/${postId}/detalhes`;
+        console.log('📡 Fazendo requisição para:', url);
+        
+        const response = await fetch(url);
+        console.log('📥 Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('📦 Dados recebidos:', data);
+        
+        if (data.success) {
+            const post = data.post;
+            
+            const header = document.getElementById('modalPostHeader');
+            header.innerHTML = `
+                <div class="modal-user-avatar">
+                    ${post.user.foto_perfil 
+                        ? `<img src="${post.user.foto_perfil}" alt="${post.user.nome}">`
+                        : post.user.nome[0].toUpperCase()
+                    }
+                </div>
+                <span class="modal-username">${post.user.nome}</span>
+            `;
+            
+            const mediaSection = document.getElementById('modalMediaSection');
+            if (post.midia) {
+                if (post.midia.tipo === 'imagem') {
+                    mediaSection.innerHTML = `<img src="${post.midia.url}" alt="Post">`;
+                } else if (post.midia.tipo === 'video') {
+                    mediaSection.innerHTML = `<video src="${post.midia.url}" controls></video>`;
+                }
+            } else {
+                mediaSection.innerHTML = `<div style="padding: 40px; color: var(--text-secondary); text-align: center;">${post.texto}</div>`;
+            }
+            
+            await loadComments(postId);
+        } else {
+            console.error('❌ API retornou success: false');
+            const commentsList = document.getElementById('modalCommentsList');
+            commentsList.innerHTML = `
+                <div class="modal-comments-empty">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar post</p>
+                    <p style="font-size: 0.85rem;">Tente novamente mais tarde</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('💥 ERRO CAPTURADO:', error);
+        console.error('Stack trace:', error.stack);
+        
+        const commentsList = document.getElementById('modalCommentsList');
+        commentsList.innerHTML = `
+            <div class="modal-comments-empty" style="color: var(--error);">
+                <i class="fas fa-exclamation-circle"></i>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar</p>
+                <p style="font-size: 0.85rem;">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+async function loadComments(postId) {
+    try {
+        const response = await fetch(`/helpzone/api/post/${postId}/comentarios`);
+        const data = await response.json();
+        
+        const commentsList = document.getElementById('modalCommentsList');
+        
+        if (data.success && data.comentarios && data.comentarios.length > 0) {
+            commentsList.innerHTML = data.comentarios.map(c => `
+                <div class="modal-comment-item">
+                    <div class="modal-comment-avatar">
+                        ${c.user.foto_perfil 
+                            ? `<img src="${c.user.foto_perfil}" alt="${c.user.nome}">`
+                            : c.user.nome[0].toUpperCase()
+                        }
+                    </div>
+                    <div class="modal-comment-content">
+                        <div>
+                            <span class="modal-comment-username">${c.user.nome}</span>
+                            <span class="modal-comment-text">${c.texto}</span>
+                        </div>
+                        <div class="modal-comment-meta">
+                            <span>${c.tempo}</span>
+                            <span onclick="likeComment(${c.id})">Curtir</span>
+                            ${c.is_owner ? `<span onclick="deleteComment(${c.id})" style="color: var(--error)">Excluir</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            commentsList.innerHTML = `
+                <div class="modal-comments-empty">
+                    <i class="far fa-comment-dots"></i>
+                    <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Nenhum comentário ainda</p>
+                    <p style="font-size: 0.85rem;">Seja o primeiro a comentar!</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar comentários:', error);
+    }
+}
+
+async function submitComment() {
+    const input = document.getElementById('modalCommentInput');
+    const texto = input.value.trim();
+    
+    if (!texto || !currentPostId) return;
+    
+    try {
+        const response = await fetch(`/helpzone/api/post/${currentPostId}/comentar`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({texto: texto})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            input.value = '';
+            await loadComments(currentPostId);
+            showToast('Comentário publicado!', 'success');
+        }
+    } catch (error) {
+        console.error('Erro ao comentar:', error);
+        showToast('Erro ao publicar comentário', 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('modalCommentInput');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitComment();
+            }
+        });
+    }
+});
+
+
+// Load Ranking
+async function loadRanking() {
+    try {
+        const response = await fetch('/helpzone/api/ranking-seguidores');
+        const data = await response.json();
+        
+        if (data.success && data.ranking && data.ranking.length > 0) {
+            const container = document.getElementById('rankingList');
+            container.innerHTML = '';
+            
+            data.ranking.forEach((user, index) => {
+                const item = document.createElement('div');
+                item.className = 'sidebar-ranking-item';
+                item.onclick = () => location.href = `/helpzone/perfil/${user.id}`;
+                
+                item.innerHTML = `
+                    <div class="sidebar-ranking-position ${index < 3 ? 'top' : ''}">${index + 1}</div>
+                    <div class="sidebar-ranking-avatar">
+                        ${user.foto_perfil ? `<img src="${user.foto_perfil}" alt="${user.nome}">` : user.nome[0].toUpperCase()}
+                    </div>
+                    <div class="sidebar-ranking-info">
+                        <div class="sidebar-ranking-name">${user.nome}</div>
+                        <div class="sidebar-ranking-xp">${user.xp || 0} XP</div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+    }
+}
+
+// Toggle Like
+async function toggleLike(postId) {
+    try {
+        const response = await fetch(`/helpzone/api/post/${postId}/like`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tipo: 'like'})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const card = document.querySelector(`[data-post-id="${postId}"]`);
+            const btn = card.querySelector('.post-action-btn.liked, .post-action-btn:not(.liked)');
+            const icon = btn.querySelector('i');
+            const stats = card.querySelector('.post-likes span');
+            
+            stats.textContent = `${data.total_likes} curtidas`;
+            
+            if (data.action !== 'removed') {
+                btn.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                btn.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+// Toggle Save
+async function toggleSave(postId, button) {
+    try {
+        const response = await fetch(`/helpzone/api/post/${postId}/save`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const icon = button.querySelector('i');
+            
+            if (data.action === 'saved') {
+                button.classList.add('saved');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                showToast('Post salvo!', 'success');
+            } else {
+                button.classList.remove('saved');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                showToast('Removido', 'info');
+            }
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+// Share Post
+function sharePost(postId) {
+    const url = window.location.origin + '/helpzone/post/' + postId;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copiado!', 'success');
+    });
+}
+
+// Toast
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadRanking();
+    console.log('✅ HelpZone Feed com Overlays carregado!');
+});
+</script>
+{% endblock %}

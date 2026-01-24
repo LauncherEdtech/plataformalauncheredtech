@@ -1,0 +1,994 @@
+<!-- app/templates/redacao/dicas.html -->
+{% extends "layout.html" %}
+
+{% block title %}Dicas de Redação - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --accent: #00d9ff;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 10px 25px -5px rgb(0 0 0 / 0.2);
+        --radius: 12px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .dicas-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Simple Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius);
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        color: var(--text);
+    }
+
+    .btn-lg {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+    }
+
+    /* Info Banner */
+    .info-banner {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .info-banner h3 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .info-banner p {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Competences Grid */
+    .competences-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .competence-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+    }
+
+    .competence-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0.8;
+    }
+
+    .competence-card:nth-child(1)::before { background: var(--primary); }
+    .competence-card:nth-child(2)::before { background: var(--accent); }
+    .competence-card:nth-child(3)::before { background: var(--success); }
+    .competence-card:nth-child(4)::before { background: var(--warning); }
+    .competence-card:nth-child(5)::before { background: var(--danger); }
+
+    .competence-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px -5px rgb(0 0 0 / 0.3);
+        border-color: var(--border-light);
+    }
+
+    .competence-content {
+        padding: 1.25rem;
+    }
+
+    .competence-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .competence-subtitle {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0 0 0.75rem 0;
+        font-weight: 500;
+    }
+
+    .competence-description {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Cards */
+    .content-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--surface-light);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .card-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header i {
+        color: var(--primary);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    .card-content p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Checklist */
+    .checklist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .checklist li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        transition: color 0.2s ease;
+    }
+
+    .checklist li:last-child {
+        border-bottom: none;
+    }
+
+    .checklist li:hover {
+        color: var(--text);
+    }
+
+    .checklist li::before {
+        content: "✓";
+        color: var(--success);
+        font-weight: bold;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    /* Accordion */
+    .accordion {
+        margin-bottom: 2rem;
+    }
+
+    .accordion-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .accordion-button {
+        background: var(--surface-light);
+        color: var(--text);
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        width: 100%;
+        text-align: left;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: none;
+    }
+
+    .accordion-button:focus {
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        border: none;
+    }
+
+    .accordion-button::after {
+        filter: brightness(0) invert(1);
+        font-size: 0.8rem;
+    }
+
+    .accordion-body {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-top: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .tip-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .tip-item:last-child {
+        border-bottom: none;
+    }
+
+    .tip-icon {
+        color: var(--primary);
+        font-size: 1rem;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .tip-content strong {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .tip-content {
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Example boxes */
+    .example-box {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin: 1rem 0;
+        position: relative;
+    }
+
+    .example-box::before {
+        content: "Exemplo";
+        position: absolute;
+        top: -0.5rem;
+        left: 1rem;
+        background: var(--surface);
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .example-box p {
+        margin: 0;
+        color: var(--text-muted);
+        font-style: italic;
+        line-height: 1.6;
+    }
+
+    .example-box.good::before {
+        content: "✓ Bom Exemplo";
+        color: var(--success);
+    }
+
+    .example-box.bad::before {
+        content: "✗ Evite";
+        color: var(--danger);
+    }
+
+    /* Call to action */
+    .call-to-action {
+        text-align: center;
+        padding: 2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .call-to-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .call-to-action .lead {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dicas-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .competences-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .competence-content {
+            padding: 1rem;
+        }
+
+        .accordion-button {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .accordion-body {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="dicas-container">
+    <!-- Simple Header -->
+    <div class="page-header">
+        <div>
+            <h1>Dicas de Redação</h1>
+            <p class="page-subtitle">Aprenda técnicas avançadas para melhorar sua escrita</p>
+        </div>
+        <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left"></i> Voltar para Redações
+        </a>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <h3>Como obter uma boa nota no ENEM?</h3>
+        <p>
+            A redação do ENEM vale 1000 pontos e pode ser decisiva para sua aprovação.
+            Nestas dicas, você encontrará orientações para desenvolver cada uma das cinco competências
+            avaliadas e técnicas avançadas para melhorar significativamente sua nota.
+        </p>
+    </div>
+
+    <!-- Competências do ENEM -->
+    <h3 style="margin-bottom: 1rem; color: var(--text);">As 5 Competências da Redação ENEM</h3>
+    <div class="competences-grid">
+        <div class="competence-card">
+            <div class="competence-content">
+                <h5 class="competence-title">Competência 1</h5>
+                <h6 class="competence-subtitle">Domínio da norma culta</h6>
+                <p class="competence-description">
+                    Demonstrar domínio da norma padrão da língua escrita.
+                </p>
+            </div>
+        </div>
+        <div class="competence-card">
+            <div class="competence-content">
+                <h5 class="competence-title">Competência 2</h5>
+                <h6 class="competence-subtitle">Compreensão da proposta</h6>
+                <p class="competence-description">
+                    Compreender a proposta e aplicar conceitos das várias áreas do conhecimento.
+                </p>
+            </div>
+        </div>
+        <div class="competence-card">
+            <div class="competence-content">
+                <h5 class="competence-title">Competência 3</h5>
+                <h6 class="competence-subtitle">Argumentação</h6>
+                <p class="competence-description">
+                    Selecionar, relacionar, organizar e interpretar informações em defesa de um ponto de vista.
+                </p>
+            </div>
+        </div>
+        <div class="competence-card">
+            <div class="competence-content">
+                <h5 class="competence-title">Competência 4</h5>
+                <h6 class="competence-subtitle">Coesão textual</h6>
+                <p class="competence-description">
+                    Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação.
+                </p>
+            </div>
+        </div>
+        <div class="competence-card">
+            <div class="competence-content">
+                <h5 class="competence-title">Competência 5</h5>
+                <h6 class="competence-subtitle">Proposta de intervenção</h6>
+                <p class="competence-description">
+                    Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checklist -->
+    <div class="content-card">
+        <div class="card-header">
+            <h4><i class="fas fa-clipboard-check"></i>Checklist Essencial</h4>
+        </div>
+        <div class="card-content">
+            <p>Verifique se sua redação atende a estes requisitos antes de enviá-la:</p>
+            
+            <ul class="checklist">
+                <li>Título criativo e coerente com o texto (opcional)</li>
+                <li>Introdução que contextualiza o tema e apresenta sua tese</li>
+                <li>Desenvolvimento com pelo menos dois parágrafos argumentativos</li>
+                <li>Argumentos apoiados por exemplos, dados ou citações</li>
+                <li>Conclusão que retoma a tese e apresenta proposta de intervenção</li>
+                <li>Proposta completa: agente + ação + meio + finalidade + detalhamento</li>
+                <li>Texto entre 25-30 linhas (2500-3000 caracteres)</li>
+                <li>Linguagem formal, sem gírias ou coloquialismos</li>
+                <li>Verificação ortográfica e gramatical completa</li>
+                <li>Uso correto de conectivos para garantir coesão</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Estrutura da Redação -->
+    <div class="content-card">
+        <div class="card-header">
+            <h4><i class="fas fa-building"></i>Estrutura Ideal da Redação</h4>
+        </div>
+        <div class="card-content">
+            <p><strong>Introdução (4-5 linhas):</strong></p>
+            <div class="example-box good">
+                <p>"No século XXI, a questão da [tema] tornou-se uma das principais preocupações da sociedade brasileira. Embora [contextualização], observa-se que [problema central]. Nesse sentido, faz-se necessário analisar [aspecto 1] e [aspecto 2] para compreender essa problemática."</p>
+            </div>
+            
+            <p><strong>Desenvolvimento 1 (7-8 linhas):</strong></p>
+            <div class="example-box good">
+                <p>"Em primeiro lugar, [primeiro argumento]. Segundo [autor/instituição], [dados/citação que comprova o argumento]. Isso evidencia que [explicação do argumento]. Um exemplo disso é [exemplo concreto], que demonstra [como o exemplo comprova o argumento]."</p>
+            </div>
+            
+            <p><strong>Desenvolvimento 2 (7-8 linhas):</strong></p>
+            <div class="example-box good">
+                <p>"Além disso, [segundo argumento]. De acordo com [fonte], [dados/informação]. Tal fato revela que [análise]. Nesse contexto, pode-se citar [exemplo], o qual ilustra [relação com o argumento]."</p>
+            </div>
+            
+            <p><strong>Conclusão (6-7 linhas):</strong></p>
+            <div class="example-box good">
+                <p>"Portanto, é evidente que [retomada da tese]. Para solucionar essa questão, é necessário que [agente] [ação], por meio de [meio/modo], a fim de [finalidade]. Ademais, [detalhamento da proposta]. Dessa forma, será possível [resultado esperado]."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dicas Específicas por Competência -->
+    <div class="accordion" id="accordionDicas">
+        <!-- Competência 1 -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                    <strong>Competência 1: Domínio da Norma Culta</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <ul class="tip-list">
+                        <li class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Acentuação:</strong> Atenção especial a "por que", "porque", "por quê", "porquê"
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Concordância verbal:</strong> "Fazem dois anos" (errado) → "Faz dois anos" (correto)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Regência:</strong> "Assistir o filme" (errado) → "Assistir ao filme" (correto)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Crase:</strong> "Referir-se a questão" (errado) → "Referir-se à questão" (correto)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Pontuação:</strong> Nunca separe sujeito do predicado com vírgula
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <div class="example-box bad">
+                        <p>"Os jovens, precisam de mais oportunidades." (Erro: vírgula entre sujeito e predicado)</p>
+                    </div>
+                    <div class="example-box good">
+                        <p>"Os jovens precisam de mais oportunidades." (Correto)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competência 2 -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                    <strong>Competência 2: Compreensão da Proposta</strong>
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <ul class="tip-list">
+                        <li class="tip-item">
+                            <i class="fas fa-lightbulb tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Repertório sociocultural:</strong> Use filosofia, sociologia, história, literatura, cinema
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-lightbulb tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Dados estatísticos:</strong> "Segundo o IBGE...", "De acordo com pesquisa da OMS..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-lightbulb tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Citações úteis:</strong> "Como dizia Nelson Mandela...", "Segundo Zygmunt Bauman..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-lightbulb tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Contexto histórico:</strong> Compare situações atuais com eventos passados
+                            </div>
+                        </li>
+                    </ul>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Repertórios por Tema:</h5>
+                    
+                    <p><strong>Educação:</strong></p>
+                    <div class="example-box">
+                        <p>"Paulo Freire defendia que 'a educação é um ato político', evidenciando a importância da democratização do ensino."</p>
+                    </div>
+                    
+                    <p><strong>Meio Ambiente:</strong></p>
+                    <div class="example-box">
+                        <p>"O conceito de desenvolvimento sustentável, estabelecido na Conferência de Brundtland (1987), define..."</p>
+                    </div>
+                    
+                    <p><strong>Tecnologia:</strong></p>
+                    <div class="example-box">
+                        <p>"A obra '1984' de George Orwell antecipou questões sobre vigilância digital que vivenciamos hoje."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Competência 3 -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                    <strong>Competência 3: Argumentação</strong>
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <h5 style="color: var(--text); margin: 0 0 1rem 0;">Tipos de Argumentos Eficazes:</h5>
+                    
+                    <ul class="tip-list">
+                        <li class="tip-item">
+                            <i class="fas fa-chart-bar tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Argumento por dados:</strong> "Segundo pesquisa do IPEA, 70% dos jovens..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-user-tie tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Argumento de autoridade:</strong> "Como afirma o sociólogo Bauman..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-history tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Argumento histórico:</strong> "Assim como na Revolução Industrial..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-balance-scale tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Argumento por comparação:</strong> "Enquanto países europeus..."
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-exclamation-triangle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Argumento por consequência:</strong> "Caso essa situação persista..."
+                            </div>
+                        </li>
+                    </ul>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Modelo de Parágrafo Argumentativo:</h5>
+                    <div class="example-box good">
+                        <p><strong>1. Tópico frasal:</strong> "Em primeiro lugar, a desigualdade social é um fator determinante para..."<br>
+                        <strong>2. Fundamentação:</strong> "Segundo dados do IBGE..."<br>
+                        <strong>3. Explicação:</strong> "Isso ocorre porque..."<br>
+                        <strong>4. Exemplificação:</strong> "Um exemplo disso é..."<br>
+                        <strong>5. Fechamento:</strong> "Portanto, evidencia-se que..."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competência 4 -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                    <strong>Competência 4: Coesão Textual</strong>
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <h5 style="color: var(--text); margin: 0 0 1rem 0;">Conectivos por Função:</h5>
+                    
+                    <p><strong>Adição:</strong> além disso, ademais, outrossim, ainda</p>
+                    <p><strong>Oposição:</strong> contudo, todavia, entretanto, não obstante</p>
+                    <p><strong>Conclusão:</strong> portanto, logo, por conseguinte, desta forma</p>
+                    <p><strong>Explicação:</strong> isto é, ou seja, a saber, por exemplo</p>
+                    <p><strong>Causa:</strong> visto que, uma vez que, já que, pois</p>
+                    <p><strong>Consequência:</strong> de modo que, por isso, assim, consequentemente</p>
+                    <p><strong>Finalidade:</strong> a fim de, para que, com o propósito de</p>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Frases de Transição:</h5>
+                    
+                    <div class="example-box good">
+                        <p><strong>Entre parágrafos:</strong><br>
+                        "Além da questão educacional, outro aspecto relevante é..."<br>
+                        "Somado a isso, é importante analisar..."<br>
+                        "Paralelamente a essa questão, observa-se que..."</p>
+                    </div>
+
+                    <div class="example-box bad">
+                        <p><strong>Evite repetições:</strong><br>
+                        "É importante... é importante... é importante" (repetitivo)</p>
+                    </div>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Elementos de Coesão:</h5>
+                    <ul class="tip-list">
+                        <li class="tip-item">
+                            <i class="fas fa-link tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Pronomes:</strong> "Este problema", "Tal situação", "Essa realidade"
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-link tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Sinônimos:</strong> questão/problema, jovens/adolescentes, Brasil/país
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-link tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Hiperônimos:</strong> "a educação" → "essa área", "o ensino" → "esse setor"
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competência 5 -->
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                    <strong>Competência 5: Proposta de Intervenção</strong>
+                </button>
+            </h2>
+            <div id="collapseFive" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <h5 style="color: var(--text); margin: 0 0 1rem 0;">Elementos Obrigatórios:</h5>
+                    
+                    <ul class="tip-list">
+                        <li class="tip-item">
+                            <i class="fas fa-user tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Agente:</strong> Quem vai executar (governo, escolas, ONGs, sociedade)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-play tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Ação:</strong> O que será feito (implementar, criar, promover, estabelecer)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-cogs tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Meio/Modo:</strong> Como será feito (por meio de, através de, mediante)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-target tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Finalidade:</strong> Para que serve (a fim de, com o objetivo de, para)
+                            </div>
+                        </li>
+                        <li class="tip-item">
+                            <i class="fas fa-info-circle tip-icon"></i>
+                            <div class="tip-content">
+                                <strong>Detalhamento:</strong> Explicação adicional de como funcionará
+                            </div>
+                        </li>
+                    </ul>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Exemplos de Propostas Completas:</h5>
+                    
+                    <div class="example-box good">
+                        <p><strong>Tema: Educação Digital</strong><br>
+                        "Para solucionar essa questão, é necessário que <em>o Ministério da Educação</em> <strong>(agente)</strong> <em>implemente um programa nacional de capacitação digital</em> <strong>(ação)</strong>, <em>por meio de parcerias com universidades e empresas de tecnologia</em> <strong>(meio)</strong>, <em>a fim de garantir que todos os professores dominem ferramentas digitais</em> <strong>(finalidade)</strong>. <em>Esse programa deve incluir cursos presenciais e online, certificação obrigatória e acompanhamento pedagógico contínuo</em> <strong>(detalhamento)</strong>."</p>
+                    </div>
+
+                    <div class="example-box good">
+                        <p><strong>Tema: Saúde Mental</strong><br>
+                        "Ademais, <em>o Sistema Único de Saúde</em> <strong>(agente)</strong> <em>deve ampliar o atendimento psicológico</em> <strong>(ação)</strong> <em>mediante a contratação de mais profissionais e criação de centros especializados</em> <strong>(meio)</strong> <em>para reduzir os casos de depressão e ansiedade</em> <strong>(finalidade)</strong>. <em>Esses centros funcionariam em horários flexíveis, ofereceriam atendimento gratuito e desenvolveriam campanhas de conscientização</em> <strong>(detalhamento)</strong>."</p>
+                    </div>
+
+                    <h5 style="color: var(--text); margin: 1.5rem 0 1rem 0;">Agentes Mais Utilizados:</h5>
+                    <p>• <strong>Governo Federal:</strong> políticas nacionais, leis, ministérios<br>
+                    • <strong>Poder Legislativo:</strong> criação de leis específicas<br>
+                    • <strong>Ministério da Educação:</strong> questões educacionais<br>
+                    • <strong>Mídia:</strong> campanhas de conscientização<br>
+                    • <strong>Escolas:</strong> projetos educativos<br>
+                    • <strong>ONGs:</strong> projetos sociais específicos<br>
+                    • <strong>Empresas:</strong> responsabilidade social</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestão de Tempo -->
+    <div class="content-card">
+        <div class="card-header">
+            <h4><i class="fas fa-clock"></i>Gestão de Tempo na Redação</h4>
+        </div>
+        <div class="card-content">
+            <p><strong>Tempo total recomendado: 60-70 minutos</strong></p>
+            
+            <ul class="tip-list">
+                <li class="tip-item">
+                    <i class="fas fa-search tip-icon"></i>
+                    <div class="tip-content">
+                        <strong>Leitura e análise (10 min):</strong> Leia todos os textos motivadores e identifique o tema central
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-sitemap tip-icon"></i>
+                    <div class="tip-content">
+                        <strong>Planejamento (10 min):</strong> Faça um esquema com tese, argumentos e proposta de intervenção
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-pencil-alt tip-icon"></i>
+                    <div class="tip-content">
+                        <strong>Escrita (40 min):</strong> Redija o texto seguindo sua estrutura planejada
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-check tip-icon"></i>
+                    <div class="tip-content">
+                        <strong>Revisão (10 min):</strong> Corrija erros ortográficos, gramaticais e de coesão
+                    </div>
+                </li>
+            </ul>
+
+            <div class="example-box">
+                <p><strong>Dica:</strong> Pratique escrever redações no tempo cronometrado para se acostumar com o ritmo necessário.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Erros Comuns -->
+    <div class="content-card">
+        <div class="card-header">
+            <h4><i class="fas fa-exclamation-triangle"></i>Erros Mais Comuns</h4>
+        </div>
+        <div class="card-content">
+            <ul class="tip-list">
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Fuga do tema:</strong> Abordar assunto diferente do proposto
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Cópia dos textos motivadores:</strong> Reproduzir trechos dos textos de apoio
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Proposta incompleta:</strong> Não incluir todos os elementos necessários
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Linguagem inadequada:</strong> Usar gírias, abreviações ou linguagem muito informal
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Argumentos sem fundamentação:</strong> Apresentar opiniões sem dados ou exemplos
+                    </div>
+                </li>
+                <li class="tip-item">
+                    <i class="fas fa-times tip-icon" style="color: var(--danger);"></i>
+                    <div class="tip-content">
+                        <strong>Texto muito curto:</strong> Redações com menos de 20 linhas perdem pontos
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="call-to-action">
+        <p class="lead">Pronto para colocar essas dicas em prática?</p>
+        <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-pencil-alt"></i> Escrever uma Redação
+        </a>
+    </div>
+</div>
+{% endblock %}

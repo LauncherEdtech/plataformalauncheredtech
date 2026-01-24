@@ -1,0 +1,1224 @@
+<!-- app/templates/helpzone/ranking.html -->
+<!-- Autor: Desenvolvimento Plataforma Launcher -->
+
+{% extends "layout.html" %}
+
+{% block title %}{{ title }} - Help Zone - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #800000;
+        --secondary-color: #500000;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --hover-color: #a00000;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), #a00000);
+        --gradient-gold: linear-gradient(135deg, #ffd700, #ffed4e);
+        --gradient-silver: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        --gradient-bronze: linear-gradient(135deg, #cd7f32, #daa520);
+        --gradient-card: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+    }
+    
+    .helpzone-ranking {
+        max-width: 1200px;
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    body {
+        background: linear-gradient(to bottom, #800000 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+    }
+    
+    /* Header Section */
+    .ranking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+        border-bottom: 2px solid rgba(128, 0, 0, 0.3);
+        animation: slideInDown 0.8s ease-out;
+        position: relative;
+    }
+    
+    .ranking-header::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+    
+    .ranking-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .ranking-header h1 i {
+        color: var(--warning-color);
+        animation: bounce 2s infinite;
+    }
+    
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .back-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+    
+    .back-btn:hover::before {
+        left: 100%;
+    }
+    
+    .back-btn:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateX(-8px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(128, 0, 0, 0.4);
+    }
+    
+    /* Period Selector */
+    .period-selector {
+        background: var(--gradient-card);
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        margin-bottom: 3rem;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .period-selector::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.8;
+    }
+    
+    .period-selector .card-body {
+        padding: 2rem;
+    }
+    
+    .btn-group {
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 15px;
+        padding: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .period-btn {
+        background: transparent;
+        border: 2px solid transparent;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        font-size: 1.1rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .period-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+    
+    .period-btn:hover {
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    .period-btn:hover::before {
+        opacity: 1;
+    }
+    
+    .period-btn.active {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 8px 25px rgba(128, 0, 0, 0.4);
+    }
+    
+    /* Podium Section */
+    .podium-section {
+        margin-bottom: 4rem;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .podium-title {
+        text-align: center;
+        margin-bottom: 3rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        position: relative;
+    }
+    
+    .podium-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--gradient-gold);
+        border-radius: 2px;
+    }
+    
+    .podium-card {
+        background: var(--gradient-card);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .podium-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0.9;
+    }
+    
+    .podium-card.first::before {
+        background: var(--gradient-gold);
+    }
+    
+    .podium-card.second::before {
+        background: var(--gradient-silver);
+    }
+    
+    .podium-card.third::before {
+        background: var(--gradient-bronze);
+    }
+    
+    .podium-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 
+            0 35px 70px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .podium-card.first:hover {
+        border-color: #ffd700;
+        box-shadow: 
+            0 35px 70px rgba(255, 215, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .podium-card.second:hover {
+        border-color: #c0c0c0;
+        box-shadow: 
+            0 35px 70px rgba(192, 192, 192, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .podium-card.third:hover {
+        border-color: #cd7f32;
+        box-shadow: 
+            0 35px 70px rgba(205, 127, 50, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .podium-card .card-body {
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+    }
+    
+    .trophy-medal {
+        position: absolute;
+        top: -15px;
+        right: -15px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .trophy-medal.first {
+        background: var(--gradient-gold);
+        color: #000;
+    }
+    
+    .trophy-medal.second {
+        background: var(--gradient-silver);
+        color: #000;
+    }
+    
+    .trophy-medal.third {
+        background: var(--gradient-bronze);
+        color: #000;
+    }
+    
+    .trophy-medal i {
+        font-size: 2rem;
+    }
+    
+    .user-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        object-fit: cover;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .podium-card.first .user-avatar-large {
+        border-color: #ffd700;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    }
+    
+    .podium-card.second .user-avatar-large {
+        border-color: #c0c0c0;
+        box-shadow: 0 0 30px rgba(192, 192, 192, 0.3);
+    }
+    
+    .podium-card.third .user-avatar-large {
+        border-color: #cd7f32;
+        box-shadow: 0 0 30px rgba(205, 127, 50, 0.3);
+    }
+
+    .user-avatar-large:hover {
+        transform: scale(1.1);
+    }
+    
+    .user-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+    
+    .user-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .reputation-badge {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+    
+    .reputation-score {
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .reputation-score.first {
+        background: var(--gradient-gold);
+        color: #000;
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    }
+    
+    .reputation-score.second {
+        background: var(--gradient-silver);
+        color: #000;
+        box-shadow: 0 8px 25px rgba(192, 192, 192, 0.3);
+    }
+    
+    .reputation-score.third {
+        background: var(--gradient-bronze);
+        color: #000;
+        box-shadow: 0 8px 25px rgba(205, 127, 50, 0.3);
+    }
+    
+    .position-indicator {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        z-index: 3;
+    }
+    
+    .position-indicator.first {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+    }
+    
+    .position-indicator.second {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+    }
+    
+    .position-indicator.third {
+        background: linear-gradient(135deg, #fd79a8, #e84393);
+        color: white;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .stat-item {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1.5rem 1rem;
+        border-radius: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-item:hover {
+        background: rgba(128, 0, 0, 0.2);
+        transform: translateY(-3px);
+        border-color: var(--primary-color);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--warning-color);
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0.5rem;
+    }
+    
+    .profile-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .profile-btn:hover {
+        background: linear-gradient(135deg, #a00000, #c00000);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(128, 0, 0, 0.4);
+        color: white;
+    }
+    
+    /* Ranking Table */
+    .ranking-table-section {
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .section-title i {
+        color: var(--warning-color);
+    }
+    
+    .table-container {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(128, 0, 0, 0.3);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .table {
+        margin: 0;
+        color: var(--text-color);
+    }
+    
+    .table thead th {
+        background: rgba(128, 0, 0, 0.2);
+        border: none;
+        padding: 1.5rem 1rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-color);
+        position: relative;
+    }
+    
+    .table thead th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--gradient-primary);
+    }
+    
+    .table tbody tr {
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(128, 0, 0, 0.1);
+        transform: scale(1.01);
+    }
+    
+    .table tbody td {
+        padding: 1.5rem 1rem;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: middle;
+    }
+    
+    .position-badge {
+        padding: 0.75rem 1rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+    }
+    
+    .position-badge.gold {
+        background: var(--gradient-gold);
+        color: #000;
+    }
+    
+    .position-badge.silver {
+        background: var(--gradient-silver);
+        color: #000;
+    }
+    
+    .position-badge.bronze {
+        background: var(--gradient-bronze);
+        color: #000;
+    }
+    
+    .position-badge.regular {
+        background: var(--gradient-primary);
+        color: white;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .user-avatar-small {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        object-fit: cover;
+    }
+    
+    .user-avatar-small:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-color);
+    }
+    
+    .user-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .points-badge {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .action-btn:hover {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        text-align: center;
+        border: 2px dashed rgba(128, 0, 0, 0.3);
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: rgba(128, 0, 0, 0.5);
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+    }
+    
+    /* Animations */
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    /* Responsiveness */
+    @media (max-width: 768px) {
+        .helpzone-ranking {
+            padding: 0 0.5rem;
+        }
+        
+        .ranking-header {
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+        
+        .ranking-header h1 {
+            font-size: 2rem;
+        }
+        
+        .period-selector .card-body {
+            padding: 1.5rem;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .period-btn {
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+        
+        .podium-card .card-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        .user-avatar-large {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .trophy-medal {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .trophy-medal i {
+            font-size: 1.5rem;
+        }
+        
+        .table-container {
+            border-radius: 15px;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 1rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .user-info {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+        }
+        
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .ranking-header h1 {
+            font-size: 1.75rem;
+        }
+        
+        .podium-card .card-body {
+            padding: 1.5rem 1rem;
+        }
+        
+        .user-avatar-large {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .reputation-score {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="helpzone-ranking">
+    <!-- Header -->
+    <div class="ranking-header">
+        <h1>
+            <i class="bi bi-trophy-fill"></i>
+            {{ title }}
+        </h1>
+        <a href="{{ url_for('helpzone.index') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Voltar para o Help Zone
+        </a>
+    </div>
+    
+    <!-- Period Selector -->
+    <div class="period-selector card">
+        <div class="card-body">
+            <div class="d-flex justify-content-center">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('helpzone.ranking', periodo='semana') }}" 
+                       class="period-btn {{ 'active' if periodo == 'semana' else '' }}">
+                        <i class="bi bi-calendar-week me-2"></i>Esta Semana
+                    </a>
+                    <a href="{{ url_for('helpzone.ranking', periodo='mes') }}" 
+                       class="period-btn {{ 'active' if periodo == 'mes' else '' }}">
+                        <i class="bi bi-calendar-month me-2"></i>Este Mês
+                    </a>
+                    <a href="{{ url_for('helpzone.ranking', periodo='geral') }}" 
+                       class="period-btn {{ 'active' if periodo == 'geral' else '' }}">
+                        <i class="bi bi-infinity me-2"></i>Todos os Tempos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if ranking_data %}
+        <!-- Podium Top 3 -->
+        <div class="podium-section">
+            <h2 class="podium-title">
+                <i class="bi bi-star-fill me-2"></i>
+                Top 3 Ajudantes
+            </h2>
+            
+            <div class="row">
+                {% for data in ranking_data[:3] %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="podium-card {{ 'first' if data.position == 1 else 'second' if data.position == 2 else 'third' }}">
+                            <!-- Trophy Medal -->
+                            <div class="trophy-medal {{ 'first' if data.position == 1 else 'second' if data.position == 2 else 'third' }}">
+                                <i class="bi bi-trophy-fill"></i>
+                            </div>
+                            
+                            <div class="card-body">
+                                <!-- User Avatar -->
+                                <img src="{{ url_for('static', filename='images/avatars/' ~ data.user.id ~ '.jpg', _external=True) }}" 
+                                     class="user-avatar-large" alt="{{ data.user.username }}"
+                                     onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                                
+                                <!-- User Info -->
+                                <h3 class="user-title">{{ data.user.username }}</h3>
+                                <p class="user-subtitle">{{ data.user.nome_completo or 'Ajudante Dedicado' }}</p>
+                                
+                                <!-- Reputation Badge -->
+                                <div class="reputation-badge">
+                                    <div class="reputation-score {{ 'first' if data.position == 1 else 'second' if data.position == 2 else 'third' }}">
+                                        <i class="bi bi-gem me-2"></i>{{ data.reputation }} pontos
+                                    </div>
+                                    <div class="position-indicator {{ 'first' if data.position == 1 else 'second' if data.position == 2 else 'third' }}">
+                                        {{ data.position }}º
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats Grid -->
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ data.answer_count }}</span>
+                                        <div class="stat-label">
+                                            <i class="bi bi-chat-square-text me-1"></i>Respostas
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ data.solution_count }}</span>
+                                        <div class="stat-label">
+                                            <i class="bi bi-check-circle me-1"></i>Soluções
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ data.positive_votes }}</span>
+                                        <div class="stat-label">
+                                            <i class="bi bi-heart me-1"></i>Curtidas
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Profile Button -->
+                                <a href="{{ url_for('helpzone.user_profile', user_id=data.user.id) }}" class="profile-btn">
+                                    <i class="bi bi-person-circle me-2"></i>Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Full Ranking Table -->
+        <div class="ranking-table-section">
+            <h2 class="section-title">
+                <i class="bi bi-list-ol"></i>
+                Ranking Completo
+            </h2>
+            
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-trophy me-2"></i>Posição</th>
+                                <th><i class="bi bi-person me-2"></i>Usuário</th>
+                                <th><i class="bi bi-chat-square-text me-2"></i>Respostas</th>
+                                <th><i class="bi bi-check-circle me-2"></i>Soluções</th>
+                                <th><i class="bi bi-heart me-2"></i>Votos +</th>
+                                <th><i class="bi bi-gem me-2"></i>Pontos</th>
+                                <th><i class="bi bi-gear me-2"></i>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in ranking_data %}
+                                <tr>
+                                    <td>
+                                        <span class="position-badge {{ 'gold' if data.position == 1 else 'silver' if data.position == 2 else 'bronze' if data.position == 3 else 'regular' }}">
+                                            {% if data.position <= 3 %}
+                                                <i class="bi bi-trophy-fill me-1"></i>
+                                            {% endif %}
+                                            {{ data.position }}º
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="{{ url_for('static', filename='images/avatars/' ~ data.user.id ~ '.jpg', _external=True) }}" 
+                                                 class="user-avatar-small" alt="{{ data.user.username }}"
+                                                 onerror="this.src='{{ url_for('static', filename='images/avatar-default.jpg') }}'">
+                                            <span class="user-name">{{ data.user.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ data.answer_count }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ data.solution_count }}</strong>
+                                        {% if data.solution_count > 0 %}
+                                            <i class="bi bi-star-fill text-warning ms-1"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ data.positive_votes }}</strong>
+                                        {% if data.positive_votes > 10 %}
+                                            <i class="bi bi-fire text-danger ms-1"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="points-badge">
+                                            {{ data.reputation }} pts
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('helpzone.user_profile', user_id=data.user.id) }}" 
+                                           class="action-btn"
+                                           data-bs-toggle="tooltip" 
+                                           title="Ver perfil de {{ data.user.username }}">
+                                            <i class="bi bi-person-circle"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="bi bi-trophy"></i>
+            <h3>Ainda não há dados suficientes</h3>
+            <p>O ranking será populado conforme os usuários começarem a responder dúvidas e ajudar a comunidade!</p>
+            <a href="{{ url_for('helpzone.index') }}" class="profile-btn mt-3">
+                <i class="bi bi-arrow-right me-2"></i>
+                Começar a Ajudar
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    initializeTooltips();
+    
+    // Configurar animações de entrada
+    setupScrollAnimations();
+    
+    // Adicionar efeitos de hover nos cards
+    setupCardEffects();
+    
+    // Configurar contadores animados
+    animateCounters();
+    
+    function initializeTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                delay: { show: 500, hide: 100 },
+                placement: 'top'
+            });
+        });
+    }
+    
+    function setupScrollAnimations() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        // Observar elementos com animação
+        document.querySelectorAll('.podium-card, .table-container').forEach(element => {
+            observer.observe(element);
+        });
+    }
+    
+    function setupCardEffects() {
+        // Efeito parallax sutil nos cards do podium
+        document.querySelectorAll('.podium-card').forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+            });
+        });
+        
+        // Efeito de brilho nos troféus
+        document.querySelectorAll('.trophy-medal').forEach(medal => {
+            medal.addEventListener('mouseenter', function() {
+                this.style.animation = 'none';
+                this.style.transform = 'scale(1.1) rotate(15deg)';
+            });
+            
+            medal.addEventListener('mouseleave', function() {
+                this.style.animation = 'float 3s ease-in-out infinite';
+                this.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    }
+    
+    function animateCounters() {
+        const counters = document.querySelectorAll('.stat-value');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.textContent);
+                    
+                    animateValue(counter, 0, target, 1500);
+                    observer.unobserve(counter);
+                }
+            });
+        });
+        
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    }
+    
+    function animateValue(element, start, end, duration) {
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function updateValue(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function para suavizar a animação
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            
+            const current = Math.floor(start + (range * easeOutQuart));
+            element.textContent = current;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateValue);
+            } else {
+                element.textContent = end; // Garantir valor final correto
+            }
+        }
+        
+        requestAnimationFrame(updateValue);
+    }
+    
+    // Efeito de confete para o primeiro lugar
+    const firstPlaceCard = document.querySelector('.podium-card.first');
+    if (firstPlaceCard) {
+        firstPlaceCard.addEventListener('mouseenter', function() {
+            createConfetti();
+        });
+    }
+    
+    function createConfetti() {
+        const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'];
+        
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }, i * 100);
+        }
+    }
+    
+    // Smooth scroll para links internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(${window.innerHeight + 50}px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    .stat-value {
+        transition: all 0.3s ease;
+    }
+    
+    .trophy-medal {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .podium-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

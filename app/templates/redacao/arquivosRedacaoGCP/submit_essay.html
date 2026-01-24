@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Nova Redação</h1>
+</div>
+
+<div class="submission-container">
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-pen-to-square"></i> Submeter Redação para Avaliação</h3>
+    </div>
+    <div class="card-content">
+      {% if user.credits <= 0 %}
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <h4>Você não tem créditos suficientes</h4>
+          <p>Para enviar uma redação para avaliação, você precisa adquirir créditos.</p>
+          <a href="https://pay.kiwify.com.br/F1BJP3Y" class="btn-primary mt-2">Comprar créditos</a>
+        </div>
+      </div>
+      {% else %}
+      <form action="{{ url_for('submit_essay') }}" method="POST" class="submission-form">
+        <div class="form-group">
+          <label for="essay-title">Título da Redação:</label>
+          <input type="text" id="essay-title" name="title" class="form-control" placeholder="Digite um título para sua redação">
+        </div>
+        
+        <div class="form-group">
+          <label for="essay-text">Texto da Redação:</label>
+          <textarea id="essay-text" name="text" class="form-control" placeholder="Digite aqui o texto completo da sua redação..." rows="12" required></textarea>
+          <div class="character-counter">
+            <span id="char-count">0</span>/3000 caracteres
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <div class="credit-info">
+            <i class="fas fa-coins"></i> Esta avaliação consumirá 1 crédito
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-paper-plane"></i> Enviar para avaliação
+          </button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="card info-card">
+    <div class="card-header">
+      <h3><i class="fas fa-info-circle"></i> Informações</h3>
+    </div>
+    <div class="card-content">
+      <div class="info-section">
+        <h4>Como funciona?</h4>
+        <p>Após o envio, nossa Inteligência Artificial vai analisar sua redação de acordo com as 5 competências do ENEM, fornecendo feedback detalhado e pontuação para cada uma.</p>
+      </div>
+      
+     <div class="info-section">
+        <h4>Competências avaliadas:</h4>
+        <ul class="competence-list">
+          <li><strong>Competência 1:</strong> Domínio da norma culta</li>
+          <li><strong>Competência 2:</strong> Compreensão do tema e aplicação das áreas de conhecimento</li>
+          <li><strong>Competência 3:</strong> Capacidade de organizar e relacionar informações e argumentos</li>
+          <li><strong>Competência 4:</strong> Conhecimento dos mecanismos linguísticos para construção da argumentação</li>
+          <li><strong>Competência 5:</strong> Proposta de intervenção com respeito aos direitos humanos</li>
+        </ul>
+      </div>
+      
+      <div class="info-section">
+        <h4>Dicas para uma boa redação:</h4>
+        <ul class="tips-list">
+          <li>Leia atentamente o tema proposto</li>
+          <li>Faça um planejamento antes de começar a escrever</li>
+          <li>Estruture seu texto com introdução, desenvolvimento e conclusão</li>
+          <li>Utilize argumentos consistentes e exemplos relevantes</li>
+          <li>Proponha uma intervenção viável e detalhada</li>
+          <li>Revise seu texto antes de enviá-lo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay de carregamento com animação sequencial -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <div class="correction-status">
+      <h3>Estamos corrigindo sua redação</h3>
+      <p>Este processo pode levar alguns instantes</p>
+      
+      <div class="status-steps">
+        <div class="status-step active" id="step-1">
+          <span class="status-icon"><i class="fas fa-spell-check"></i></span>
+          <span>Analisando estrutura e ortografia</span>
+        </div>
+        <div class="status-step" id="step-2">
+          <span class="status-icon"><i class="fas fa-brain"></i></span>
+          <span>Avaliando argumentação</span>
+        </div>
+        <div class="status-step" id="step-3">
+          <span class="status-icon"><i class="fas fa-check-double"></i></span>
+          <span>Gerando feedback detalhado</span>
+        </div>
+        <div class="status-step" id="step-4">
+          <span class="status-icon"><i class="fas fa-chart-bar"></i></span>
+          <span>Calculando sua nota</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .submission-container {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1.5rem;
+  }
+  
+  @media (max-width: 992px) {
+    .submission-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-header {
+    padding: 1rem 1.5rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card-header h3 i {
+    margin-right: 0.75rem;
+    color: #6366f1;
+  }
+  
+  .card-content {
+    padding: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s ease;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  
+  textarea.form-control {
+    resize: vertical;
+    min-height: 200px;
+  }
+  
+  .character-counter {
+    margin-top: 0.5rem;
+    text-align: right;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  
+  .credit-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .credit-info i {
+    margin-right: 0.5rem;
+    color: #f59e0b;
+  }
+  
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #4f46e5;
+  }
+  
+  .alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .alert-warning {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+  }
+  
+  .alert i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+  }
+  
+  .alert h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+  
+  .alert p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+  
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+  
+  .info-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .info-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .info-section h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: #374151;
+  }
+  
+  .info-section p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+  
+  .competence-list, .tips-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #6b7280;
+  }
+  
+  .competence-list li, .tips-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+  
+  .competence-list li:last-child, .tips-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Estilos para o overlay de carregamento */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 0.3s, opacity 0.3s linear;
+  }
+
+  .loading-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+
+  .loading-spinner {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba(99, 102, 241, 0.2);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 1s ease-in-out infinite;
+    margin: 0 auto 1.5rem;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .correction-status h3 {
+    margin: 0 0 0.5rem;
+    color: #1f2937;
+    font-size: 1.5rem;
+  }
+
+  .correction-status p {
+    margin: 0 0 1.5rem;
+    color: #6b7280;
+  }
+
+  .status-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .status-step {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background-color: #f3f4f6;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+  }
+
+  .status-step.active {
+    background-color: #eef2ff;
+    opacity: 1;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+  }
+
+  .status-step.completed {
+    background-color: #10B981;
+    opacity: 1;
+  }
+
+  .status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    margin-right: 1rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+  }
+
+  .status-step.active .status-icon {
+    background-color: #c7d2fe;
+    color: #6366f1;
+  }
+
+  .status-step.completed .status-icon {
+    background-color: #a7f3d0;
+    color: #10b981;
+  }
+
+  .status-step.completed .status-icon i::before {
+    content: "\f00c"; /* Ícone de check */
+  }
+
+  /* Animação de pulso para o passo ativo */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .status-step.active {
+    animation: pulse 2s infinite;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const textArea = document.getElementById('essay-text');
+    const charCount = document.getElementById('char-count');
+    
+    if (textArea && charCount) {
+      textArea.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = count;
+        
+        if (count > 3000) {
+          charCount.style.color = '#ef4444';
+        } else {
+          charCount.style.color = '';
+        }
+      });
+    }
+
+    // Controle do overlay de carregamento e animação dos passos
+    const form = document.querySelector('.submission-form');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const steps = document.querySelectorAll('.status-step');
+
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        // Em ambiente de desenvolvimento, podemos usar preventDefault para testar a animação
+        // Em produção, remova esta linha para que o formulário seja enviado normalmente
+        // e.preventDefault();
+        
+        // Exibe o overlay de carregamento
+        loadingOverlay.classList.add('visible');
+        
+        // Simula o progresso dos passos
+        simulateSteps();
+      });
+    }
+
+    function simulateSteps() {
+      const delays = [0, 3000, 6000, 9000]; // Tempos para cada passo (em ms)
+      
+      // Ativa os passos sequencialmente
+      delays.forEach((delay, index) => {
+        setTimeout(() => {
+          // Marca os passos anteriores como concluídos
+          for (let i = 0; i < index; i++) {
+            steps[i].classList.remove('active');
+            steps[i].classList.add('completed');
+          }
+          
+          // Ativa o passo atual
+          steps[index].classList.add('active');
+        }, delay);
+      });
+      
+      // Tempo total estimado - use um valor um pouco maior que o último delay
+      // Em produção, isso poderia ser substituído por um evento real de conclusão
+      setTimeout(() => {
+        // Este timeout só deve executar em ambiente de desenvolvimento
+        // Em produção, o redirecionamento do servidor já cuidará disso
+        
+        // Apenas para teste: Desativaria o overlay após o tempo
+        // loadingOverlay.classList.remove('visible');
+      }, 12000);
+    }
+  });
+</script>
+{% endblock %}

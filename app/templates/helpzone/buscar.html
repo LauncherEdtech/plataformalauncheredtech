@@ -1,0 +1,1223 @@
+{% extends "layout.html" %}
+
+{% block title %}Explorar - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ================================================
+   VARIÁVEIS E RESET
+   ================================================ */
+:root {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --card-bg: #141414;
+    --accent-purple: #8b5cf6;
+    --accent-purple-hover: #7c3aed;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #666666;
+    --border-color: #262626;
+    --border-subtle: #1a1a1a;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+}
+
+/* ================================================
+   CONTAINER PRINCIPAL
+   ================================================ */
+.buscar-content {
+    max-width: 935px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+}
+
+/* ================================================
+   HEADER DE BUSCA
+   ================================================ */
+.search-header {
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff, #999);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.search-wrapper {
+    max-width: 100%;
+    position: relative;
+}
+
+.search-input-group {
+    position: relative;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    transition: all 0.3s;
+}
+
+.search-input-group:focus-within {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+.search-main-input {
+    width: 100%;
+    padding: 18px 60px 18px 24px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    outline: none;
+}
+
+.search-main-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent-purple);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+
+.search-btn:hover {
+    background: var(--accent-purple-hover);
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* ================================================
+   TABS DE FILTRO
+   ================================================ */
+.search-tabs {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    border-bottom: 2px solid var(--border-subtle);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.search-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--accent-purple);
+    border-bottom-color: var(--accent-purple);
+}
+
+.tab-count {
+    background: var(--card-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+/* ================================================
+   HASHTAGS EM ALTA
+   ================================================ */
+.trending-section {
+    margin-bottom: 40px;
+    padding: 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+
+.trending-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.trending-icon {
+    font-size: 1.4rem;
+    color: var(--warning-color);
+}
+
+.trending-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.trending-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.tag-item:hover {
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.tag-count {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--accent-purple);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* ================================================
+   SEÇÃO DE RESULTADOS
+   ================================================ */
+.section-header {
+    margin: 40px 0 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+}
+
+.results-count {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* ================================================
+   GRID DE USUÁRIOS
+   ================================================ */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.user-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.user-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-purple);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+}
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+    border: 3px solid var(--bg-primary);
+    box-shadow: 0 0 0 2px var(--accent-purple);
+    cursor: pointer;
+    transition: transform 0.2s;
+    overflow: hidden;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    text-decoration: none;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-name:hover {
+    color: var(--accent-purple);
+}
+
+.user-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent-purple);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: capitalize;
+}
+
+.user-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.user-stats strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.btn-follow {
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: var(--accent-purple);
+    color: white;
+}
+
+.btn-follow:hover {
+    background: var(--accent-purple-hover);
+    transform: scale(1.02);
+}
+
+.btn-follow.following {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-follow.following:hover {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+/* ================================================
+   GRID DE POSTS (ESTILO INSTAGRAM)
+   ================================================ */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.post-card-grid {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.post-card-grid:hover {
+    opacity: 0.85;
+}
+
+.post-card-grid:hover .post-overlay {
+    opacity: 1;
+}
+
+.post-image-grid {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-text-only {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
+    color: white;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+}
+
+.post-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-weight: 600;
+}
+
+.post-overlay-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ================================================
+   LISTA DE HASHTAGS (VIEW DETALHADA)
+   ================================================ */
+.hashtags-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.hashtag-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: block;
+}
+
+.hashtag-card:hover {
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.hashtag-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.hashtag-card-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+}
+
+.hashtag-card-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.hashtag-card-stats strong {
+    color: var(--text-primary);
+}
+
+/* ================================================
+   EMPTY STATE
+   ================================================ */
+.empty-results {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+    grid-column: 1 / -1;
+}
+
+.empty-results i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.empty-results h3 {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.empty-results p {
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+/* ================================================
+   PAGINAÇÃO
+   ================================================ */
+.pagination-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.page-btn {
+    padding: 12px 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-btn:hover {
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-purple);
+}
+
+/* ================================================
+   RESPONSIVIDADE
+   ================================================ */
+@media (max-width: 768px) {
+    .buscar-content {
+        padding: 24px 16px 60px 16px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .search-tabs {
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .user-card {
+        padding: 20px 12px;
+    }
+
+    .user-avatar {
+        width: 64px;
+        height: 64px;
+        font-size: 1.6rem;
+    }
+
+    .posts-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2px;
+    }
+
+    .hashtags-list {
+        grid-template-columns: 1fr;
+    }
+
+    .trending-tags {
+        gap: 8px;
+    }
+
+    .tag-item {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+    }
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<body class="helpzone-page">
+
+<!-- Top Navigation Bar -->
+<div class="helpzone-top-nav">
+    <div class="nav-content">
+        <a href="{{ url_for('helpzone.feed') }}" class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <span class="d-none d-md-inline">HelpZone</span>
+        </a>
+        
+        <div class="search-quick d-none d-lg-block">
+            <input type="text" class="search-input" placeholder="Buscar na HelpZone..." 
+                   value="{{ query or '' }}"
+                   onclick="location.href='{{ url_for('helpzone.buscar_usuarios') }}'">
+        </div>
+        
+        <div class="nav-actions">
+            <button class="nav-icon-btn d-lg-none" onclick="openMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="nav-icon-btn" onclick="location.href='{{ url_for('helpzone.notificacoes') }}'">
+                <i class="far fa-bell"></i>
+                <span class="badge-dot"></span>
+            </button>
+            <button class="nav-icon-btn" onclick="location.href='{{ url_for('dashboard.index') }}'">
+                <i class="fas fa-graduation-cap"></i>
+            </button>
+            <div class="user-avatar-btn" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
+                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;">
+                    {{ current_user.nome_completo[0].upper() }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Desktop Sidebar -->
+<div class="helpzone-sidebar d-none d-lg-flex">
+    <!-- Quick Profile -->
+    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
+        <div class="sidebar-profile-avatar">
+            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+            <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+            {% else %}
+            {{ current_user.nome_completo[0].upper() }}
+            {% endif %}
+            <div class="level-badge">{{ current_user.nivel or 1 }}</div>
+        </div>
+        <div class="sidebar-profile-info">
+            <div class="sidebar-profile-name">{{ current_user.nome_completo }}</div>
+            <div class="sidebar-profile-stats">
+                <span><i class="fas fa-fire" style="color: var(--streak-orange);"></i> {{ current_user.xp_total or 0 }}</span>
+                <span><i class="fas fa-gem" style="color: var(--diamond-cyan);"></i> {{ current_user.diamantes or 0 }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- HelpZone Navigation -->
+    <nav class="sidebar-nav-links">
+        <a href="{{ url_for('helpzone.feed') }}" class="sidebar-nav-link">
+            <i class="fas fa-home"></i>
+            <span>Feed</span>
+        </a>
+        <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="sidebar-nav-link active">
+            <i class="fas fa-search"></i>
+            <span>Explorar</span>
+        </a>
+        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="#" class="sidebar-nav-link">
+            <i class="fas fa-bookmark"></i>
+            <span>Salvos</span>
+        </a>
+    </nav>
+    
+    <button class="sidebar-create-btn" onclick="location.href='{{ url_for('helpzone.criar_post') }}'">
+        <i class="fas fa-plus"></i>
+        <span>Criar Post</span>
+    </button>
+    
+    <!-- Plataforma Launcher Navigation -->
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-subtle);">
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-tertiary); margin-bottom: 10px; padding: 0 16px; text-transform: uppercase;">
+            Plataforma
+        </div>
+        <nav class="sidebar-nav-links">
+            <a href="{{ url_for('dashboard.index') }}" class="sidebar-nav-link">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('simulados.index') }}" class="sidebar-nav-link">
+                <i class="fas fa-file-alt"></i>
+                <span>Simulados</span>
+            </a>
+            <a href="{{ url_for('progresso.index') }}" class="sidebar-nav-link">
+                <i class="fas fa-chart-line"></i>
+                <span>Progresso</span>
+            </a>
+            <a href="{{ url_for('ranking.index') }}" class="sidebar-nav-link">
+                <i class="fas fa-trophy"></i>
+                <span>Ranking</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Gamification Stats -->
+    <div class="sidebar-gamification">
+        <div class="sidebar-gamification-title">Seu Progresso</div>
+        <div class="sidebar-gamification-stat">
+            <div class="sidebar-gamification-stat-label">
+                <i class="fas fa-fire" style="color: var(--streak-orange);"></i>
+                Sequência
+            </div>
+            <div class="sidebar-gamification-stat-value">{{ current_user.sequencia_dias or 0 }}d</div>
+        </div>
+        <div class="sidebar-gamification-stat">
+            <div class="sidebar-gamification-stat-label">
+                <i class="fas fa-star" style="color: var(--xp-gold);"></i>
+                Nível
+            </div>
+            <div class="sidebar-gamification-stat-value">{{ current_user.nivel or 1 }}</div>
+        </div>
+        
+        <div class="sidebar-xp-progress">
+            <div class="sidebar-xp-progress-label">
+                <span>XP para próximo nível</span>
+                <span>{{ current_user.xp_total or 0 }}/{{ (current_user.nivel or 1) * 1000 }}</span>
+            </div>
+            <div class="sidebar-xp-progress-bar">
+                <div class="sidebar-xp-progress-fill" style="width: {{ ((current_user.xp_total or 0) / ((current_user.nivel or 1) * 1000) * 100)|int }}%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="helpzone-main-content">
+    <div class="helpzone-feed-container">
+        <div class="buscar-content">
+
+            <!-- Header & Search -->
+            <div class="search-header">
+                <h1 class="page-title">Explorar HelpZone</h1>
+                
+                <div class="search-wrapper">
+                    <form method="GET" action="{{ url_for('helpzone.buscar_usuarios') }}" class="search-input-group">
+                        <input type="hidden" name="tipo" value="{{ tipo }}">
+                        <input type="text" 
+                               name="q" 
+                               class="search-main-input" 
+                               placeholder="Buscar pessoas, posts ou #hashtags..." 
+                               value="{{ query or '' }}" 
+                               autocomplete="off">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabs de Filtro -->
+                <div class="search-tabs">
+                    <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo='pessoas') }}" 
+                       class="tab-btn {{ 'active' if tipo == 'pessoas' else '' }}">
+                        <i class="fas fa-users"></i>
+                        Pessoas
+                        {% if usuarios %}
+                        <span class="tab-count">{{ usuarios.total }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo='posts') }}" 
+                       class="tab-btn {{ 'active' if tipo == 'posts' else '' }}">
+                        <i class="fas fa-image"></i>
+                        Posts
+                        {% if posts %}
+                        <span class="tab-count">{{ posts.total }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo='hashtags') }}" 
+                       class="tab-btn {{ 'active' if tipo == 'hashtags' else '' }}">
+                        <i class="fas fa-hashtag"></i>
+                        Hashtags
+                        {% if hashtags %}
+                        <span class="tab-count">{{ hashtags.total }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hashtags em Alta (mostra sempre que não tiver busca) -->
+            {% if not query and hashtags_em_alta %}
+            <div class="trending-section">
+                <div class="trending-header">
+                    <i class="fas fa-fire trending-icon"></i>
+                    <h2 class="trending-title">Hashtags em Alta</h2>
+                </div>
+                
+                <div class="trending-tags">
+                    {% for hashtag in hashtags_em_alta %}
+                    <a href="{{ url_for('helpzone.buscar_usuarios', q='#' + hashtag.tag, tipo='posts') }}" class="tag-item">
+                        <i class="fas fa-hashtag"></i>
+                        {{ hashtag.tag }}
+                        <span class="tag-count">{{ hashtag.uso_ultima_semana }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ========================================
+                 TAB: PESSOAS
+                 ======================================== -->
+            {% if tipo == 'pessoas' %}
+                {% if usuarios and usuarios.items %}
+                    <div class="section-header">
+                        <span class="section-title">
+                            {% if query %}
+                                Resultados para "{{ query }}"
+                            {% else %}
+                                Sugestões para você
+                            {% endif %}
+                        </span>
+                        <div class="section-line"></div>
+                        <span class="results-count">{{ usuarios.total }} pessoas</span>
+                    </div>
+
+                    <div class="results-grid">
+                        {% for usuario in usuarios.items %}
+                        <div class="user-card">
+                            <!-- Avatar -->
+                            <div class="user-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=usuario.id) }}'">
+                                {% if usuario.perfil_social and usuario.perfil_social.foto_perfil %}
+                                <img src="{{ usuario.perfil_social.foto_perfil }}" alt="{{ usuario.nome_completo }}">
+                                {% else %}
+                                {{ usuario.nome_completo[0].upper() }}
+                                {% endif %}
+                            </div>
+
+                            <!-- Nome -->
+                            <a href="{{ url_for('helpzone.perfil_usuario', user_id=usuario.id) }}" class="user-name">
+                                {{ usuario.nome_completo }}
+                            </a>
+
+                            <!-- Badge -->
+                            <span class="user-badge">
+                                {% if usuario.perfil_social %}
+                                    {{ usuario.perfil_social.nivel_influencia|title }}
+                                {% else %}
+                                    Estudante
+                                {% endif %}
+                            </span>
+
+                            <!-- Stats -->
+                            <div class="user-stats">
+                                <span>
+                                    <strong>{{ usuario.perfil_social.total_seguidores if usuario.perfil_social else 0 }}</strong>
+                                    seguidores
+                                </span>
+                                <span>•</span>
+                                <span>
+                                    <strong>{{ usuario.perfil_social.total_posts if usuario.perfil_social else 0 }}</strong>
+                                    posts
+                                </span>
+                            </div>
+
+                            <!-- Botão Seguir -->
+                            {% if usuario.id != current_user.id %}
+                            <button class="btn-follow {% if usuario.id in seguindo_ids %}following{% endif %}"
+                                    onclick="toggleFollow({{ usuario.id }}, this)">
+                                {% if usuario.id in seguindo_ids %}
+                                    <i class="fas fa-user-check"></i> Seguindo
+                                {% else %}
+                                    <i class="fas fa-user-plus"></i> Seguir
+                                {% endif %}
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if usuarios.has_prev or usuarios.has_next %}
+                    <div class="pagination-bar">
+                        {% if usuarios.has_prev %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=usuarios.prev_num) }}" class="page-btn">
+                            <i class="fas fa-chevron-left"></i>
+                            Anterior
+                        </a>
+                        {% endif %}
+                        
+                        {% if usuarios.has_next %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=usuarios.next_num) }}" class="page-btn">
+                            Próximo
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="empty-results">
+                        <i class="fas fa-users"></i>
+                        <h3>Nenhuma pessoa encontrada</h3>
+                        <p>Tente buscar com outros termos ou explore a comunidade.</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <!-- ========================================
+                 TAB: POSTS (ESTILO INSTAGRAM GRID)
+                 ======================================== -->
+            {% if tipo == 'posts' %}
+                {% if posts and posts.items %}
+                    <div class="section-header">
+                        <span class="section-title">
+                            {% if query %}
+                                Posts com "{{ query }}"
+                            {% else %}
+                                Posts Populares
+                            {% endif %}
+                        </span>
+                        <div class="section-line"></div>
+                        <span class="results-count">{{ posts.total }} posts</span>
+                    </div>
+
+                    <div class="posts-grid">
+                        {% for post in posts.items %}
+                        <div class="post-card-grid" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=post.id) }}'">
+                            {% if post.midia and post.tipo_midia == 'imagem' %}
+                                <img src="{{ post.midia.url }}" alt="Post" class="post-image-grid">
+                            {% elif post.midia and post.tipo_midia == 'video' %}
+                                <img src="{{ post.midia.url_thumbnail or post.midia.url }}" alt="Post" class="post-image-grid">
+                            {% else %}
+                                <div class="post-text-only">
+                                    {{ post.texto[:100] }}{% if post.texto|length > 100 %}...{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="post-overlay">
+                                <div class="post-overlay-stat">
+                                    <i class="fas fa-heart"></i>
+                                    {{ post.total_likes }}
+                                </div>
+                                <div class="post-overlay-stat">
+                                    <i class="fas fa-comment"></i>
+                                    {{ post.total_comentarios }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+
+                    <!-- Paginação -->
+                    {% if posts.has_prev or posts.has_next %}
+                    <div class="pagination-bar">
+                        {% if posts.has_prev %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=posts.prev_num) }}" class="page-btn">
+                            <i class="fas fa-chevron-left"></i>
+                            Anterior
+                        </a>
+                        {% endif %}
+                        
+                        {% if posts.has_next %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=posts.next_num) }}" class="page-btn">
+                            Próximo
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="empty-results">
+                        <i class="fas fa-image"></i>
+                        <h3>Nenhum post encontrado</h3>
+                        <p>Tente buscar com outros termos ou hashtags.</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <!-- ========================================
+                 TAB: HASHTAGS
+                 ======================================== -->
+            {% if tipo == 'hashtags' %}
+                {% if hashtags and hashtags.items %}
+                    <div class="section-header">
+                        <span class="section-title">
+                            {% if query %}
+                                Hashtags com "{{ query }}"
+                            {% else %}
+                                Hashtags em Alta
+                            {% endif %}
+                        </span>
+                        <div class="section-line"></div>
+                        <span class="results-count">{{ hashtags.total }} hashtags</span>
+                    </div>
+
+                    <div class="hashtags-list">
+                        {% for hashtag in hashtags.items %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q='#' + hashtag.tag, tipo='posts') }}" class="hashtag-card">
+                            <div class="hashtag-card-header">
+                                <div class="hashtag-card-name">#{{ hashtag.tag }}</div>
+                            </div>
+                            <div class="hashtag-card-stats">
+                                <span>
+                                    <strong>{{ hashtag.total_uso }}</strong> posts
+                                </span>
+                                <span>•</span>
+                                <span>
+                                    <strong>{{ hashtag.uso_ultima_semana }}</strong> esta semana
+                                </span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if hashtags.has_prev or hashtags.has_next %}
+                    <div class="pagination-bar">
+                        {% if hashtags.has_prev %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=hashtags.prev_num) }}" class="page-btn">
+                            <i class="fas fa-chevron-left"></i>
+                            Anterior
+                        </a>
+                        {% endif %}
+                        
+                        {% if hashtags.has_next %}
+                        <a href="{{ url_for('helpzone.buscar_usuarios', q=query, tipo=tipo, page=hashtags.next_num) }}" class="page-btn">
+                            Próximo
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="empty-results">
+                        <i class="fas fa-hashtag"></i>
+                        <h3>Nenhuma hashtag encontrada</h3>
+                        <p>Tente buscar com outros termos.</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Right Sidebar -->
+<div class="helpzone-sidebar-right d-none d-xl-flex">
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Hashtags Populares</div>
+        {% if hashtags_em_alta %}
+        <div style="padding: 10px 0;">
+            {% for hashtag in hashtags_em_alta[:5] %}
+            <a href="{{ url_for('helpzone.buscar_usuarios', q='#' + hashtag.tag, tipo='posts') }}" 
+               style="display:block;padding:10px 20px;color:var(--text-primary);text-decoration:none;border-radius:8px;margin-bottom:4px;transition:all 0.2s;">
+                <div style="font-weight:600;color:var(--accent-purple);">#{{ hashtag.tag }}</div>
+                <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;">
+                    {{ hashtag.uso_ultima_semana }} posts esta semana
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
+            <i class="fas fa-hashtag" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+            <p style="font-size: 0.9rem;">Nenhuma hashtag em alta</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Slide Menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">
+        <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="mobile-menu-header">
+        <div class="mobile-menu-profile">
+            <div class="mobile-menu-avatar">
+                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Perfil">
+                {% else %}
+                {{ current_user.nome_completo[0].upper() }}
+                {% endif %}
+            </div>
+            <div class="mobile-menu-user-info">
+                <h3>{{ current_user.nome_completo }}</h3>
+                <p>Nível {{ current_user.nivel or 1 }} • {{ current_user.xp_total or 0 }} XP</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-menu-nav">
+        <div class="mobile-menu-section">
+            <div class="mobile-menu-section-title">HelpZone</div>
+            <a href="{{ url_for('helpzone.feed') }}" class="mobile-menu-link">
+                <i class="fas fa-home"></i>
+                <span>Feed</span>
+            </a>
+            <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="mobile-menu-link active">
+                <i class="fas fa-search"></i>
+                <span>Explorar</span>
+            </a>
+            <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="mobile-menu-link">
+                <i class="fas fa-user"></i>
+                <span>Meu Perfil</span>
+            </a>
+            <a href="{{ url_for('helpzone.criar_post') }}" class="mobile-menu-link">
+                <i class="fas fa-plus-circle"></i>
+                <span>Criar Post</span>
+            </a>
+        </div>
+        
+        <div class="mobile-menu-section">
+            <div class="mobile-menu-section-title">Plataforma de Estudos</div>
+            <a href="{{ url_for('dashboard.index') }}" class="mobile-menu-link">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('simulados.index') }}" class="mobile-menu-link">
+                <i class="fas fa-file-alt"></i>
+                <span>Simulados</span>
+            </a>
+            <a href="{{ url_for('progresso.index') }}" class="mobile-menu-link">
+                <i class="fas fa-chart-line"></i>
+                <span>Meu Progresso</span>
+            </a>
+            <a href="{{ url_for('ranking.index') }}" class="mobile-menu-link">
+                <i class="fas fa-trophy"></i>
+                <span>Ranking</span>
+            </a>
+            <a href="{{ url_for('shop.index') }}" class="mobile-menu-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Shop</span>
+            </a>
+        </div>
+        
+        <div class="mobile-menu-section">
+            <a href="{{ url_for('auth.logout') }}" class="mobile-menu-link" style="color: var(--error);">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+</body>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mobile Menu Scripts
+function openMobileMenu() {
+    document.getElementById('mobileMenu').classList.add('active');
+    document.getElementById('mobileMenuOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+    document.getElementById('mobileMenu').classList.remove('active');
+    document.getElementById('mobileMenuOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// ================================================
+// TOGGLE SEGUIR
+// ================================================
+async function toggleFollow(userId, button) {
+    try {
+        const response = await fetch(`/helpzone/api/user/${userId}/follow`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.seguindo) {
+                button.classList.add('following');
+                button.innerHTML = '<i class="fas fa-user-check"></i> Seguindo';
+            } else {
+                button.classList.remove('following');
+                button.innerHTML = '<i class="fas fa-user-plus"></i> Seguir';
+            }
+        } else {
+            console.error('Erro:', data.message);
+        }
+    } catch (error) {
+        console.error('Erro ao seguir/deixar de seguir:', error);
+    }
+}
+</script>
+{% endblock %}

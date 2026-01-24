@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+{% block title %}Status do Prêmio — Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root{
+        --accent:#00b4d8; --accent-2:#0084ff; --yellow:#ffc107;
+        --success:#28a745; --card-bg:rgba(255,255,255,0.08);
+        --card-border:rgba(255,255,255,0.1); --text:#fff; --text-dim:rgba(255,255,255,0.8);
+    }
+    body{ background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%); color:var(--text); }
+    .wrap{ max-width: 960px; margin:0 auto; padding:24px; }
+    .header{
+        background: var(--card-bg); border:1px solid var(--card-border); border-radius:20px;
+        padding:24px; margin-bottom:20px; display:flex; align-items:center; gap:14px;
+    }
+    .badge{ width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(135deg,var(--accent),var(--accent-2)); font-size:28px; box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+    .title{ margin:0; font-size:1.8rem; font-weight:800; }
+    .sub{ margin:0; color:var(--text-dim); }
+    .card{ background: var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:24px; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .prize{
+        display:flex; gap:18px; align-items:center; margin-bottom:18px;
+        padding:16px; border-radius:14px; background: rgba(255,255,255,0.06); border:1px solid var(--card-border);
+    }
+    .prize-ico{
+        width:76px;height:76px;border-radius:12px;background:#00000066;border:1px solid var(--card-border);
+        display:flex;align-items:center;justify-content:center;font-size:40px;
+    }
+    .prize-name{ font-weight:800; font-size:1.2rem; margin:0 0 4px 0; }
+    .prize-desc{ margin:0; color:var(--text-dim); }
+    .panel{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:18px; }
+    @media (max-width: 900px){ .panel{ grid-template-columns:1fr; } }
+
+    .info{ background: rgba(255,255,255,0.06); border:1px solid var(--card-border); border-radius:14px; padding:16px; }
+    .info-title{ font-weight:700; margin-bottom:8px; }
+    .info-grid{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:10px; }
+    .info-chip{ background: rgba(255,255,255,0.08); border:1px solid var(--card-border); padding:10px; border-radius:10px; text-align:center; }
+    .muted{ color:var(--text-dim); font-size:.92rem; }
+    .progress{ background:#0e1b2a; border:1px solid var(--card-border); border-radius:999px; height:28px; overflow:hidden; }
+    .bar{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 1s ease; position:relative; }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .btn{ padding:12px 18px; border-radius:10px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:8px; text-decoration:none; }
+    .btn-primary{ background: linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
+    .btn-secondary{ background: rgba(255,255,255,0.1); color:#fff; border:1px solid var(--card-border); }
+    .btn-success{ background: linear-gradient(90deg, var(--success), #20c997); color:#fff; }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+    .chips{ display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:16px; }
+    .chip{ background: rgba(255,255,255,0.06); border:1px solid var(--card-border); border-radius:12px; padding:12px; text-align:center; }
+    .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:50; align-items:center; justify-content:center; }
+    .modal.show{ display:flex; }
+    .modal-card{ background: var(--card-bg); border:1px solid var(--card-border); border-radius:18px; width:min(560px, 92vw); padding:22px; }
+    .form-row{ margin-bottom:12px; }
+    .label{ display:block; margin-bottom:6px; font-weight:700; }
+    .input, .textarea{ width:100%; padding:10px 12px; border-radius:10px; background: rgba(0,0,0,0.35); border:1px solid var(--card-border); color:#fff; }
+    .textarea{ min-height:90px; resize:vertical; }
+
+    /* ====== MODAL FREEMIUM (TAXA DE RESGATE) ====== */
+    .freemium-modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:60; align-items:center; justify-content:center; }
+    .freemium-modal-content{ background:#0e1b2a; border:1px solid var(--card-border); border-radius:18px; width:min(480px,92vw); padding:28px; text-align:center; color:#fff; }
+    .freemium-lock-icon{ font-size:42px; margin-bottom:10px; }
+    .freemium-modal-title{ font-size:1.6rem; font-weight:800; margin-bottom:8px; }
+    .freemium-modal-subtitle{ font-size:.95rem; color:var(--text-dim); margin-bottom:20px; }
+    .freemium-benefits{ list-style:none; padding:0; margin:0 0 18px 0; text-align:left; }
+    .freemium-benefits li{ padding:6px 0; font-size:.95rem; }
+    .freemium-plan-card{ display:block; border-radius:12px; border:1px solid var(--accent); padding:18px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; text-decoration:none; font-weight:700; }
+    .freemium-plan-button{ background:#fff; color:#001233; border:none; padding:10px 20px; border-radius:10px; font-weight:700; margin-top:8px; cursor:pointer; }
+    .freemium-security-badge{ margin-top:12px; font-size:.85rem; color:var(--text-dim); }
+</style>
+
+
+<div class="wrap">
+    <div class="header">
+        <div class="badge">🏆</div>
+        <div>
+            <h1 class="title">Status do seu prêmio</h1>
+            <p class="sub">Acompanhe a liberação e faça o resgate quando estiver disponível.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="prize">
+            <div class="prize-ico">🥤</div>
+            <div>
+                <p class="prize-name">{{ roleta.produto_ganho.nome }}</p>
+                <p class="prize-desc">{{ roleta.produto_ganho.descricao }}</p>
+            </div>
+        </div>
+
+        {% if not roleta.foi_resgatado %}
+            {% if not roleta.pode_resgatar %}
+                <!-- Aguardando tempo -->
+                <div class="panel">
+                    <div class="info">
+                        <div class="info-title">⏰ Tempo restante para liberação</div>
+                        <div class="info-grid">
+                            <div class="info-chip">
+                                <div style="font-size:1.6rem;font-weight:800" id="days">{{ roleta.dias_restantes }}</div>
+                                <div class="muted">Dias</div>
+                            </div>
+                            <div class="info-chip">
+                                <div style="font-size:1.6rem;font-weight:800" id="hours">0</div>
+                                <div class="muted">Horas</div>
+                            </div>
+                            <div class="info-chip">
+                                <div style="font-size:1.6rem;font-weight:800" id="minutes">0</div>
+                                <div class="muted">Minutos</div>
+                            </div>
+                        </div>
+                        {% set progress = ((8 - roleta.dias_restantes) / 8 * 100) %}
+                        <div style="margin-top:14px" class="progress"><div class="bar" style="width: {{ progress }}%"></div></div>
+                        <div class="muted" style="margin-top:6px;text-align:center">{{ progress|int }}% do período concluído</div>
+                    </div>
+                    <div class="info">
+                        <div class="info-title">Informações</div>
+                        <div class="chips">
+                            <div class="chip"><div class="muted">Data do Giro</div><div style="font-weight:700">{{ roleta.data_giro.strftime('%d/%m/%Y') }}</div></div>
+                            <div class="chip"><div class="muted">Status</div><div style="font-weight:700">Aguardando {{ roleta.dias_restantes }} dias</div></div>
+                            <div class="chip"><div class="muted">Prêmio</div><div style="font-weight:700">{{ roleta.produto_ganho.nome }}</div></div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-primary" disabled>🔒 Resgate indisponível</button>
+                            <a class="btn btn-secondary" href="{{ url_for('dashboard.index') }}">Voltar ao Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Liberado -->
+                <div class="info" style="border:1px solid rgba(40,167,69,0.35);">
+                    <div class="info-title" style="color:var(--text)">✅ Seu prêmio está disponível para resgate</div>
+                    <p class="muted">Clique em “Resgatar agora” e informe seus dados de envio.</p>
+                    <div class="actions">
+                        <button id="resgatarBtn" class="btn btn-success">🎁 Resgatar agora</button>
+                        <a class="btn btn-secondary" href="{{ url_for('dashboard.index') }}">Resgatar depois</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="info" style="border:1px solid rgba(255,193,7,0.35);">
+                <div class="info-title">🎉 Prêmio já resgatado</div>
+                <p class="muted">Acompanhe o status do envio na área de resgates.</p>
+                <div class="actions">
+                    <a class="btn btn-primary" href="{{ url_for('shop.meus_resgates') }}">📦 Ver meus resgates</a>
+                    <a class="btn btn-secondary" href="{{ url_for('dashboard.index') }}">Voltar ao Dashboard</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Resgate -->
+<div class="modal" id="redeemModal">
+    <div class="modal-card">
+        <h3 style="margin:0 0 10px 0;font-weight:800">🎁 Resgatar prêmio</h3>
+        <p class="muted" style="margin:0 0 14px 0">Preencha seus dados para envio.</p>
+        <form id="resgateForm" action="{{ url_for('roleta.resgatar_premio') }}" method="POST">
+            <div class="form-row"><label class="label">Nome completo</label><input class="input" name="nome" required value="{{ current_user.nome_completo }}"></div>
+            <div class="form-row"><label class="label">E-mail</label><input class="input" type="email" name="email" required value="{{ current_user.email }}"></div>
+            <div class="form-row"><label class="label">WhatsApp</label><input class="input" name="telefone" required placeholder="(00) 00000-0000"></div>
+            <div class="form-row"><label class="label">Endereço completo</label><textarea class="textarea" name="endereco" required placeholder="Rua, número, complemento, bairro, cidade, estado, CEP"></textarea></div>
+            <div class="actions" style="margin-top:12px">
+                <button type="submit" class="btn btn-success" style="flex:1">Confirmar resgate</button>
+                <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeRedeemModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL TAXA DE RESGATE -->
+<div id="taxaResgateModal" class="freemium-modal">
+    <div class="freemium-modal-content">
+        <div class="freemium-lock-icon">💎</div>
+        <h2 class="freemium-modal-title">Pague a Taxa de Resgate</h2>
+        <p class="freemium-modal-subtitle">
+            Para liberar o envio do seu prêmio, é necessário pagar uma pequena taxa de resgate.
+        </p>
+        <ul class="freemium-benefits">
+            <li>✔️ Confirmação automática do pagamento</li>
+            <li>✔️ Receba seu prêmio com prioridade</li>
+            <li>✔️ Notificação por e-mail após o pagamento</li>
+        </ul>
+        <a href="https://pay.kiwify.com.br/2HipOfz" target="_blank" class="freemium-plan-card">
+            💰 <strong>Taxa de Resgate — R$ 14,90</strong>
+            <button class="freemium-plan-button">PAGAR TAXA AGORA</button>
+        </a>
+        <p class="freemium-security-badge">Pagamento 100% seguro pela Kiwify</p>
+    </div>
+</div>
+
+<script>
+{% if not roleta.foi_resgatado and not roleta.pode_resgatar %}
+const targetDate = new Date("{{ roleta.data_liberacao_resgate.isoformat() }}").getTime();
+const elD=document.getElementById('days'),elH=document.getElementById('hours'),elM=document.getElementById('minutes');
+const t=setInterval(()=>{const now=Date.now();const dist=targetDate-now;if(dist>0){const d=Math.floor(dist/86400000);const h=Math.floor((dist%86400000)/3600000);const m=Math.floor((dist%3600000)/60000);elD.textContent=d;elH.textContent=h;elM.textContent=m;}else{clearInterval(t);location.reload();}},1000);
+{% endif %}
+
+function showRedeemModal(){ document.getElementById('redeemModal').classList.add('show'); }
+function closeRedeemModal(){ document.getElementById('redeemModal').classList.remove('show'); }
+document.getElementById('redeemModal').addEventListener('click',e=>{ if(e.target.id==='redeemModal') closeRedeemModal(); });
+
+// Novo fluxo AJAX para validar assinatura ou taxa de resgate
+document.getElementById('resgatarBtn')?.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    showRedeemModal();
+});
+
+document.getElementById('resgateForm')?.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const response = await fetch('{{ url_for("roleta.resgatar_premio") }}', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    });
+    if(response.status === 403){
+        const data = await response.json();
+        if(data.show_freemium_modal) document.getElementById('taxaResgateModal').style.display='flex';
+        return;
+    }
+    if(response.redirected) window.location.href=response.url;
+});
+</script>
+{% endblock %}

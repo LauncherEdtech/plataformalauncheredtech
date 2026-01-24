@@ -1,0 +1,985 @@
+<!-- app/templates/estudo/modulo.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ modulo.titulo }} - LauncherFlix{% endblock %}
+
+{% block styles %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap');
+
+    /* --- CORREÇÃO CRÍTICA DO FUNDO (BOOTSTRAP OVERRIDE) --- */
+    :root {
+        --bg-color: #000000;
+        --card-bg: #141414;
+        --accent: #e50914;
+        --bs-dark-rgb: 0, 0, 0 !important; 
+        --bs-body-bg: #000000 !important;
+    }
+
+    html, body {
+        background-color: #000000 !important;
+        background: #000000 !important;
+        color: #ffffff !important;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .bg-dark, .wrapper, .main-content {
+        background-color: #000000 !important;
+        background: #000000 !important;
+    }
+
+    /* --- WRAPPER FULL-WIDTH --- */
+    .netflix-wrapper {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        background-color: #000000;
+        min-height: 100vh;
+    }
+
+    /* --- HERO COMPACTO (Breadcrumb + Título) --- */
+    .episode-header {
+        position: relative;
+        padding: 80px 5% 40px 5%;
+        background: 
+            linear-gradient(to bottom, #000000 70%, transparent 100%),
+            radial-gradient(circle at 80% 20%, rgba(229, 9, 20, 0.15) 0%, transparent 50%);
+    }
+
+    .breadcrumb-netflix {
+        font-size: 13px;
+        color: #999;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .breadcrumb-netflix a {
+        color: #999;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .breadcrumb-netflix a:hover {
+        color: #fff;
+    }
+
+    .season-info {
+        max-width: 900px;
+    }
+
+    .season-title {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 900;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    .season-subtitle {
+        font-size: 1.2rem;
+        color: #999;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .season-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+
+    .meta-badge {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        backdrop-filter: blur(10px);
+    }
+
+    .meta-badge.dificuldade-facil {
+        background: rgba(40, 167, 69, 0.25);
+        border: 1px solid rgba(40, 167, 69, 0.4);
+        color: #4caf50;
+    }
+
+    .meta-badge.dificuldade-medio {
+        background: rgba(255, 193, 7, 0.25);
+        border: 1px solid rgba(255, 193, 7, 0.4);
+        color: #ffc107;
+    }
+
+    .meta-badge.dificuldade-dificil {
+        background: rgba(244, 67, 54, 0.25);
+        border: 1px solid rgba(244, 67, 54, 0.4);
+        color: #f44336;
+    }
+
+    .meta-badge.info {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #e5e5e5;
+    }
+
+    .season-desc {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #ccc;
+        max-width: 700px;
+    }
+
+    /* --- PROGRESSO SECTION --- */
+    .progress-section {
+        padding: 0 5% 30px 5%;
+        background-color: #000000;
+    }
+
+    .progress-card {
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .progress-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #e5e5e5;
+    }
+
+    .progress-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .progress-bar-container {
+        height: 8px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), #ff1744);
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+    }
+
+    .progress-details {
+        font-size: 0.9rem;
+        color: #999;
+    }
+
+    /* --- ADMIN HEADER --- */
+    .admin-header {
+        padding: 0 5% 20px 5%;
+    }
+
+    .admin-card {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .admin-title {
+        color: #4caf50;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .admin-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-admin {
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-admin-warning {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.4);
+    }
+
+    .btn-admin-success {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+        border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+
+    .btn-admin:hover {
+        transform: translateY(-2px);
+    }
+
+    /* --- EPISODES LIST (Estilo Netflix) --- */
+    .episodes-section {
+        padding: 0 5% 60px 5%;
+        background-color: #000000;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e5e5e5;
+    }
+
+    .episodes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* --- EPISODE CARD (Horizontal Netflix Style) --- */
+    .episode-card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        cursor: pointer;
+        border: 1px solid transparent;
+        position: relative;
+    }
+
+    .episode-card:hover {
+        background: #1f1f1f;
+        transform: scale(1.02);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    /* Bordas de status */
+    .episode-card.concluida {
+        border-left: 4px solid #4caf50;
+    }
+
+    .episode-card.em-andamento {
+        border-left: 4px solid #ffc107;
+    }
+
+    /* --- THUMBNAIL SECTION --- */
+    .episode-thumbnail {
+        position: relative;
+        width: 280px;
+        min-width: 280px;
+        height: 160px;
+        background: #000;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    /* Thumbnail do YouTube */
+    .video-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .episode-card:hover .video-thumbnail {
+        transform: scale(1.1);
+    }
+
+    /* Play Overlay */
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(0,0,0,0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255,255,255,0.8);
+        transition: all 0.3s ease;
+        z-index: 5;
+    }
+
+    .episode-card:hover .play-overlay {
+        background: rgba(229, 9, 20, 0.9);
+        border-color: #fff;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .play-icon {
+        width: 0;
+        height: 0;
+        border-left: 18px solid white;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        margin-left: 5px;
+    }
+
+    /* Ícones para tipos não-vídeo */
+    .type-icon {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+    }
+
+    .type-icon.pdf {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+
+    .type-icon.texto {
+        background: linear-gradient(135deg, #00b4d8 0%, #0084ff 100%);
+    }
+
+    /* Episode Number Badge */
+    .episode-number {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.8);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+        z-index: 6;
+    }
+
+    /* Duration Badge */
+    .duration-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.8);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: monospace;
+        backdrop-filter: blur(10px);
+        z-index: 6;
+    }
+
+    /* Progress on Thumbnail */
+    .thumbnail-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        z-index: 7;
+    }
+
+    .thumbnail-progress-fill {
+        height: 100%;
+        background: var(--accent);
+        transition: width 0.5s ease;
+    }
+
+    /* --- EPISODE CONTENT --- */
+    .episode-content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .episode-header-content {
+        margin-bottom: 15px;
+    }
+
+    .episode-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .episode-description {
+        font-size: 0.95rem;
+        color: #aaa;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    /* Episode Meta */
+    .episode-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+
+    .type-badge {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .type-badge.video {
+        background: rgba(255, 107, 107, 0.2);
+        color: #ff6b6b;
+        border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .type-badge.pdf {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .type-badge.texto {
+        background: rgba(0, 180, 216, 0.2);
+        color: #00b4d8;
+        border: 1px solid rgba(0, 180, 216, 0.3);
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-badge.concluida {
+        background: rgba(40, 167, 69, 0.2);
+        color: #4caf50;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-badge.em-andamento {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .status-badge.nao-iniciada {
+        background: rgba(108, 117, 125, 0.2);
+        color: #999;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+
+    .materials-badge {
+        background: rgba(0, 180, 216, 0.15);
+        color: #00b4d8;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        border: 1px solid rgba(0, 180, 216, 0.25);
+    }
+
+    /* Episode Footer */
+    .episode-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .episode-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-episode {
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary-episode {
+        background: #fff;
+        color: #000;
+    }
+
+    .btn-primary-episode:hover {
+        background: rgba(255,255,255,0.85);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: #000;
+    }
+
+    /* Admin Actions Compact */
+    .episode-admin-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: 15px;
+    }
+
+    .btn-admin-compact {
+        padding: 8px 14px;
+        border-radius: 5px;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .btn-admin-edit {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .btn-admin-delete {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+        border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .btn-admin-compact:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #e5e5e5;
+    }
+
+    .empty-description {
+        font-size: 1.1rem;
+        color: #999;
+        margin-bottom: 30px;
+    }
+
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .episode-thumbnail {
+            width: 240px;
+            min-width: 240px;
+            height: 135px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .episode-header {
+            padding: 60px 4% 30px 4%;
+        }
+
+        .season-title {
+            font-size: 2rem;
+        }
+
+        .season-meta {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .episode-card {
+            flex-direction: column;
+        }
+
+        .episode-thumbnail {
+            width: 100%;
+            min-width: 100%;
+            height: 200px;
+        }
+
+        .episode-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-episode {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .episode-admin-actions {
+            flex-direction: column;
+        }
+    }
+
+    /* Animações */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .episode-card {
+        animation: fadeInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .episode-card:nth-child(1) { animation-delay: 0.1s; }
+    .episode-card:nth-child(2) { animation-delay: 0.15s; }
+    .episode-card:nth-child(3) { animation-delay: 0.2s; }
+    .episode-card:nth-child(4) { animation-delay: 0.25s; }
+    .episode-card:nth-child(5) { animation-delay: 0.3s; }
+    .episode-card:nth-child(6) { animation-delay: 0.35s; }
+    .episode-card:nth-child(7) { animation-delay: 0.4s; }
+    .episode-card:nth-child(8) { animation-delay: 0.45s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- WRAPPER NETFLIX -->
+<div class="netflix-wrapper">
+
+    <!-- EPISODE HEADER -->
+    <div class="episode-header">
+        <div class="breadcrumb-netflix">
+            <a href="{{ url_for('estudo.index') }}">Estudos</a> › 
+            <a href="{{ url_for('estudo.materia', materia_id=modulo.materia.id) }}">{{ modulo.materia.nome }}</a> › 
+            {{ modulo.titulo }}
+        </div>
+        
+        <div class="season-info">
+            <h1 class="season-title">{{ modulo.titulo }}</h1>
+            <p class="season-subtitle">{{ modulo.materia.nome }}</p>
+            
+            <div class="season-meta">
+                <div class="meta-badge dificuldade-{{ modulo.dificuldade }}">
+                    {% if modulo.dificuldade == 'facil' %}
+                        <span>🟢</span> Fácil
+                    {% elif modulo.dificuldade == 'dificil' %}
+                        <span>🔴</span> Difícil
+                    {% else %}
+                        <span>🟡</span> Médio
+                    {% endif %}
+                </div>
+                
+                <div class="meta-badge info">
+                    <span>📝</span> {{ aulas|length }} episódios
+                </div>
+                
+                {% if modulo.duracao_estimada %}
+                <div class="meta-badge info">
+                    <span>⏱️</span> {{ modulo.duracao_estimada }} min
+                </div>
+                {% endif %}
+            </div>
+
+            {% if modulo.descricao %}
+            <p class="season-desc">{{ modulo.descricao }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PROGRESS SECTION -->
+    <div class="progress-section">
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-title">Progresso da Temporada</span>
+                <span class="progress-percentage">{{ modulo.progresso_usuario|int }}%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ modulo.progresso_usuario }}%"></div>
+            </div>
+            <div class="progress-details">
+                {{ modulo.aulas_concluidas }} de {{ modulo.total_aulas }} episódios concluídos
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN HEADER -->
+    {% if current_user.is_admin %}
+    <div class="admin-header">
+        <div class="admin-card">
+            <div class="admin-title">
+                <span>🔧</span>
+                <span>Painel Administrativo</span>
+            </div>
+            <div class="admin-actions">
+                <a href="{{ url_for('estudo.editar_modulo', modulo_id=modulo.id) }}" 
+                   class="btn-admin btn-admin-warning">
+                    ✏️ Editar Módulo
+                </a>
+                <a href="{{ url_for('estudo.nova_aula', modulo_id=modulo.id) }}" 
+                   class="btn-admin btn-admin-success">
+                    ➕ Novo Episódio
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- EPISODES LIST -->
+    <div class="episodes-section">
+        <div class="section-header">
+            <h2 class="section-title">Episódios</h2>
+        </div>
+
+        {% if aulas %}
+        <div class="episodes-list">
+            {% for aula in aulas %}
+            <div class="episode-card {% if aula.concluida %}concluida{% elif aula.progresso_percentual > 0 %}em-andamento{% endif %}"
+                 onclick="window.location.href='{{ url_for('estudo.aula', aula_id=aula.id) }}'">
+                
+                <!-- THUMBNAIL -->
+                <div class="episode-thumbnail">
+                    <!-- Episode Number -->
+                    <div class="episode-number">{{ aula.ordem }}</div>
+
+                    {% if aula.tipo == 'video' and aula.url_video %}
+                        <!-- Thumbnail do YouTube -->
+                        {% set video_id = extrair_video_id(aula.url_video) %}
+                        {% if video_id %}
+                        <img src="https://img.youtube.com/vi/{{ video_id }}/maxresdefault.jpg" 
+                             alt="{{ aula.titulo }}" 
+                             class="video-thumbnail"
+                             onerror="this.src='https://img.youtube.com/vi/{{ video_id }}/hqdefault.jpg'">
+                        {% else %}
+                        <div class="type-icon video">🎥</div>
+                        {% endif %}
+                        
+                        <!-- Play Overlay -->
+                        <div class="play-overlay">
+                            <div class="play-icon"></div>
+                        </div>
+                    {% elif aula.tipo == 'pdf' %}
+                        <div class="type-icon pdf">📄</div>
+                    {% else %}
+                        <div class="type-icon texto">📝</div>
+                    {% endif %}
+
+                    <!-- Duration -->
+                    {% if aula.duracao_estimada %}
+                    <div class="duration-badge">{{ aula.duracao_estimada }} min</div>
+                    {% endif %}
+
+                    <!-- Progress on Thumbnail -->
+                    {% if aula.progresso_percentual > 0 and aula.progresso_percentual < 100 %}
+                    <div class="thumbnail-progress">
+                        <div class="thumbnail-progress-fill" style="width: {{ aula.progresso_percentual }}%"></div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- CONTENT -->
+                <div class="episode-content">
+                    <div>
+                        <div class="episode-header-content">
+                            <h3 class="episode-title">{{ aula.ordem }}. {{ aula.titulo }}</h3>
+                            {% if aula.descricao %}
+                            <p class="episode-description">{{ aula.descricao }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="episode-meta">
+                            <span class="type-badge {{ aula.tipo }}">
+                                {% if aula.tipo == 'video' %}🎥 Vídeo
+                                {% elif aula.tipo == 'pdf' %}📄 PDF
+                                {% else %}📝 Texto{% endif %}
+                            </span>
+
+                            {% if aula.concluida %}
+                            <div class="status-badge concluida">✅ Concluída</div>
+                            {% elif aula.progresso_percentual > 0 %}
+                            <div class="status-badge em-andamento">🔄 {{ aula.progresso_percentual|int }}%</div>
+                            {% else %}
+                            <div class="status-badge nao-iniciada">⭕ Não iniciada</div>
+                            {% endif %}
+
+                            {% if aula.materiais.count() > 0 %}
+                            <span class="materials-badge">
+                                📎 {{ aula.materiais.count() }} material{{ 'is' if aula.materiais.count() > 1 else '' }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="episode-footer">
+                        <div class="episode-actions">
+                            <a href="{{ url_for('estudo.aula', aula_id=aula.id) }}" 
+                               class="btn-episode btn-primary-episode"
+                               onclick="event.stopPropagation()">
+                                {% if aula.concluida %}
+                                    <span>🔄</span>
+                                    <span>Revisar</span>
+                                {% else %}
+                                    <span>▶</span>
+                                    <span>{% if aula.progresso_percentual > 0 %}Continuar{% else %}Assistir{% endif %}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+
+                        <!-- Admin Actions -->
+                        {% if current_user.is_admin %}
+                        <div class="episode-admin-actions" onclick="event.stopPropagation()">
+                            <a href="{{ url_for('estudo.editar_aula', aula_id=aula.id) }}" 
+                               class="btn-admin-compact btn-admin-edit">
+                                ✏️ Editar
+                            </a>
+                            <button onclick="event.stopPropagation(); confirmarExclusaoAula({{ aula.id }}, '{{ aula.titulo }}')" 
+                                    class="btn-admin-compact btn-admin-delete">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3 class="empty-title">Nenhum episódio disponível</h3>
+            <p class="empty-description">Esta temporada ainda não possui episódios criados.</p>
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('estudo.nova_aula', modulo_id=modulo.id) }}" class="btn-episode btn-primary-episode">
+                ➕ Criar Primeiro Episódio
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+</div> <!-- Fim Netflix Wrapper -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Script de segurança para forçar fundo preto
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.style.backgroundColor = "#000000";
+    document.documentElement.style.backgroundColor = "#000000";
+    
+    document.querySelectorAll('.bg-dark').forEach(el => {
+        el.style.setProperty('background-color', '#000000', 'important');
+    });
+
+    // Animar barras de progresso
+    const progressBars = document.querySelectorAll('.progress-bar-fill, .thumbnail-progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 100);
+    });
+});
+
+function confirmarExclusaoAula(aulaId, nomeAula) {
+    event.stopPropagation();
+    const confirmacao = prompt(
+        `⚠️ EXCLUIR EPISÓDIO?\n\n` +
+        `Para deletar "${nomeAula}", digite: DELETAR`
+    );
+    
+    if (confirmacao === 'DELETAR') {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/estudo/admin/aula/excluir/${aulaId}`;
+        
+        const csrfToken = document.querySelector('meta[name=csrf-token]');
+        if (csrfToken) {
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'csrf_token';
+            hiddenField.value = csrfToken.getAttribute('content');
+            form.appendChild(hiddenField);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

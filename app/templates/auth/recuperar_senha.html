@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recuperar Senha — Plataforma Launcher</title>
+  
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    :root{
+      --bg: #000000;
+      --bg-gradient: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+      --surface: #111111;
+      --surface-light: #1a1a1a;
+      --primary: #3b82f6;
+      --accent: #00d9ff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --text-secondary: #9fb1d1;
+      --border: #262626;
+      --focus: rgba(59, 130, 246, 0.3);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(600px 300px at 20% 30%, rgba(59, 130, 246, 0.12), transparent 50%),
+        radial-gradient(800px 400px at 80% 70%, rgba(0, 217, 255, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: floatingBg 20s ease-in-out infinite;
+    }
+
+    @keyframes floatingBg {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+
+    .container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      font-weight: 800;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .alert {
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #a5d8ff;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ffd5d5;
+    }
+
+    .alert i {
+      margin-top: 2px;
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-light);
+      color: var(--text);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
+    .input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--text);
+      transform: none;
+    }
+
+    .info-box {
+      background: rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .info-box i {
+      color: var(--accent);
+      margin-right: 8px;
+    }
+
+    .help-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .help-section h6 {
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .help-section a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .help-section a:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding: 2rem 1.5rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🔐</div>
+      <h1>Recuperar Senha</h1>
+      <p class="subtitle">Digite seu email para receber o link de redefinição</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i class="bi bi-{% if category == 'danger' %}exclamation-triangle-fill{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" id="recoverForm">
+      <div class="form-group">
+        <label class="label" for="email">
+          <i class="bi bi-envelope"></i> Email cadastrado
+        </label>
+        <input 
+          type="email" 
+          class="input" 
+          id="email" 
+          name="email" 
+          placeholder="seu@email.com"
+          required 
+          autofocus
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i class="bi bi-send" id="btnIcon"></i>
+        <span id="btnText">Enviar Link de Reset</span>
+      </button>
+
+      <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Voltar ao Login
+      </a>
+    </form>
+
+    <div class="info-box">
+      <i class="bi bi-info-circle-fill"></i>
+      <strong>Como funciona:</strong> Você receberá um email com um link seguro para criar uma nova senha. O link expira em 30 minutos.
+    </div>
+
+    <div class="help-section">
+      <h6><i class="bi bi-headset"></i> Precisa de ajuda?</h6>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+        WhatsApp: <a href="https://wa.me/5562995594055">(62) 99559-4055</a>
+      </p>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Email: <a href="mailto:suporte@plataformalauncher.com.br">suporte@plataformalauncher.com.br</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('recoverForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnIcon = document.getElementById('btnIcon');
+      const btnText = document.getElementById('btnText');
+      const emailInput = document.getElementById('email');
+
+      form.addEventListener('submit', function(e) {
+        const email = emailInput.value.trim();
+        
+        if (!email) {
+          e.preventDefault();
+          showAlert('Por favor, digite seu email.', 'warning');
+          return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          e.preventDefault();
+          showAlert('Por favor, digite um email válido.', 'warning');
+          return;
+        }
+
+        // Loading state
+        submitBtn.disabled = true;
+        btnIcon.className = 'bi bi-arrow-clockwise';
+        btnIcon.style.animation = 'spin 1s linear infinite';
+        btnText.textContent = 'Enviando...';
+      });
+
+      // Email validation
+      emailInput.addEventListener('input', function() {
+        const email = this.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailRegex.test(email)) {
+          this.style.borderColor = 'var(--warning)';
+        } else if (email) {
+          this.style.borderColor = 'var(--success)';
+        } else {
+          this.style.borderColor = '';
+        }
+      });
+
+      function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.innerHTML = `
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>${message}</span>
+        `;
+        form.parentNode.insertBefore(alertDiv, form);
+        
+        setTimeout(() => alertDiv.remove(), 5000);
+      }
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

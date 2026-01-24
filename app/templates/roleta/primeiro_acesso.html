@@ -1,0 +1,517 @@
+{% extends "layout.html" %}
+{% block title %}Roleta de Prêmios — Boas-vindas{% endblock %}
+
+{% block content %}
+<style>
+  :root{
+    --primary:#001233;
+    --accent:#00b4d8;
+    --accent-2:#0084ff;
+    --yellow:#ffc107;
+    --card-bg:rgba(255,255,255,0.08);
+    --card-border:rgba(255,255,255,0.1);
+    --text:#ffffff;
+    --text-dim:rgba(255,255,255,0.8);
+  }
+  
+  body{
+    background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+    color: var(--text);
+  }
+  
+  .container-roleta{
+    max-width:1200px;
+    margin:0 auto;
+    padding:24px;
+  }
+  
+  .page-header{
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:28px;
+    margin-bottom:24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .icon-badge{
+    width:64px;
+    height:64px;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  
+  .page-title{
+    font-size:2rem;
+    font-weight:800;
+    margin:0 0 6px;
+    color:#fff;
+  }
+  
+  .page-sub{
+    font-size:1rem;
+    color:var(--text-dim);
+    margin:0;
+  }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 8px 32px rgba(0,0,0,.3);
+    backdrop-filter: blur(10px);
+  }
+  
+  .grid{
+    display:grid;
+    grid-template-columns:520px 1fr;
+    gap:24px;
+    align-items: start;
+  }
+  
+  @media (max-width:1024px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------------- ROLETA CORRIGIDA ---------------- */
+  .wheel-wrap{
+    position:relative;
+    width:min(520px,86vw);
+    aspect-ratio:1/1;
+    margin:0 auto;
+    border-radius:50%;
+    padding:18px;
+    background:radial-gradient(circle at 50% 50%, rgba(0,180,216,.25), rgba(0,0,0,0) 60%);
+    border:1px solid var(--card-border);
+  }
+  
+  .pointer{
+    position:absolute;
+    top:-10px;
+    left:50%;
+    transform:translateX(-50%);
+    width:0;
+    height:0;
+    border-left:16px solid transparent;
+    border-right:16px solid transparent;
+    border-bottom:26px solid var(--yellow);
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.4));
+    z-index:3;
+  }
+  
+  .wheel{
+    position:relative;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    overflow:visible;
+    background:conic-gradient(
+      #1e90ff 0 45deg,
+      #00b4d8 45deg 90deg,
+      #20c997 90deg 135deg,
+      #ffc107 135deg 180deg,
+      #ff6b6b 180deg 225deg,
+      #a55eea 225deg 270deg,
+      #6ab04c 270deg 315deg,
+      #0084ff 315deg 360deg
+    );
+    transition:transform 4s cubic-bezier(.17,.67,.12,.99);
+    border:6px solid rgba(255,255,255,.12);
+    box-shadow: inset 0 0 40px rgba(0,0,0,.4);
+  }
+
+  /* ===== RÓTULOS CORRIGIDOS ===== */
+  .seg{
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    pointer-events:none;
+  }
+
+ 
+  .seg-label{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:100px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    color:#fff;
+    text-shadow:0 2px 8px rgba(0,0,0,.8);
+    transform-origin: 0 0;
+  }
+  
+  /* Posicionamento individual de cada prêmio */
+  .seg:nth-child(1) .seg-label { /* 0° */
+    transform: translate(-50%, -50%) rotate(0deg) translateY(-160px) rotate(0deg);
+  }
+  .seg:nth-child(2) .seg-label { /* 45° */
+    transform: translate(-50%, -50%) rotate(45deg) translateY(-160px) rotate(-45deg);
+  }
+  .seg:nth-child(3) .seg-label { /* 90° */
+    transform: translate(-50%, -50%) rotate(90deg) translateY(-160px) rotate(-90deg);
+  }
+  .seg:nth-child(4) .seg-label { /* 135° */
+    transform: translate(-50%, -50%) rotate(135deg) translateY(-160px) rotate(-135deg);
+  }
+  .seg:nth-child(5) .seg-label { /* 180° */
+    transform: translate(-50%, -50%) rotate(180deg) translateY(-160px) rotate(-180deg);
+  }
+  .seg:nth-child(6) .seg-label { /* 225° */
+    transform: translate(-50%, -50%) rotate(225deg) translateY(-160px) rotate(-225deg);
+  }
+  .seg:nth-child(7) .seg-label { /* 270° */
+    transform: translate(-50%, -50%) rotate(270deg) translateY(-160px) rotate(-270deg);
+  }
+  .seg:nth-child(8) .seg-label { /* 315° */
+    transform: translate(-50%, -50%) rotate(315deg) translateY(-160px) rotate(-315deg);
+  }
+  
+  .seg-emoji{
+    font-size:28px;
+    line-height:1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  }
+  
+  .seg-text{
+    font-weight:700;
+    font-size:.85rem;
+    white-space:nowrap;
+    color:#fff;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 8px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Botão central */
+  .center-btn{
+    position:absolute;
+    inset:0;
+    margin:auto;
+    width:130px;
+    height:130px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #fff, #e9ecef);
+    border:4px solid var(--yellow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    font-size: 1.1rem;
+    letter-spacing:.08em;
+    color:#1f2937;
+    cursor:pointer;
+    z-index:2;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);
+    transition:.25s;
+  }
+  
+  .center-btn:hover{
+    transform:scale(1.06);
+    box-shadow:0 12px 35px rgba(0,0,0,.55);
+  }
+  
+  .center-btn:active{
+    transform:scale(0.97);
+  }
+  
+  .center-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Lado direito */
+  .side{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  
+  .side .hint{
+    color:var(--text-dim);
+    font-size:.95rem;
+    line-height: 1.5;
+  }
+  
+  .btn{
+    padding:12px 18px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    font-size: 1rem;
+    display:inline-flex;
+    align-items:center;
+    justify-content: center;
+    gap:8px;
+    transition:transform .15s ease, background .2s ease;
+    text-decoration:none;
+  }
+  
+  .btn-primary{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#fff;
+  }
+  
+  .btn-primary:hover{
+    transform:translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,180,216,0.4);
+  }
+  
+  .btn-secondary{
+    background:rgba(255,255,255,.1);
+    color:#fff;
+    border:1px solid var(--card-border);
+  }
+  
+  .btn-secondary:hover{
+    background:rgba(255,255,255,.15);
+    transform:translateY(-2px);
+  }
+  
+  .meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    color:var(--text-dim);
+    font-size:.9rem;
+  }
+  
+  .meta span{
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--card-border);
+    padding:6px 10px;
+    border-radius:999px;
+  }
+
+  /* Modal resultado */
+  .modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.8);
+    z-index:50;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal.show{
+    display:flex;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .modal-card{
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    width:min(520px,92vw);
+    padding:32px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.4s ease;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .prize-title{
+    font-size:1.8rem;
+    font-weight:800;
+    margin-bottom:8px;
+  }
+  
+  .prize-sub{
+    color:var(--text-dim);
+    margin-bottom:20px;
+  }
+
+ 
+  .prize-box{
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:20px;
+  }
+  
+  #prizeName{
+    font-weight:800;
+    font-size:1.3rem;
+    margin-bottom:6px;
+    color: var(--accent);
+  }
+</style>
+
+<div class="container-roleta">
+  <div class="page-header">
+    <div class="icon-badge">🎁</div>
+    <div>
+      <h1 class="page-title">Roleta de Boas-vindas</h1>
+      <p class="page-sub">Gire a roleta e descubra seu prêmio de primeiro acesso.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <!-- Roleta -->
+      <div>
+        <div class="wheel-wrap">
+          <div class="pointer"></div>
+
+          <div class="wheel" id="wheel">
+            {# ===== LOOP DE RÓTULOS CORRIGIDO ===== #}
+            {% for premio in premios %}
+            <div class="seg">
+              <div class="seg-label">
+                <div class="seg-emoji">
+                  {% if 'iPhone' in premio.nome %}📱
+                  {% elif 'Garrafinha' in premio.nome %}🥤
+                  {% elif 'Notebook' in premio.nome %}💻
+                  {% elif 'Fone' in premio.nome %}🎧
+                  {% elif 'Livros' in premio.nome %}📚
+                  {% elif 'Caderno' in premio.nome %}📓
+                  {% elif 'Tablet' in premio.nome %}📱
+                  {% else %}🎁{% endif %}
+                </div>
+                <div class="seg-text">{{ premio.nome }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <button class="center-btn" id="spinButton">GIRAR</button>
+        </div>
+      </div>
+
+      <!-- Lado direito -->
+      <div class="side">
+        <div class="meta">
+          <span>✨ Primeiro acesso</span>
+          <span>🎁 Prêmios físicos</span>
+          <span>⏰ Resgate em até 8 dias</span>
+        </div>
+        <p class="hint">Ao clicar em <strong>GIRAR</strong>, o resultado será salvo automaticamente e você poderá acompanhar o status do prêmio no seu painel.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn btn-secondary" href="{{ url_for('dashboard.index') }}">← Voltar ao Dashboard</a>
+          <button class="btn btn-primary" id="spinButtonMirror">✨ Girar agora</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Resultado -->
+<div class="modal" id="resultModal">
+  <div class="modal-card">
+    <div style="font-size:64px;margin-bottom:12px">🎉</div>
+    <div class="prize-title">Parabéns!</div>
+    <div class="prize-sub">Seu prêmio foi registrado com sucesso.</div>
+    <div class="prize-box">
+      <div id="prizeName">Garrafinha Launcher</div>
+      <div style="color:var(--text-dim)">Aguarde a liberação para resgate.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('roleta.status_premio') }}">Acompanhar status ➜</a>
+  </div>
+</div>
+
+
+
+<script>
+  const wheel = document.getElementById('wheel');
+  const spinBtn = document.getElementById('spinButton');
+  const spinBtnMirror = document.getElementById('spinButtonMirror');
+  const modal = document.getElementById('resultModal');
+  const prizeNameEl = document.getElementById('prizeName');
+
+  let spinning = false;
+  let currentRotation = 0;
+
+  function spin(){
+    if (spinning) return;
+    spinning = true;
+
+    // Desabilita botões
+    spinBtn.disabled = true;
+    spinBtnMirror.disabled = true;
+    spinBtn.textContent = 'GIRANDO...';
+
+    // Para na Garrafinha (índice 1 = 45°)
+    const spins = Math.floor(Math.random() * 3) + 8; // 8-10 voltas
+    const targetAngle = 45; // Ângulo da Garrafinha
+    const offset = 22.5; // Centraliza na fatia
+    
+    // Calcula rotação final
+    const finalDeg = currentRotation + (spins * 360) + (360 - targetAngle) + offset;
+    
+    wheel.style.transform = `rotate(${finalDeg}deg)`;
+    currentRotation = finalDeg;
+
+    setTimeout(() => {
+      fetch('{{ url_for("roleta.girar_roleta") }}', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ premio: 1 })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data?.success){
+          if (data.nome) prizeNameEl.textContent = data.nome;
+          modal.classList.add('show');
+        } else {
+          alert(data?.message || 'Erro ao processar prêmio');
+          window.location.href = '{{ url_for("dashboard.index") }}';
+        }
+      })
+      .catch(() => { 
+        alert('Falha de comunicação. Tente novamente.'); 
+      })
+      .finally(() => { 
+        spinning = false;
+        spinBtn.disabled = false;
+        spinBtnMirror.disabled = false;
+        spinBtn.textContent = 'GIRAR';
+      });
+    }, 4200);
+  }
+
+  spinBtn.addEventListener('click', spin);
+  spinBtnMirror.addEventListener('click', spin);
+
+  // Fecha modal ao clicar fora
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('show');
+    }
+  });
+</script>
+{% endblock %}

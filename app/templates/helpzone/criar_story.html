@@ -1,0 +1,1020 @@
+<!-- app/templates/helpzone/criar_story.html -->
+{% extends "layout.html" %}
+
+{% block title %}Criar Story - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ================================================
+   VARIÁVEIS
+   ================================================ */
+:root {
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    --gradient-sunset: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    --gradient-ocean: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    --gradient-dark: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+/* ================================================
+   RESET E BASE
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+}
+
+/* ================================================
+   CONTAINER PRINCIPAL
+   ================================================ */
+.story-creator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    z-index: 9999;
+}
+
+/* ================================================
+   HEADER MODERNO
+   ================================================ */
+.sc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sc-back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sc-back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(-4px);
+}
+
+.sc-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: var(--gradient-purple);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.sc-post-btn {
+    background: var(--gradient-purple);
+    color: white;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    display: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sc-post-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.sc-post-btn:hover::before {
+    left: 100%;
+}
+
+.sc-post-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.6);
+}
+
+.sc-post-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.sc-post-btn.active {
+    display: block;
+    animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ================================================
+   ÁREA DE PREVIEW
+   ================================================ */
+.sc-preview {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Partículas de fundo */
+.sc-preview::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle, rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+        radial-gradient(circle, rgba(236, 72, 153, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px;
+    background-position: 0 0, 40px 40px;
+    animation: moveParticles 20s linear infinite;
+}
+
+@keyframes moveParticles {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
+.sc-preview-content {
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    max-height: 720px;
+    aspect-ratio: 9 / 16;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 100px rgba(139, 92, 246, 0.2);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sc-preview-content:hover {
+    transform: scale(1.02);
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.15),
+        0 30px 80px rgba(0, 0, 0, 0.9),
+        0 0 120px rgba(139, 92, 246, 0.3);
+}
+
+.sc-preview-content.has-media {
+    background: #000;
+}
+
+/* ================================================
+   PLACEHOLDER
+   ================================================ */
+.sc-placeholder {
+    text-align: center;
+    color: #666;
+    padding: 40px 20px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.sc-placeholder-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    background: var(--gradient-purple);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.sc-placeholder-icon::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    filter: blur(30px);
+    opacity: 0.5;
+    animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(0.9); }
+    50% { transform: scale(1.1); }
+}
+
+.sc-placeholder-icon i {
+    font-size: 3rem;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.sc-placeholder h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.sc-placeholder p {
+    font-size: 0.95rem;
+    color: #888;
+    line-height: 1.6;
+}
+
+.sc-placeholder-tip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px 16px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    color: #a78bfa;
+}
+
+/* ================================================
+   PREVIEW DE MÍDIA
+   ================================================ */
+.sc-preview-image,
+.sc-preview-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: zoomIn 0.5s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ================================================
+   BOTÃO DE UPLOAD
+   ================================================ */
+.sc-upload-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient-purple);
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 
+        0 8px 30px rgba(139, 92, 246, 0.5),
+        0 0 0 0 rgba(139, 92, 246, 0.7);
+    z-index: 10;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+.sc-upload-btn:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 
+        0 12px 40px rgba(139, 92, 246, 0.7),
+        0 0 0 8px rgba(139, 92, 246, 0.2);
+}
+
+.sc-upload-btn:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+.sc-upload-btn.hidden {
+    display: none;
+}
+
+.sc-upload-btn i {
+    font-size: 1.2rem;
+}
+
+/* ================================================
+   CONTROLES
+   ================================================ */
+.sc-controls {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 12px;
+    z-index: 10;
+}
+
+.sc-controls.active {
+    display: flex;
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.sc-control-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.sc-control-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.sc-control-btn:active {
+    transform: translateY(-1px);
+}
+
+.sc-control-btn i {
+    font-size: 1.1rem;
+}
+
+/* ================================================
+   LOADING
+   ================================================ */
+.sc-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 1000;
+}
+
+.sc-loading.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.spinner-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.spinner {
+    width: 100px;
+    height: 100px;
+    border: 4px solid rgba(139, 92, 246, 0.2);
+    border-top-color: #8b5cf6;
+    border-right-color: #ec4899;
+    border-radius: 50%;
+    animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--gradient-purple);
+    filter: blur(20px);
+    opacity: 0.5;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.sc-loading-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.sc-loading-subtext {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* ================================================
+   PROGRESS BAR
+   ================================================ */
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-purple);
+    border-radius: 10px;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* ================================================
+   TOAST
+   ================================================ */
+.toast {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(239, 68, 68, 0.95);
+    backdrop-filter: blur(20px);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.5);
+    animation: toastSlide 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes toastSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+.toast.show {
+    display: flex;
+}
+
+.toast.success {
+    background: rgba(16, 185, 129, 0.95);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+}
+
+.toast i {
+    font-size: 1.2rem;
+}
+
+/* ================================================
+   FILE INFO
+   ================================================ */
+.file-info {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    padding: 12px 24px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 50;
+    animation: slideDown 0.4s ease;
+}
+
+.file-info.active {
+    display: flex;
+}
+
+.file-info-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-info-text {
+    font-size: 0.85rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.file-info-size {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* ================================================
+   RESPONSIVIDADE
+   ================================================ */
+@media (max-width: 768px) {
+    .sc-header {
+        padding: 12px 16px;
+    }
+
+    .sc-title {
+        font-size: 1rem;
+    }
+
+    .sc-back-btn,
+    .sc-post-btn {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+
+    .sc-preview {
+        padding: 10px;
+    }
+
+    .sc-preview-content {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 16px;
+    }
+
+    .sc-upload-btn {
+        bottom: 24px;
+        padding: 16px 32px;
+        font-size: 0.95rem;
+    }
+
+    .sc-controls {
+        bottom: 24px;
+        gap: 8px;
+    }
+
+    .sc-control-btn {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+    }
+
+    .sc-placeholder-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .sc-placeholder-icon i {
+        font-size: 2rem;
+    }
+
+    .sc-placeholder h3 {
+        font-size: 1.1rem;
+    }
+
+    .sc-placeholder p {
+        font-size: 0.85rem;
+    }
+}
+
+
+
+/* ================================================
+   ANIMAÇÕES EXTRAS
+   ================================================ */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="story-creator">
+    <!-- Header -->
+    <div class="sc-header">
+        <button class="sc-back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </button>
+        <div class="sc-title">✨ Criar Story</div>
+        <button class="sc-post-btn" id="post-btn" onclick="publicarStory()">
+            <i class="fas fa-rocket"></i>
+            Publicar
+        </button>
+    </div>
+
+    <!-- Preview Area -->
+    <div class="sc-preview">
+        <div class="sc-preview-content" id="preview-content">
+            <!-- Placeholder -->
+            <div class="sc-placeholder" id="placeholder">
+                <div class="sc-placeholder-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <h3>Compartilhe seu momento</h3>
+                <p>Adicione uma foto ou vídeo para criar seu story</p>
+                <div class="sc-placeholder-tip">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Vídeos até 15 segundos</span>
+                </div>
+            </div>
+
+            <!-- Preview de mídia -->
+            <img id="preview-image" class="sc-preview-image" style="display: none;">
+            <video id="preview-video" class="sc-preview-video" style="display: none;" playsinline></video>
+        </div>
+
+        <!-- File Info -->
+        <div class="file-info" id="file-info">
+            <div class="file-info-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div>
+                <div class="file-info-text" id="file-name">arquivo.jpg</div>
+                <div class="file-info-size" id="file-size">2.5 MB</div>
+            </div>
+        </div>
+
+        <!-- Upload Button -->
+        <button class="sc-upload-btn" id="upload-btn" onclick="document.getElementById('story-file-input').click()">
+            <i class="fas fa-plus-circle"></i>
+            Escolher Arquivo
+        </button>
+
+        <!-- Controls -->
+        <div class="sc-controls" id="controls">
+            <button class="sc-control-btn" onclick="document.getElementById('story-file-input').click()">
+                <i class="fas fa-sync-alt"></i>
+                Trocar Arquivo
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div class="sc-loading" id="loading">
+            <div class="spinner-container">
+                <div class="spinner-glow"></div>
+                <div class="spinner"></div>
+            </div>
+            <div class="sc-loading-text">Publicando seu story...</div>
+            <div class="sc-loading-subtext">Aguarde um momento</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input 
+        type="file" 
+        id="story-file-input" 
+        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,video/mp4,video/webm,video/mov"
+        onchange="handleFileSelect(event)"
+    >
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fas fa-exclamation-circle"></i>
+    <span id="toast-message"></span>
+</div>
+
+<script>
+let selectedFile = null;
+let fileType = null;
+
+function goBack() {
+    if (selectedFile) {
+        if (confirm('Descartar story? Suas alterações serão perdidas.')) {
+            window.location.href = '{{ url_for("helpzone.feed") }}';
+        }
+    } else {
+        window.location.href = '{{ url_for("helpzone.feed") }}';
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log('Arquivo selecionado:', file.name, file.type, file.size);
+
+    // Validações
+    const maxImageSize = 5 * 1024 * 1024; // 5MB
+    const maxVideoSize = 10 * 1024 * 1024; // 10MB
+
+    if (file.type.startsWith('image/')) {
+        if (file.size > maxImageSize) {
+            showToast('Imagem muito grande! Máximo 5MB', 'error');
+            return;
+        }
+        fileType = 'imagem';
+        previewImage(file);
+    } else if (file.type.startsWith('video/')) {
+        if (file.size > maxVideoSize) {
+            showToast('Vídeo muito grande! Máximo 10MB', 'error');
+            return;
+        }
+        fileType = 'video';
+        previewVideo(file);
+    } else {
+        showToast('Formato não suportado! Use imagens ou vídeos.', 'error');
+        return;
+    }
+
+    selectedFile = file;
+
+    // Mostrar info do arquivo
+    document.getElementById('file-name').textContent = file.name;
+    document.getElementById('file-size').textContent = formatFileSize(file.size);
+    document.getElementById('file-info').classList.add('active');
+
+    // Mostrar botão de publicar
+    document.getElementById('post-btn').classList.add('active');
+    document.getElementById('upload-btn').classList.add('hidden');
+    document.getElementById('controls').classList.add('active');
+    document.getElementById('preview-content').classList.add('has-media');
+}
+
+function previewImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('preview-video').style.display = 'none';
+        
+        const img = document.getElementById('preview-image');
+        img.src = e.target.result;
+        img.style.display = 'block';
+
+        console.log('Preview de imagem carregado');
+    };
+    reader.readAsDataURL(file);
+}
+
+function previewVideo(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('preview-image').style.display = 'none';
+        
+        const video = document.getElementById('preview-video');
+        video.src = e.target.result;
+        video.style.display = 'block';
+        video.muted = true;
+        video.play().catch(err => console.log('Erro ao dar play:', err));
+
+        // Verificar duração
+        video.onloadedmetadata = () => {
+            console.log('Duração do vídeo:', video.duration);
+            if (video.duration > 15) {
+                showToast('Vídeo muito longo! Máximo 15 segundos', 'error');
+                resetPreview();
+            }
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+function resetPreview() {
+    selectedFile = null;
+    fileType = null;
+    document.getElementById('placeholder').style.display = 'block';
+    document.getElementById('preview-image').style.display = 'none';
+    document.getElementById('preview-video').style.display = 'none';
+    document.getElementById('post-btn').classList.remove('active');
+    document.getElementById('upload-btn').classList.remove('hidden');
+    document.getElementById('controls').classList.remove('active');
+    document.getElementById('file-info').classList.remove('active');
+    document.getElementById('preview-content').classList.remove('has-media');
+    document.getElementById('story-file-input').value = '';
+}
+
+async function publicarStory() {
+    if (!selectedFile) {
+        showToast('Selecione um arquivo primeiro!', 'error');
+        return;
+    }
+
+    console.log('Iniciando publicação...', fileType);
+
+    // Mostrar loading
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('post-btn').disabled = true;
+
+    // Criar FormData
+    const formData = new FormData();
+    formData.append('arquivo', selectedFile);
+    formData.append('tipo', fileType);
+
+    try {
+        console.log('Enviando para servidor...');
+        
+        const response = await fetch('{{ url_for("helpzone.criar_story") }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.success) {
+            showToast('✨ Story publicado com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = '{{ url_for("helpzone.feed") }}';
+            }, 1500);
+        } else {
+            showToast(data.error || 'Erro ao publicar story', 'error');
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('post-btn').disabled = false;
+        }
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+        showToast('Erro ao publicar story. Tente novamente.', 'error');
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('post-btn').disabled = false;
+    }
+}
+
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastMessage.textContent = message;
+    toast.classList.remove('success');
+    
+    if (type === 'success') {
+        toast.classList.add('success');
+        toast.querySelector('i').className = 'fas fa-check-circle';
+    } else {
+        toast.querySelector('i').className = 'fas fa-exclamation-circle';
+    }
+    
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Prevenir saída acidental
+window.addEventListener('beforeunload', (e) => {
+    if (selectedFile && !document.getElementById('loading').classList.contains('active')) {
+        e.preventDefault();
+        e.returnValue = 'Suas alterações serão perdidas. Deseja sair mesmo assim?';
+    }
+});
+
+// Atalhos de teclado
+document.addEventListener('keydown', (e) => {
+    // ESC para voltar
+    if (e.key === 'Escape' && !document.getElementById('loading').classList.contains('active')) {
+        goBack();
+    }
+    
+    // Enter para publicar (se tiver arquivo)
+    if (e.key === 'Enter' && selectedFile && !document.getElementById('loading').classList.contains('active')) {
+        publicarStory();
+    }
+});
+
+console.log('Script carregado com sucesso');
+</script>
+{% endblock %}

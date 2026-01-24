@@ -1,0 +1,921 @@
+<!-- app/templates/shop/meus_resgates.html -->
+{% extends "layout.html" %}
+
+{% block title %}Meus Resgates - Shop - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        background: linear-gradient(45deg, #007bff, #00b4d8);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .nav-tabs {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .nav-tabs .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        border: none;
+        padding: 0.8rem 1.5rem;
+        font-weight: 500;
+        position: relative;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: #fff;
+        border: none;
+        background-color: transparent;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #fff;
+        background-color: transparent;
+        border: none;
+    }
+    
+    .nav-tabs .nav-link.active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 100%;
+        height: 2px;
+        background-color: #007bff;
+    }
+    
+    .resgate-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .resgate-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 123, 255, 0.2);
+    }
+    
+    .resgate-header {
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .resgate-date {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .resgate-id {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .resgate-body {
+        padding: 1.5rem;
+    }
+    
+    .resgate-product {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+    
+    .resgate-img {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .resgate-img img {
+        max-width: 100%;
+        max-height: 70px;
+    }
+    
+    .resgate-info {
+        flex-grow: 1;
+    }
+    
+    .resgate-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    
+    .resgate-desc {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .resgate-xp {
+        display: inline-flex;
+        align-items: center;
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .resgate-xp i {
+        margin-right: 6px;
+    }
+    
+    .resgate-status {
+        display: flex;
+        margin-top: 1.5rem;
+    }
+    
+    .status-timeline {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    
+    .timeline-step {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-step:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-step::before {
+        content: '';
+        position: absolute;
+        left: 0.35rem;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .timeline-step:last-child::before {
+        bottom: 50%;
+    }
+    
+    .timeline-step:first-child::before {
+        top: 50%;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0.35rem;
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .timeline-step.active .timeline-marker {
+        background-color: #28a745;
+        border: 2px solid rgba(40, 167, 69, 0.3);
+        left: -0.15rem;
+        top: 0.2rem;
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    .timeline-content h5 {
+        font-size: 0.95rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .timeline-content p {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0;
+    }
+    
+    .timeline-date {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 0;
+    }
+    
+    .resgate-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.pending {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+    
+    .status-badge.sent {
+        background-color: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+    
+    .status-badge.delivered {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .tracking-info {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .tracking-info h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tracking-code {
+        font-family: monospace;
+        font-size: 1rem;
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 0.5rem;
+        border-radius: 4px;
+        letter-spacing: 1px;
+    }
+    
+    .address-info {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .address-info h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .address-text {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="meus-resgates">
+    <!-- Header da Página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">Shop</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Meus Resgates</li>
+            </ol>
+        </nav>
+        
+        <a href="{{ url_for('shop.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para a Loja
+        </a>
+    </div>
+    
+    <!-- Cabeçalho da Página -->
+    <div class="page-header">
+        <h1 class="page-title">Meus Resgates</h1>
+        <p class="mb-0">Acompanhe o status dos produtos que você resgatou.</p>
+    </div>
+    
+    <!-- Tabs de Filtro -->
+    <ul class="nav nav-tabs" id="resgatesTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="todos-tab" data-bs-toggle="tab" data-bs-target="#todos" 
+                    type="button" role="tab" aria-controls="todos" aria-selected="true">
+                Todos ({{ resgates|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes" 
+                    type="button" role="tab" aria-controls="pendentes" aria-selected="false">
+                Pendentes ({{ resgates|selectattr('status', 'equalto', 'Pendente')|list|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="enviados-tab" data-bs-toggle="tab" data-bs-target="#enviados" 
+                    type="button" role="tab" aria-controls="enviados" aria-selected="false">
+                Enviados ({{ resgates|selectattr('status', 'equalto', 'Enviado')|list|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="entregues-tab" data-bs-toggle="tab" data-bs-target="#entregues" 
+                    type="button" role="tab" aria-controls="entregues" aria-selected="false">
+                Entregues ({{ resgates|selectattr('status', 'equalto', 'Entregue')|list|length }})
+            </button>
+        </li>
+    </ul>
+
+    <!-- Conteúdo das Tabs -->
+    <div class="tab-content" id="resgatesTabContent">
+        <!-- Tab Todos -->
+        <div class="tab-pane fade show active" id="todos" role="tabpanel" aria-labelledby="todos-tab">
+            {% if resgates %}
+                {% for resgate in resgates %}
+                <div class="resgate-card">
+                    <div class="resgate-header">
+                        <div class="resgate-date">
+                            <i class="bi bi-calendar me-2"></i>Resgatado em {{ resgate.data_resgate_brasil.strftime('%d/%m/%Y') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="resgate-id">
+                            Código: #{{ '%06d' % resgate.id }}
+                        </div>
+                    </div>
+                    <div class="resgate-body">
+                        <div class="resgate-product">
+                            <div class="resgate-img">
+                                <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                     alt="{{ resgate.produto.nome }}">
+                            </div>
+                            <div class="resgate-info">
+                                <h4 class="resgate-title">{{ resgate.produto.nome }}</h4>
+                                <p class="resgate-desc">{{ resgate.produto.descricao|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="resgate-xp">
+                                        <i class="bi bi-coin"></i> {{ resgate.produto.preco_xp }} XP
+                                    </div>
+                                    <div>
+                                        {% if resgate.status == 'Pendente' %}
+                                            <span class="status-badge pending">
+                                                <i class="bi bi-clock me-1"></i>{{ resgate.status }}
+                                            </span>
+                                        {% elif resgate.status == 'Enviado' %}
+                                            <span class="status-badge sent">
+                                                <i class="bi bi-truck me-1"></i>{{ resgate.status }}
+                                            </span>
+                                        {% elif resgate.status == 'Entregue' %}
+                                            <span class="status-badge delivered">
+                                                <i class="bi bi-check-circle me-1"></i>{{ resgate.status }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Timeline -->
+                        <div class="resgate-status">
+                            <div class="status-timeline">
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Pedido Confirmado</h5>
+                                        <p>Seu resgate foi recebido e está sendo processado.</p>
+                                        <p class="timeline-date">{{ resgate.data_resgate_brasil.strftime('%d/%m/%Y às %H:%M') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if resgate.status == 'Enviado' or resgate.status == 'Entregue' %}
+                                <div class="timeline-step active">
+                                {% else %}
+                                <div class="timeline-step">
+                                {% endif %}
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Produto Enviado</h5>
+                                        <p>Seu pedido foi enviado e está a caminho.</p>
+                                        {% if resgate.data_envio_brasil %}
+                                            <p class="timeline-date">{{ resgate.data_envio_brasil.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% elif resgate.status == 'Enviado' or resgate.status == 'Entregue' %}
+                                            <p class="timeline-date">Enviado</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if resgate.status == 'Entregue' %}
+                                <div class="timeline-step active">
+                                {% else %}
+                                <div class="timeline-step">
+                                {% endif %}
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Entrega Concluída</h5>
+                                        <p>Seu produto foi entregue com sucesso.</p>
+                                        {% if resgate.data_entrega_brasil %}
+                                            <p class="timeline-date">{{ resgate.data_entrega_brasil.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% elif resgate.status == 'Entregue' %}
+                                            <p class="timeline-date">Entregue</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if resgate.status == 'Enviado' %}
+                        <!-- Informações de Rastreio -->
+                        <div class="tracking-info">
+                            <h6><i class="bi bi-truck me-2"></i>Informações de Rastreio</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="tracking-code">BR123456789XX</div>
+                                <a href="https://www.correios.com.br/rastreamento" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Rastrear Pedido
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Endereço de Entrega -->
+                        <div class="address-info">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Informações de Contato</h6>
+                            <p class="address-text">{{ resgate.endereco_entrega|safe }}</p>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="resgate-actions">
+                            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#detalheModal{{ resgate.id }}">
+                                <i class="bi bi-eye me-1"></i>Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-box"></i>
+                    <h3>Nenhum resgate encontrado</h3>
+                    <p class="text-muted mb-4">Você ainda não resgatou nenhum produto na nossa loja.</p>
+                    <a href="{{ url_for('shop.index') }}" class="btn btn-primary">
+                        <i class="bi bi-shop me-2"></i>Explorar a Loja
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Tab Pendentes -->
+        <div class="tab-pane fade" id="pendentes" role="tabpanel" aria-labelledby="pendentes-tab">
+            {% set pendentes = resgates|selectattr('status', 'equalto', 'Pendente')|list %}
+            {% if pendentes %}
+                {% for resgate in pendentes %}
+                <div class="resgate-card">
+                    <!-- Conteúdo similar ao da tab "Todos" para Pendentes -->
+                    <div class="resgate-header">
+                        <div class="resgate-date">
+                            <i class="bi bi-calendar me-2"></i>Resgatado em {{ resgate.data_resgate_brasil.strftime('%d/%m/%Y') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="resgate-id">
+                            Código: #{{ '%06d' % resgate.id }}
+                        </div>
+                    </div>
+                    <div class="resgate-body">
+                        <!-- Conteúdo do card -->
+                        <div class="resgate-product">
+                            <div class="resgate-img">
+                                <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                     alt="{{ resgate.produto.nome }}">
+                            </div>
+                            <div class="resgate-info">
+                                <h4 class="resgate-title">{{ resgate.produto.nome }}</h4>
+                                <p class="resgate-desc">{{ resgate.produto.descricao|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="resgate-xp">
+                                        <i class="bi bi-coin"></i> {{ resgate.produto.preco_xp }} XP
+                                    </div>
+                                    <div>
+                                        <span class="status-badge pending">
+                                            <i class="bi bi-clock me-1"></i>{{ resgate.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Timeline -->
+                        <div class="resgate-status">
+                            <div class="status-timeline">
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Pedido Confirmado</h5>
+                                        <p>Seu resgate foi recebido e está sendo processado.</p>
+                                        <p class="timeline-date">{{ resgate.data_resgate_brasil.strftime('%d/%m/%Y às %H:%M') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Produto Enviado</h5>
+                                        <p>Seu pedido será enviado em breve.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Entrega Concluída</h5>
+                                        <p>Seu produto será entregue após o envio.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Endereço de Entrega -->
+                        <div class="address-info">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Informações de Contato</h6>
+                            <p class="address-text">{{ resgate.endereco_entrega|safe }}</p>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="resgate-actions">
+                            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#detalheModal{{ resgate.id }}">
+                                <i class="bi bi-eye me-1"></i>Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-hourglass"></i>
+                    <h3>Nenhum resgate pendente</h3>
+                    <p class="text-muted mb-4">Você não possui resgates pendentes no momento.</p>
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- Tab Enviados -->
+        <div class="tab-pane fade" id="enviados" role="tabpanel" aria-labelledby="enviados-tab">
+            {% set enviados = resgates|selectattr('status', 'equalto', 'Enviado')|list %}
+            {% if enviados %}
+                {% for resgate in enviados %}
+                <div class="resgate-card">
+                    <div class="resgate-header">
+                        <div class="resgate-date">
+                            <i class="bi bi-calendar me-2"></i>Resgatado em {{ resgate.data_resgate_brasil.strftime('%d/%m/%Y') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="resgate-id">
+                            Código: #{{ '%06d' % resgate.id }}
+                        </div>
+                    </div>
+                    <div class="resgate-body">
+                        <div class="resgate-product">
+                            <div class="resgate-img">
+                                <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                     alt="{{ resgate.produto.nome }}">
+                            </div>
+                            <div class="resgate-info">
+                                <h4 class="resgate-title">{{ resgate.produto.nome }}</h4>
+                                <p class="resgate-desc">{{ resgate.produto.descricao|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="resgate-xp">
+                                        <i class="bi bi-coin"></i> {{ resgate.produto.preco_xp }} XP
+                                    </div>
+                                    <div>
+                                        <span class="status-badge sent">
+                                            <i class="bi bi-truck me-1"></i>{{ resgate.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Timeline -->
+                        <div class="resgate-status">
+                            <div class="status-timeline">
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Pedido Confirmado</h5>
+                                        <p>Seu resgate foi recebido e está sendo processado.</p>
+                                        <p class="timeline-date">{{ resgate.data_resgate_brasil.strftime('%d/%m/%Y às %H:%M') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Produto Enviado</h5>
+                                        <p>Seu pedido foi enviado e está a caminho.</p>
+                                        {% if resgate.data_envio_brasil %}
+                                            <p class="timeline-date">{{ resgate.data_envio_brasil.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% else %}
+                                            <p class="timeline-date">Enviado</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Entrega Concluída</h5>
+                                        <p>Seu produto será entregue em breve.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações de Rastreio -->
+                        <div class="tracking-info">
+                            <h6><i class="bi bi-truck me-2"></i>Informações de Rastreio</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="tracking-code">BR123456789XX</div>
+                                <a href="https://www.correios.com.br/rastreamento" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Rastrear Pedido
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Endereço de Entrega -->
+                        <div class="address-info">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Informações de Contato</h6>
+                            <p class="address-text">{{ resgate.endereco_entrega|safe }}</p>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="resgate-actions">
+                            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#detalheModal{{ resgate.id }}">
+                                <i class="bi bi-eye me-1"></i>Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-truck"></i>
+                    <h3>Nenhum resgate em trânsito</h3>
+                    <p class="text-muted mb-4">Você não possui resgates em trânsito no momento.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Tab Entregues -->
+        <div class="tab-pane fade" id="entregues" role="tabpanel" aria-labelledby="entregues-tab">
+            {% set entregues = resgates|selectattr('status', 'equalto', 'Entregue')|list %}
+            {% if entregues %}
+                {% for resgate in entregues %}
+                <div class="resgate-card">
+                    <div class="resgate-header">
+                        <div class="resgate-date">
+                            <i class="bi bi-calendar me-2"></i>Resgatado em {{ resgate.data_resgate_brasil.strftime('%d/%m/%Y') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="resgate-id">
+                            Código: #{{ '%06d' % resgate.id }}
+                        </div>
+                    </div>
+                    <div class="resgate-body">
+                        <div class="resgate-product">
+                            <div class="resgate-img">
+                                <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                     alt="{{ resgate.produto.nome }}">
+                            </div>
+                            <div class="resgate-info">
+                                <h4 class="resgate-title">{{ resgate.produto.nome }}</h4>
+                                <p class="resgate-desc">{{ resgate.produto.descricao|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="resgate-xp">
+                                        <i class="bi bi-coin"></i> {{ resgate.produto.preco_xp }} XP
+                                    </div>
+                                    <div>
+                                        <span class="status-badge delivered">
+                                            <i class="bi bi-check-circle me-1"></i>{{ resgate.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Timeline -->
+                        <div class="resgate-status">
+                            <div class="status-timeline">
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Pedido Confirmado</h5>
+                                        <p>Seu resgate foi recebido e está sendo processado.</p>
+                                        <p class="timeline-date">{{ resgate.data_resgate_brasil.strftime('%d/%m/%Y às %H:%M') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Produto Enviado</h5>
+                                        <p>Seu pedido foi enviado e está a caminho.</p>
+                                        {% if resgate.data_envio_brasil %}
+                                            <p class="timeline-date">{{ resgate.data_envio_brasil.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% else %}
+                                            <p class="timeline-date">Enviado</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-step active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h5>Entrega Concluída</h5>
+                                        <p>Seu produto foi entregue com sucesso.</p>
+                                        {% if resgate.data_entrega_brasil %}
+                                            <p class="timeline-date">{{ resgate.data_entrega_brasil.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% else %}
+                                            <p class="timeline-date">Entregue</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Endereço de Entrega -->
+                        <div class="address-info">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Informações de Contato</h6>
+                            <p class="address-text">{{ resgate.endereco_entrega|safe }}</p>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="resgate-actions">
+                            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#detalheModal{{ resgate.id }}">
+                                <i class="bi bi-eye me-1"></i>Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <h3>Nenhum resgate entregue</h3>
+                    <p class="text-muted mb-4">Você ainda não recebeu nenhum produto resgatado.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modais de Detalhes (um para cada resgate) -->
+    {% for resgate in resgates %}
+    <div class="modal fade" id="detalheModal{{ resgate.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalhes do Resgate #{{ '%06d' % resgate.id }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="product-image-container">
+                                <img src="{{ url_for('static', filename='images/produtos/' ~ resgate.produto.imagem) }}" 
+                                    alt="{{ resgate.produto.nome }}" class="img-fluid">
+                            </div>
+                            <h4 class="product-preview-title">{{ resgate.produto.nome }}</h4>
+                            <p class="product-preview-desc">{{ resgate.produto.descricao|truncate(100) }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="resgate-xp">
+                                    <i class="bi bi-coin"></i> {{ resgate.produto.preco_xp }} XP
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card bg-dark mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">Informações do Pedido</h5>
+                                    <div class="row mb-2">
+                                        <div class="col-5">Data do Resgate:</div>
+                                        <div class="col-7">{{ resgate.data_resgate_brasil.strftime('%d/%m/%Y às %H:%M') if resgate.data_resgate_brasil else resgate.data_resgate.strftime('%d/%m/%Y às %H:%M') }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5">Número do Pedido:</div>
+                                        <div class="col-7">#{{ '%06d' % resgate.id }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5">Status Atual:</div>
+                                        <div class="col-7">
+                                            {% if resgate.status == 'Pendente' %}
+                                                <span class="status-badge pending">
+                                                    <i class="bi bi-clock me-1"></i>{{ resgate.status }}
+                                                </span>
+                                            {% elif resgate.status == 'Enviado' %}
+                                                <span class="status-badge sent">
+                                                    <i class="bi bi-truck me-1"></i>{{ resgate.status }}
+                                                </span>
+                                            {% elif resgate.status == 'Entregue' %}
+                                                <span class="status-badge delivered">
+                                                    <i class="bi bi-check-circle me-1"></i>{{ resgate.status }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if resgate.data_envio_brasil %}
+                                    <div class="row mb-2">
+                                        <div class="col-5">Data de Envio:</div>
+                                        <div class="col-7">{{ resgate.data_envio_brasil.strftime('%d/%m/%Y às %H:%M') }}</div>
+                                    </div>
+                                    {% endif %}
+                                    {% if resgate.data_entrega_brasil %}
+                                    <div class="row mb-2">
+                                        <div class="col-5">Data de Entrega:</div>
+                                        <div class="col-7">{{ resgate.data_entrega_brasil.strftime('%d/%m/%Y às %H:%M') }}</div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="row">
+                                        <div class="col-5">Pontos Utilizados:</div>
+                                        <div class="col-7">{{ resgate.produto.preco_xp }} XP</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card bg-dark mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">Informações de Contato</h5>
+                                    <div class="contact-info">
+                                        {{ resgate.endereco_entrega|safe }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    {% if resgate.status == 'Enviado' %}
+                    <a href="https://www.correios.com.br/rastreamento" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Rastrear Pedido
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}  
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar detalhes do resgate ao clicar no botão
+        $('.btn-ver-detalhes').on('click', function() {
+            var resgateId = $(this).data('resgate-id');
+            $('#detalheModal' + resgateId).modal('show');
+        });
+        
+        // Animação para status badges
+        document.querySelectorAll('.status-badge.sent').forEach(badge => {
+            let isVisible = true;
+            setInterval(() => {
+                if (isVisible) {
+                    badge.style.opacity = '0.5';
+                } else {
+                    badge.style.opacity = '1';
+                }
+                isVisible = !isVisible;
+            }, 1000);
+        });
+        
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+{% endblock %}

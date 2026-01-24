@@ -1,0 +1,1081 @@
+<!-- app/templates/estudo/modulo.html -->
+
+{% extends "layout.html" %}
+
+
+
+{% block title %}{{ modulo.titulo }} - {{ modulo.materia.nome }}{% endblock %}
+
+
+
+{% block styles %}
+
+<style>
+
+    body {
+
+        background: linear-gradient(to bottom, #00205B 0%, #001233 25%, #000 40%, #000 100%);
+
+        color: white;
+
+    }
+
+
+
+    .modulo-container {
+
+        max-width: 1200px;
+
+        margin: 0 auto;
+
+        padding: 20px;
+
+    }
+
+
+
+    .breadcrumb {
+
+        margin-bottom: 20px;
+
+        font-size: 14px;
+
+        opacity: 0.8;
+
+    }
+
+
+
+    .breadcrumb a {
+
+        color: #00b4d8;
+
+        text-decoration: none;
+
+    }
+
+
+
+    .modulo-header {
+
+        background: rgba(255, 255, 255, 0.1);
+
+        padding: 30px;
+
+        border-radius: 20px;
+
+        margin-bottom: 30px;
+
+    }
+
+
+
+    .modulo-title {
+
+        font-size: 2.5rem;
+
+        font-weight: bold;
+
+        margin-bottom: 10px;
+
+        color: white;
+
+    }
+
+
+
+    .modulo-subtitle {
+
+        font-size: 1.2rem;
+
+        opacity: 0.8;
+
+        margin-bottom: 20px;
+
+    }
+
+
+
+    .modulo-meta {
+
+        display: flex;
+
+        gap: 20px;
+
+        flex-wrap: wrap;
+
+        margin-bottom: 20px;
+
+        font-size: 1rem;
+
+    }
+
+
+
+    .meta-item {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 8px 15px;
+
+        background: rgba(255, 255, 255, 0.1);
+
+        border-radius: 20px;
+
+    }
+
+
+
+    .dificuldade-facil { background: rgba(40, 167, 69, 0.3); }
+
+    .dificuldade-medio { background: rgba(255, 193, 7, 0.3); }
+
+    .dificuldade-dificil { background: rgba(220, 53, 69, 0.3); }
+
+
+
+    .modulo-descricao {
+
+        font-size: 1.1rem;
+
+        line-height: 1.6;
+
+        opacity: 0.9;
+
+    }
+
+
+
+    .progresso-geral {
+
+        background: rgba(255, 255, 255, 0.1);
+
+        padding: 20px;
+
+        border-radius: 15px;
+
+        margin-bottom: 30px;
+
+    }
+
+
+
+    .progress-bar {
+
+        background: rgba(255, 255, 255, 0.2);
+
+        height: 10px;
+
+        border-radius: 5px;
+
+        overflow: hidden;
+
+        margin: 10px 0;
+
+    }
+
+
+
+    .progress-fill {
+
+        height: 100%;
+
+        background: linear-gradient(90deg, #00b4d8, #0084ff);
+
+        transition: width 0.3s ease;
+
+    }
+
+
+
+    .progress-text {
+
+        font-size: 0.9rem;
+
+        opacity: 0.8;
+
+    }
+
+
+
+    .aulas-grid {
+
+        display: grid;
+
+        gap: 20px;
+
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+
+    }
+
+
+
+    .aula-card {
+
+        background: rgba(255, 255, 255, 0.08);
+
+        border-radius: 15px;
+
+        padding: 25px;
+
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        transition: all 0.3s ease;
+
+        position: relative;
+
+    }
+
+
+
+    .aula-card:hover {
+
+        background: rgba(255, 255, 255, 0.12);
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+    }
+
+
+
+    .aula-card.concluida {
+
+        border-left: 4px solid #28a745;
+
+    }
+
+
+
+    .aula-card.em-andamento {
+
+        border-left: 4px solid #ffc107;
+
+    }
+
+
+
+    .aula-header {
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 15px;
+
+        margin-bottom: 20px;
+
+    }
+
+
+
+    .aula-icon {
+
+        width: 50px;
+
+        height: 50px;
+
+        border-radius: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        font-size: 24px;
+
+    }
+
+
+
+    .tipo-icon.video {
+
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+
+    }
+
+
+
+    .tipo-icon.pdf {
+
+        background: linear-gradient(135deg, #dc3545, #c82333);
+
+    }
+
+
+
+    .tipo-icon.texto {
+
+        background: linear-gradient(135deg, #00b4d8, #0084ff);
+
+    }
+
+
+
+    .aula-info {
+
+        flex: 1;
+
+    }
+
+
+
+    .aula-titulo {
+
+        font-size: 1.3rem;
+
+        font-weight: 600;
+
+        margin-bottom: 8px;
+
+        color: white;
+
+    }
+
+
+
+    .aula-descricao {
+
+        font-size: 0.95rem;
+
+        opacity: 0.8;
+
+        line-height: 1.5;
+
+        margin-bottom: 12px;
+
+    }
+
+
+
+    .aula-meta {
+
+        display: flex;
+
+        gap: 10px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+
+    .tipo-badge {
+
+        padding: 4px 10px;
+
+        border-radius: 12px;
+
+        font-size: 0.8rem;
+
+        font-weight: 500;
+
+    }
+
+
+
+    .tipo-badge.video {
+
+        background: rgba(255, 107, 107, 0.2);
+
+        color: #ff6b6b;
+
+    }
+
+
+
+    .tipo-badge.pdf {
+
+        background: rgba(220, 53, 69, 0.2);
+
+        color: #dc3545;
+
+    }
+
+
+
+    .tipo-badge.texto {
+
+        background: rgba(0, 180, 216, 0.2);
+
+        color: #00b4d8;
+
+    }
+
+
+
+    .duracao {
+
+        padding: 4px 10px;
+
+        border-radius: 12px;
+
+        font-size: 0.8rem;
+
+        background: rgba(255, 255, 255, 0.1);
+
+        color: white;
+
+    }
+
+
+
+    .aula-status {
+
+        display: flex;
+
+        align-items: center;
+
+        margin-bottom: 15px;
+
+    }
+
+
+
+    .status-badge {
+
+        padding: 6px 12px;
+
+        border-radius: 15px;
+
+        font-size: 0.85rem;
+
+        font-weight: 600;
+
+    }
+
+
+
+    .status-badge.concluida {
+
+        background: rgba(40, 167, 69, 0.2);
+
+        color: #28a745;
+
+    }
+
+
+
+    .status-badge.em-andamento {
+
+        background: rgba(255, 193, 7, 0.2);
+
+        color: #ffc107;
+
+    }
+
+
+
+    .status-badge.nao-iniciada {
+
+        background: rgba(108, 117, 125, 0.2);
+
+        color: #6c757d;
+
+    }
+
+
+
+    .aula-actions {
+
+        margin-top: 20px;
+
+    }
+
+
+
+    .user-actions {
+
+        display: flex;
+
+        gap: 10px;
+
+        margin-bottom: 15px;
+
+        align-items: center;
+
+    }
+
+
+
+    .btn {
+
+        padding: 10px 20px;
+
+        border-radius: 8px;
+
+        text-decoration: none;
+
+        font-weight: 600;
+
+        transition: all 0.3s ease;
+
+        border: none;
+
+        cursor: pointer;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+    }
+
+
+
+    .btn-primary {
+
+        background: #0084ff;
+
+        color: white;
+
+    }
+
+
+
+    .btn-primary:hover {
+
+        background: #0066cc;
+
+        transform: translateY(-2px);
+
+        text-decoration: none;
+
+        color: white;
+
+    }
+
+
+
+    .materiais-info {
+
+        margin-left: auto;
+
+    }
+
+
+
+    .materiais-badge {
+
+        background: rgba(0, 180, 216, 0.2);
+
+        color: #00b4d8;
+
+        padding: 4px 8px;
+
+        border-radius: 10px;
+
+        font-size: 0.8rem;
+
+    }
+
+
+
+    /* Estilos para botões administrativos */
+
+    .admin-actions {
+
+        background: rgba(220, 53, 69, 0.1);
+
+        border: 1px solid rgba(220, 53, 69, 0.3);
+
+        padding: 15px;
+
+        border-radius: 8px;
+
+        margin-top: 15px;
+
+    }
+
+
+
+    .admin-actions-title {
+
+        color: #ffc107;
+
+        font-weight: 600;
+
+        font-size: 0.9rem;
+
+        margin-bottom: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+    }
+
+
+
+    .admin-buttons {
+
+        display: flex;
+
+        gap: 8px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+
+    .btn-admin {
+
+        padding: 6px 12px;
+
+        border-radius: 5px;
+
+        text-decoration: none;
+
+        font-size: 0.8rem;
+
+        font-weight: 500;
+
+        border: none;
+
+        cursor: pointer;
+
+        transition: all 0.2s ease;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+    }
+
+
+
+    .btn-admin:hover {
+
+        transform: translateY(-1px);
+
+        text-decoration: none;
+
+    }
+
+
+
+    .btn-admin.btn-warning {
+
+        background: #ffc107;
+
+        color: #212529;
+
+    }
+
+
+
+    .btn-admin.btn-success {
+
+        background: #28a745;
+
+        color: white;
+
+    }
+
+
+
+    .btn-admin.btn-danger {
+
+        background: #dc3545;
+
+        color: white;
+
+    }
+
+
+
+    .btn-admin:hover.btn-warning {
+
+        background: #e0a800;
+
+        color: #212529;
+
+    }
+
+
+
+    .btn-admin:hover.btn-success {
+
+        background: #218838;
+
+        color: white;
+
+    }
+
+
+
+    .btn-admin:hover.btn-danger {
+
+        background: #c82333;
+
+        color: white;
+
+    }
+
+
+
+    .modulo-admin-header {
+
+        background: rgba(40, 167, 69, 0.1); 
+
+        border: 1px solid rgba(40, 167, 69, 0.3); 
+
+        padding: 15px; 
+
+        border-radius: 8px; 
+
+        margin-bottom: 20px;
+
+    }
+
+
+
+    .empty-state {
+
+        text-align: center;
+
+        padding: 60px 20px;
+
+        opacity: 0.8;
+
+    }
+
+
+
+    .empty-icon {
+
+        font-size: 4rem;
+
+        margin-bottom: 20px;
+
+    }
+
+
+
+    @media (max-width: 768px) {
+
+        .modulo-title {
+
+            font-size: 2rem;
+
+        }
+
+
+
+        .aulas-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+
+        .aula-header {
+
+            flex-direction: column;
+
+            text-align: center;
+
+        }
+
+
+
+        .admin-buttons {
+
+            flex-direction: column;
+
+        }
+
+
+
+        .btn-admin {
+
+            justify-content: center;
+
+        }
+
+
+
+        .modulo-meta {
+
+            justify-content: center;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+
+
+<div class="modulo-container">
+
+    <!-- Breadcrumb -->
+
+    <div class="breadcrumb">
+
+        <a href="{{ url_for('estudo.index') }}">Estudos</a> > 
+
+        <a href="{{ url_for('estudo.materia', materia_id=modulo.materia.id) }}">{{ modulo.materia.nome }}</a> > 
+
+        {{ modulo.titulo }}
+
+    </div>
+
+
+
+    <!-- Header do Módulo -->
+
+    <div class="modulo-header">
+
+        <h1 class="modulo-title">{{ modulo.titulo }}</h1>
+
+        <p class="modulo-subtitle">{{ modulo.materia.nome }}</p>
+
+        
+
+        <div class="modulo-meta">
+
+            <div class="meta-item dificuldade-{{ modulo.dificuldade }}">
+
+                {% if modulo.dificuldade == 'facil' %}
+
+                    <span>🟢</span> Fácil
+
+                {% elif modulo.dificuldade == 'dificil' %}
+
+                    <span>🔴</span> Difícil
+
+                {% else %}
+
+                    <span>🟡</span> Médio
+
+                {% endif %}
+
+            </div>
+
+            
+
+            <div class="meta-item">
+
+                <span>📝</span> {{ aulas|length }} aulas
+
+            </div>
+
+            
+
+            {% if modulo.duracao_estimada %}
+
+            <div class="meta-item">
+
+                <span>⏱️</span> {{ modulo.duracao_estimada }} min
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+
+        {% if modulo.descricao %}
+
+        <p class="modulo-descricao">{{ modulo.descricao }}</p>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- Progresso Geral -->
+
+    <div class="progresso-geral">
+
+        <h3>Seu Progresso no Módulo</h3>
+
+        <div class="progress-bar">
+
+            <div class="progress-fill" style="width: {{ modulo.progresso_usuario }}%"></div>
+
+        </div>
+
+        <div class="progress-text">
+
+            {{ modulo.aulas_concluidas }} de {{ modulo.total_aulas }} aulas concluídas ({{ modulo.progresso_usuario|int }}%)
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Admin Header (se for admin) -->
+
+    {% if current_user.is_admin %}
+
+    <div class="modulo-admin-header">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+
+            <div style="color: #28a745; font-weight: 600;">
+
+                🔧 Painel Administrativo do Módulo
+
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+
+                <a href="{{ url_for('estudo.editar_modulo', modulo_id=modulo.id) }}" 
+
+                   class="btn-admin btn-warning">
+
+                    ✏️ Editar Módulo
+
+                </a>
+
+                <a href="{{ url_for('estudo.nova_aula', modulo_id=modulo.id) }}" 
+
+                   class="btn-admin btn-success">
+
+                    ➕ Nova Aula
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- Lista de Aulas -->
+
+    <div class="aulas-grid">
+
+        {% if aulas %}
+
+            {% for aula in aulas %}
+
+            <div class="aula-card {% if aula.concluida %}concluida{% elif aula.progresso_percentual > 0 %}em-andamento{% endif %}">
+
+                <div class="aula-header">
+
+                    <div class="aula-icon">
+
+                        {% if aula.tipo == 'video' %}
+
+                            <span class="tipo-icon video">🎥</span>
+
+                        {% elif aula.tipo == 'pdf' %}
+
+                            <span class="tipo-icon pdf">📄</span>
+
+                        {% else %}
+
+                            <span class="tipo-icon texto">📝</span>
+
+                        {% endif %}
+
+                    </div>
+
+                    
+
+                    <div class="aula-info">
+
+                        <h4 class="aula-titulo">{{ aula.ordem }}. {{ aula.titulo }}</h4>
+
+                        {% if aula.descricao %}
+
+                        <p class="aula-descricao">{{ aula.descricao }}</p>
+
+                        {% endif %}
+
+                        <div class="aula-meta">
+
+                            <span class="tipo-badge {{ aula.tipo }}">
+
+                                {% if aula.tipo == 'video' %}🎥 Vídeo
+
+                                {% elif aula.tipo == 'pdf' %}📄 PDF
+
+                                {% else %}📝 Texto{% endif %}
+
+                            </span>
+
+                            {% if aula.duracao_estimada %}
+
+                            <span class="duracao">⏱️ {{ aula.duracao_estimada }} min</span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="aula-status">
+
+                    {% if aula.concluida %}
+
+                    <div class="status-badge concluida">
+
+                        ✅ Concluída
+
+                    </div>
+
+                    {% elif aula.progresso_percentual > 0 %}
+
+                    <div class="status-badge em-andamento">
+
+                        🔄 {{ aula.progresso_percentual|int }}% concluída
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="status-badge nao-iniciada">
+
+                        ⭕ Não iniciada
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+

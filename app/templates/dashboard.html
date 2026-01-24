@@ -1,0 +1,616 @@
+<!-- app/templates/dashboard.html -->
+{% extends "layout.html" %}
+
+{% block title %}Launcher ENEM 2025{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+    :root {
+        --bg-color: #000000;
+        --card-bg: #111111;
+        --accent: #00b4d8;
+        --accent-purple: #6c13d3;
+        --text-main: #ffffff;
+        --text-secondary: #a1a1a1;
+        --netflix-red: #e50914;
+        /* CRÍTICO: Sobrescrever variáveis do Bootstrap */
+        --bs-bg-opacity: 0 !important;
+        --bs-body-bg: #000000 !important;
+        --bs-body-bg-rgb: 0, 0, 0 !important;
+        --bs-dark-rgb: 0, 0, 0 !important;
+    }
+
+    /* --- RESET & LAYOUT (COM !IMPORTANT FORÇADO) --- */
+    html, body {
+        background-color: #000000 !important;
+        background: #000000 !important;
+        color: var(--text-main) !important;
+        font-family: 'Inter', sans-serif !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden;
+        --bs-bg-opacity: 0 !important;
+    }
+
+    /* CRÍTICO: Matar todos os fundos cinzas do Bootstrap */
+    .bg-dark {
+        --bs-bg-opacity: 0 !important;
+        background-color: #000000 !important;
+        background: #000000 !important;
+    }
+
+    body.bg-dark {
+        background-color: #000000 !important;
+        background: #000000 !important;
+    }
+
+    .container, .container-fluid, .wrapper, .main-content {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #000000 !important;
+        background-color: #000000 !important;
+    }
+
+    .dashboard-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        background-color: #000000 !important;
+        background: #000000 !important;
+        padding-bottom: 80px;
+    }
+
+    /* --- HERO SECTION (Cinemática) --- */
+    .hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0 5%;
+        margin-bottom: 40px;
+        overflow: hidden;
+        background: #000000 !important;
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        background-image: url("{{ url_for('static', filename='images/students.png') }}");
+        background-size: cover;
+        background-position: center 20%;
+        z-index: 0;
+        transform: scale(1.05);
+        transition: transform 10s ease;
+    }
+    
+    .hero:hover .hero-bg { transform: scale(1); }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 80% 20%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 60%),
+                    linear-gradient(to top, #000000 10%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.3) 100%),
+                    linear-gradient(to right, #000000 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 10;
+        max-width: 650px;
+        margin-top: 40px;
+        animation: slideUp 0.8s ease-out;
+    }
+
+    .hero-tag {
+        display: inline-block;
+        background: rgba(229, 9, 20, 0.2);
+        border: 1px solid var(--netflix-red);
+        color: var(--netflix-red);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 15px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    }
+
+    .hero-desc {
+        font-size: 1.1rem;
+        color: #ddd;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .hero-btn {
+        padding: 12px 30px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary { background: white; color: black; }
+    .btn-primary:hover { background: #ccc; transform: translateY(-2px); }
+    .btn-secondary { background: rgba(109, 109, 110, 0.6); color: white; backdrop-filter: blur(10px); }
+    .btn-secondary:hover { background: rgba(109, 109, 110, 0.4); transform: translateY(-2px); }
+
+    /* --- BENTO GRID --- */
+    .bento-section {
+        padding: 0 5%;
+        margin-bottom: 60px;
+        background: #000000 !important;
+    }
+
+    .bento-header {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: 240px;
+        gap: 20px;
+    }
+
+    .bento-card {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        text-decoration: none;
+        color: white;
+        background: transparent !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none !important;
+    }
+
+    .bento-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        z-index: 5;
+    }
+
+    .bento-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6;
+        transition: opacity 0.3s, transform 0.5s;
+    }
+    .bento-card:hover .bento-bg { opacity: 0.4; transform: scale(1.05); }
+
+    .bento-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 20px;
+        width: 100%;
+        z-index: 2;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    }
+
+    .bento-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .bento-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .bento-sub {
+        font-size: 0.85rem;
+        color: #ccc;
+        margin-top: 4px;
+    }
+
+    .bento-large {
+        grid-column: span 1; /* Mesmo tamanho dos outros cards */
+        background: transparent !important;
+    }
+    
+    .bento-normal {
+        grid-column: span 1;
+    }
+
+    /* --- CAROUSEL SECTIONS --- */
+    .row-section {
+        padding: 0 5%;
+        margin-bottom: 50px;
+        position: relative;
+        background: #000000 !important;
+    }
+
+    .row-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 15px;
+    }
+
+    .row-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #e5e5e5;
+    }
+
+    .carousel-wrapper {
+        position: relative;
+    }
+
+    .carousel-track {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 10px 0 40px 0;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+    }
+    .carousel-track::-webkit-scrollbar { display: none; }
+
+    /* --- STANDARD CARD --- */
+    .std-card {
+        flex: 0 0 auto;
+        width: 200px;
+        height: 300px;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #1a1a1a !important;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+        text-decoration: none;
+        border: none !important;
+        outline: none !important;
+    }
+
+    .std-card:hover {
+        transform: scale(1.1);
+        z-index: 10;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+
+    .std-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        opacity: 0.9;
+        transition: opacity 0.3s;
+    }
+    
+    .std-card:hover .std-card-img { opacity: 1; }
+
+    .std-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 50%);
+        opacity: 0.8;
+        transition: opacity 0.3s;
+    }
+    
+    .std-card:hover .std-overlay { opacity: 0.6; }
+
+    .std-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px;
+        transform: translateY(10px);
+        transition: transform 0.3s;
+    }
+    
+    .std-card:hover .std-info { transform: translateY(0); }
+
+    .std-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,1);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .std-meta {
+        font-size: 0.75rem;
+        color: #46d369;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .std-card:hover .std-meta { opacity: 1; }
+
+    .std-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: rgba(255,255,255,0.2);
+    }
+    .std-progress-fill {
+        height: 100%;
+        background: var(--netflix-red);
+        box-shadow: 0 0 10px var(--netflix-red);
+    }
+
+    /* NAV BUTTONS */
+    .nav-btn {
+        position: absolute;
+        top: 0;
+        bottom: 40px;
+        width: 50px;
+        background: rgba(0,0,0,0.5);
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        z-index: 15;
+        opacity: 0;
+        transition: opacity 0.3s, background 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .carousel-wrapper:hover .nav-btn { opacity: 1; }
+    .nav-btn:hover { background: rgba(0,0,0,0.8); color: var(--accent); }
+    .nav-prev { left: -50px; }
+    .carousel-wrapper:hover .nav-prev { left: -20px; }
+    .nav-next { right: -50px; }
+    .carousel-wrapper:hover .nav-next { right: -20px; }
+
+    /* --- RESPONSIVIDADE --- */
+    @media (max-width: 1024px) {
+        .bento-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto;
+        }
+        .bento-large { grid-column: span 1; height: 220px; }
+        .bento-normal { height: 180px; }
+    }
+
+    @media (max-width: 768px) {
+        .hero { height: auto; padding-top: 100px; padding-bottom: 40px; }
+        .hero-title { font-size: 2.5rem; }
+        
+        .bento-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .bento-large, .bento-normal {
+            width: 100%;
+            height: 140px;
+        }
+
+        .std-card { width: 140px; height: 210px; }
+        .std-meta { opacity: 1; }
+        .std-card:hover { transform: none; }
+        .nav-btn { display: none; }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- HERO SECTION -->
+    <div class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-tag">🚀 Destaque da Semana</div>
+            <h1 class="hero-title">Rumo à Aprovação</h1>
+            <p class="hero-desc">
+                Sua jornada estratégica começa aqui. Trilhas inteligentes, simulados oficiais e a metodologia exclusiva Launcher para garantir sua vaga.
+            </p>
+            <div class="hero-actions">
+                <a href="{{ url_for('simulados.index') }}" class="hero-btn btn-primary">
+                    <span>▶</span> Fazer Simulado
+                </a>
+                <a href="{{ url_for('redacao.index') }}" class="hero-btn btn-secondary">
+                    <span>✏️</span> Treinar Redação
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BENTO GRID -->
+    <section class="bento-section">
+        <h2 class="bento-header">Acesso Rápido</h2>
+        <div class="bento-grid">
+            
+            <a href="{{ url_for('simulados.index') }}" class="bento-card bento-large">
+                <img src="{{ url_for('static', filename='images/covers/simulados.png') }}" class="bento-bg" alt="Simulados">
+                <div class="bento-content">
+                    <span class="bento-icon">📝</span>
+                    <h3 class="bento-title">Simulados Oficiais</h3>
+                    <p class="bento-sub">Última nota: <strong style="color: #46d369;">{{ ultima_nota_simulado or '--' }}</strong></p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('ranking.index') }}" class="bento-card bento-normal">
+                <img src="{{ url_for('static', filename='images/covers/ranking.png') }}" class="bento-bg" alt="Ranking">
+                <div class="bento-content">
+                    <span class="bento-icon">🏆</span>
+                    <h3 class="bento-title">Ranking</h3>
+                    <p class="bento-sub">Posição: {{ posicao_ranking or '#' }}</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('helpzone.feed') }}" class="bento-card bento-normal">
+                <img src="{{ url_for('static', filename='images/covers/helpzone.png') }}" class="bento-bg" alt="Help Zone">
+                <div class="bento-content">
+                    <span class="bento-icon">💬</span>
+                    <h3 class="bento-title">Help Zone</h3>
+                    <p class="bento-sub">{{ duvidas_respondidas or 0 }} ajudas</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('shop.index') }}" class="bento-card bento-normal">
+                <img src="{{ url_for('static', filename='images/covers/shop.png') }}" class="bento-bg" alt="Shop">
+                <div class="bento-content">
+                    <span class="bento-icon">💎</span>
+                    <h3 class="bento-title">Shop</h3>
+                    <p class="bento-sub">{{ current_user.total_moedas or 0 }} moedas</p>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+
+    <!-- SEÇÕES DO ADMIN -->
+    {% if secoes_materias %}
+        {% for secao, itens in secoes_materias %}
+        <section class="row-section">
+            <div class="row-header">
+                <h2 class="row-title">{{ secao.icone or '' }} {{ secao.titulo }}</h2>
+            </div>
+
+            <div class="carousel-wrapper">
+                <button class="nav-btn nav-prev" onclick="scrollCarousel('sec-mat-{{ secao.id }}', -1)">‹</button>
+                <div class="carousel-track" id="sec-mat-{{ secao.id }}">
+                    {% for item in itens %}
+                        {% set m = item.materia %}
+                        {% set titulo = item.titulo_override or (m and m.nome) or 'Conteúdo' %}
+                        {% set img = item.imagem_url or (m and m.capa_url) or 'images/covers/placeholder-subject.jpg' %}
+                        {% set link = url_for('estudo.materia', materia_id=m.id) if m else '#' %}
+                        {% set prog = (m and m.progresso_usuario_calc) or 0 %}
+                        
+                        <a href="{{ link }}" class="std-card">
+                            <img src="{{ url_for('static', filename=img) }}" class="std-card-img" alt="{{ titulo }}">
+                            
+                            {% if prog > 0 %}
+                            <div class="std-progress"><div class="std-progress-fill" style="width: {{ prog }}%"></div></div>
+                            {% endif %}
+
+                            <div class="std-overlay"></div>
+                            <div class="std-info">
+                                <div class="std-title">{{ titulo }}</div>
+                                <div class="std-meta">{{ "%.0f"|format(prog) }}% Concluído</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+                <button class="nav-btn nav-next" onclick="scrollCarousel('sec-mat-{{ secao.id }}', 1)">›</button>
+            </div>
+        </section>
+        {% endfor %}
+    {% endif %}
+
+    <!-- SEÇÕES RENDER -->
+    {% if secoes_render %}
+        {% for sec in secoes_render %}
+        <section class="row-section">
+            <div class="row-header">
+                <h2 class="row-title">{{ sec.titulo }}</h2>
+            </div>
+
+            <div class="carousel-wrapper">
+                <button class="nav-btn nav-prev" onclick="scrollCarousel('sec-rend-{{ loop.index }}', -1)">‹</button>
+                <div class="carousel-track" id="sec-rend-{{ loop.index }}">
+                    {% for card in sec.itens %}
+                        <a href="{{ card.href }}" class="std-card">
+                            {% set img_path = card.img.replace('static/', '') if 'static/' in card.img else card.img %}
+                            <img src="{{ url_for('static', filename=img_path) }}" class="std-card-img" alt="{{ card.titulo }}">
+                            
+                            {% if card.progresso %}
+                            <div class="std-progress"><div class="std-progress-fill" style="width: {{ card.progresso }}%"></div></div>
+                            {% endif %}
+
+                            <div class="std-overlay"></div>
+                            <div class="std-info">
+                                <div class="std-title">{{ card.titulo }}</div>
+                                <div class="std-meta">{{ card.sub }}</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+                <button class="nav-btn nav-next" onclick="scrollCarousel('sec-rend-{{ loop.index }}', 1)">›</button>
+            </div>
+        </section>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+<script>
+    function scrollCarousel(id, direction) {
+        const container = document.getElementById(id);
+        if (!container) return;
+        const scrollAmount = direction * (container.offsetWidth * 0.8);
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+
+    // CRÍTICO: Força bruta para matar o fundo cinza
+    document.addEventListener("DOMContentLoaded", function() {
+        // Força o body
+        document.body.style.setProperty('background-color', '#000000', 'important');
+        document.body.style.setProperty('background', '#000000', 'important');
+        document.documentElement.style.setProperty('background-color', '#000000', 'important');
+        document.documentElement.style.setProperty('background', '#000000', 'important');
+        
+        // Mata o --bs-bg-opacity
+        document.body.style.setProperty('--bs-bg-opacity', '0', 'important');
+        document.documentElement.style.setProperty('--bs-bg-opacity', '0', 'important');
+        
+        // Procura e mata todos os .bg-dark
+        document.querySelectorAll('.bg-dark').forEach(el => {
+            el.style.setProperty('background-color', '#000000', 'important');
+            el.style.setProperty('background', '#000000', 'important');
+            el.style.setProperty('--bs-bg-opacity', '0', 'important');
+        });
+        
+        // Observador de mutação para matar fundos cinzas dinamicamente
+        const observer = new MutationObserver(function(mutations) {
+            document.querySelectorAll('.bg-dark').forEach(el => {
+                el.style.setProperty('background-color', '#000000', 'important');
+                el.style.setProperty('--bs-bg-opacity', '0', 'important');
+            });
+        });
+        
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class'],
+            subtree: true
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Plataforma Launcher - Decole rumo à aprovação no ENEM{% endblock %}
+
+{% block content %}
+<section class="hero py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 mb-4">Decole rumo à aprovação no ENEM 2025</h1>
+            <p class="lead mb-4">
+                Com os métodos inteligentes da Plataforma Launcher, estudar nunca foi tão estratégico. 
+                Aqui, seu esforço vira resultado: aprenda com os melhores métodos, no seu ritmo, do seu jeito.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="#" class="btn btn-primary btn-lg">Acessar App Launcher</a>
+                <a href="#" class="btn btn-outline-light btn-lg">Quiz Enem</a>
+                <a href="#" class="btn btn-success btn-lg">Suporte WhatsApp</a>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card bg-dark border-0 rounded-4 p-4 mt-4 mt-lg-0">
+                <div class="text-center mb-4">
+                    <h3>Aqui seu esforço vale mais!</h3>
+                    <p>🛡 Aprenda. 🎯 Avance. 🎁 Recompense-se.</p>
+                </div>
+                <img src="{{ url_for('static', filename='images/students.jpg') }}" class="img-fluid rounded-3" alt="Estudantes">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mt-5">
+    <h2 class="mb-4">Comece por Aqui</h2>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-dark h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Revisão Rápida</h5>
+                    <p class="card-text flex-grow-1">Conteúdos essenciais resumidos para revisão eficiente.</p>
+                    <a href="#" class="btn btn-outline-primary mt-auto">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Mapas Mentais</h5>
+                    <p class="card-text flex-grow-1">Visualize conceitos complexos de forma simples e conectada.</p>
+                    <a href="#" class="btn btn-outline-primary mt-auto">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Simulados</h5>
+                    <p class="card-text flex-grow-1">Teste seus conhecimentos com questões no estilo ENEM.</p>
+                    <a href="#" class="btn btn-outline-primary mt-auto">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Redação</h5>
+                    <p class="card-text flex-grow-1">Aprimore sua escrita com feedback detalhado.</p>
+                    <a href="#" class="btn btn-outline-primary mt-auto">Acessar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

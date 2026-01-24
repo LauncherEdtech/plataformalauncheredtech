@@ -1,0 +1,1726 @@
+<!-- templates/ranking/mensal.html -->
+{% extends "layout.html" %}
+
+{% block title %}Ranking Mensal - Plataforma Launcher{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-color: #001233;
+        --secondary-color: #003366;
+        --tertiary-color: #004080;
+        --accent-gold: #FFD700;
+        --accent-silver: #C0C0C0;
+        --accent-bronze: #CD7F32;
+        --accent-orange: #ff6b35;
+        --accent-coral: #ff9068;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.95);
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--tertiary-color));
+        --gradient-monthly: linear-gradient(135deg, #ff6b35, #ff9068);
+        --gradient-gold: linear-gradient(135deg, #FFD700, #FFA500);
+        --gradient-silver: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+        --gradient-bronze: linear-gradient(135deg, #CD7F32, #8B4513);
+        --gradient-card: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.9));
+        --gradient-hero: linear-gradient(135deg, rgba(0, 18, 51, 0.4), rgba(0, 51, 102, 0.2));
+        --glow-gold: 0 0 30px rgba(255, 215, 0, 0.5);
+        --glow-orange: 0 0 30px rgba(255, 107, 53, 0.4);
+        --glow-blue: 0 0 30px rgba(0, 64, 128, 0.4);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        overflow-x: hidden;
+    }
+    .ranking-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        min-height: 100vh;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        background: var(--gradient-hero);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0, 64, 128, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+        z-index: -1;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: #ffffff;
+        background-clip: text;
+        position: relative;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
+        margin: 0 auto 2rem auto;
+        line-height: 1.6;
+    }
+
+    .calendar-icon {
+        color: var(--tertiary-color);
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+        animation: pulse 2s infinite;
+    }
+
+    /* Monthly Highlight Banner */
+    .monthly-highlight {
+        background: var(--gradient-card);
+        border: 2px solid rgba(0, 64, 128, 0.4);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            var(--glow-blue),
+            0 15px 35px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.2s both;
+    }
+
+    .monthly-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .monthly-highlight::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: radial-gradient(circle at 30% 70%, rgba(0, 64, 128, 0.1), transparent 50%);
+        z-index: -1;
+    }
+
+    .monthly-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .monthly-description {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .star-icon {
+        color: var(--accent-gold);
+        font-size: 1.3rem;
+        animation: twinkle 2s infinite;
+    }
+
+    /* Navigation Tabs */
+    .tab-navigation {
+        background: var(--gradient-card);
+        border-radius: 20px;
+        padding: 1rem;
+        margin-bottom: 3rem;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.8s ease-out 0.4s both;
+    }
+
+    .nav-tabs-custom {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-width: 200px;
+        padding: 1.25rem 2rem;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+        backdrop-filter: blur(10px);
+    }
+
+    .tab-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+
+    .tab-btn:hover::before {
+        left: 100%;
+    }
+
+    .tab-btn:hover {
+        background: rgba(0, 64, 128, 0.3);
+        color: white;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 64, 128, 0.4);
+        border-color: rgba(0, 64, 128, 0.5);
+    }
+
+    .tab-btn.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--glow-blue);
+        border-color: var(--tertiary-color);
+        transform: translateY(-2px);
+    }
+
+    .tab-btn.active::before {
+        display: none;
+    }
+
+    /* User Stats */
+    .user-stats {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.6s both;
+    }
+
+    .user-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateY(-8px) scale(1.02);
+        border-color: var(--tertiary-color);
+        box-shadow: 0 15px 35px rgba(0, 64, 128, 0.3);
+    }
+
+    .stat-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--accent-orange);
+        display: block;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.4);
+        position: relative;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .stat-icon {
+        font-size: 1.5rem;
+        color: var(--tertiary-color);
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    /* Podium Section */
+    .podium-section {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            var(--glow-gold);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out 0.8s both;
+    }
+
+    .podium-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-gold);
+        opacity: 0.9;
+    }
+
+    .podium-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        background: var(--gradient-gold);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+    }
+
+    .crown-icon {
+        color: var(--accent-gold);
+        font-size: 1.8rem;
+        margin-left: 0.5rem;
+        animation: pulse 2s infinite;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+    }
+
+    .podium-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 2rem;
+        align-items: end;
+    }
+
+    .podium-position {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .podium-position::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+
+    .podium-position.first {
+        height: 320px;
+        border: 3px solid var(--accent-gold);
+        box-shadow: var(--glow-gold);
+    }
+
+    .podium-position.first::before {
+        background: var(--gradient-gold);
+    }
+
+    .podium-position.second {
+        height: 270px;
+        border: 3px solid var(--accent-silver);
+        box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
+    }
+
+    .podium-position.second::before {
+        background: var(--gradient-silver);
+    }
+
+    .podium-position.third {
+        height: 220px;
+        border: 3px solid var(--accent-bronze);
+        box-shadow: 0 0 20px rgba(205, 127, 50, 0.4);
+    }
+
+    .podium-position.third::before {
+        background: var(--gradient-bronze);
+    }
+
+    .podium-position:hover::before {
+        opacity: 0.1;
+    }
+
+    .podium-position:hover {
+        transform: translateY(-10px) scale(1.05);
+    }
+
+    .rank-badge {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.8rem;
+        margin: 0 auto 1.5rem auto;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .rank-badge.rank-1 {
+        background: var(--gradient-gold);
+        color: #000;
+        box-shadow: var(--glow-gold);
+        animation: shine 3s infinite;
+    }
+
+    .rank-badge.rank-2 {
+        background: var(--gradient-silver);
+        color: #000;
+        box-shadow: 0 0 20px rgba(192, 192, 192, 0.5);
+    }
+
+    .rank-badge.rank-3 {
+        background: var(--gradient-bronze);
+        color: #fff;
+        box-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+    }
+
+    .podium-position:hover .rank-badge {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    .podium-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .podium-xp {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--accent-orange);
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.4);
+        margin-bottom: 0.5rem;
+    }
+
+    .podium-username {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Progress Bars */
+    .progress-container {
+        margin-top: 1rem;
+        position: relative;
+    }
+
+    .progress {
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-bar-custom {
+        background: var(--gradient-monthly);
+        border-radius: 10px;
+        height: 100%;
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: progressShine 2s infinite;
+    }
+
+    /* Ranking Cards */
+    .ranking-card {
+        background: var(--gradient-card);
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        border-radius: 25px;
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        animation: slideInUp 0.8s ease-out 1s both;
+    }
+
+    .ranking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.9;
+    }
+
+    .ranking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .ranking-header {
+        padding: 2rem 2.5rem 1rem 2.5rem;
+        border-bottom: 1px solid rgba(0, 64, 128, 0.3);
+    }
+
+    .ranking-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .ranking-list {
+        padding: 1.5rem;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .ranking-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .ranking-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+    }
+
+    .ranking-list::-webkit-scrollbar-thumb {
+        background: var(--gradient-primary);
+        border-radius: 4px;
+    }
+
+    .ranking-item {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .ranking-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 64, 128, 0.3), transparent);
+        transition: left 0.6s;
+    }
+
+    .ranking-item:hover::before {
+        left: 100%;
+    }
+
+    .ranking-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateX(10px) scale(1.02);
+        border-color: var(--tertiary-color);
+        box-shadow: 0 10px 25px rgba(0, 64, 128, 0.3);
+    }
+
+    .ranking-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .ranking-item.user-highlight {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+        border: 2px solid rgba(255, 215, 0, 0.5);
+        box-shadow: var(--glow-gold);
+        animation: glow 2s infinite alternate;
+    }
+
+    .ranking-item.user-highlight::before {
+        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+    }
+
+    .rank-badge-small {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .rank-other {
+        background: linear-gradient(45deg, #495057, #6c757d);
+        color: #fff;
+    }
+
+    .ranking-item:hover .rank-badge-small {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .user-info {
+        flex-grow: 1;
+    }
+
+    .user-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--text-color);
+    }
+
+    .user-username {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.75rem;
+    }
+
+    .user-xp {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .xp-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--accent-orange);
+        text-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+    }
+
+    .xp-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 0.25rem;
+    }
+
+    .badge-you {
+        background: var(--gradient-gold);
+        color: #000;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        opacity: 0.3;
+        animation: pulse 2s infinite;
+    }
+
+    .empty-state h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+
+    .no-score-state {
+        background: rgba(0, 64, 128, 0.1);
+        border: 2px dashed rgba(0, 64, 128, 0.3);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .start-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+    }
+
+    .start-btn:hover {
+        background: linear-gradient(135deg, #004080, #003366);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: var(--glow-blue);
+        color: white;
+    }
+
+    /* Info Section */
+    .info-section {
+        background: var(--gradient-card);
+        border-radius: 25px;
+        padding: 2.5rem;
+        margin-top: 3rem;
+        border: 1px solid rgba(0, 64, 128, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideInUp 0.8s ease-out 1.2s both;
+    }
+
+    .info-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .info-item {
+        padding: 1.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-item:hover {
+        background: rgba(0, 64, 128, 0.2);
+        transform: translateY(-5px);
+        border-color: var(--tertiary-color);
+    }
+
+    .info-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-icon {
+        font-size: 1.3rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+
+    .info-icon.calendar { background: rgba(0, 64, 128, 0.2); color: #004080; }
+    .info-icon.lightning { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .info-icon.target { background: rgba(0, 64, 128, 0.2); color: #004080; }
+    .info-icon.trophy { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+
+    .info-item-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .info-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes twinkle {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.1) rotate(180deg);
+        }
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes shine {
+        0%, 100% {
+            filter: brightness(1) saturate(1);
+        }
+        50% {
+            filter: brightness(1.2) saturate(1.3);
+        }
+    }
+
+    @keyframes glow {
+        0% {
+            box-shadow: var(--glow-gold);
+        }
+        100% {
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+        }
+    }
+
+    @keyframes progressShine {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* Loading Animation */
+    .loading-skeleton {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Responsiveness */
+    @media (max-width: 1200px) {
+        .podium-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .podium-position {
+            height: auto !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .ranking-container {
+            padding: 0 0.5rem;
+        }
+        
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .nav-tabs-custom {
+            flex-direction: column;
+        }
+        
+        .tab-btn {
+            min-width: auto;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            padding: 1.5rem 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+        }
+        
+        .podium-section, .monthly-highlight, .info-section {
+            padding: 2rem 1rem;
+        }
+        
+        .ranking-header {
+            padding: 1.5rem;
+        }
+        
+        .ranking-item {
+            padding: 1rem 1.5rem;
+        }
+        
+        .user-name {
+            font-size: 1rem;
+        }
+        
+        .xp-value {
+            font-size: 1.2rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .info-item {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .ranking-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .user-xp {
+            text-align: center;
+        }
+        
+        .rank-badge-small {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ranking-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">
+            <i class="bi bi-calendar-month calendar-icon"></i>
+            Ranking Mensal
+        </h1>
+        <p class="hero-subtitle">
+            Os mais dedicados em {{ mes_atual }}! 🚀<br>
+            O ranking reinicia todo mês. Prove sua constância e evolução!
+        </p>
+    </section>
+
+    <!-- Monthly Highlight Banner -->
+    <section class="monthly-highlight">
+        <h2 class="monthly-title">
+            <i class="bi bi-star star-icon"></i>
+            Competição Mensal de {{ mes_atual }}
+        </h2>
+        <p class="monthly-description">
+            Mostre sua dedicação e conquiste o topo! O ranking reinicia no dia 1º de cada mês,
+            dando a todos uma nova chance de brilhar.
+        </p>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+        <div class="nav-tabs-custom">
+            <a href="{{ url_for('ranking.index') }}" class="tab-btn">
+                <i class="bi bi-trophy me-2"></i>
+                XP Geral
+            </a>
+            <a href="{{ url_for('ranking.mensal') }}" class="tab-btn active">
+                <i class="bi bi-calendar-month me-2"></i>
+                Mensal
+            </a>
+            <a href="{{ url_for('ranking.tempo_estudo') }}" class="tab-btn">
+                <i class="bi bi-clock me-2"></i>
+                Tempo de Estudo
+            </a>
+            <a href="{{ url_for('ranking.simulados') }}" class="tab-btn">
+                <i class="bi bi-journal-check me-2"></i>
+                Simulados
+            </a>
+        </div>
+    </nav>
+
+    <!-- User Stats -->
+    <section class="user-stats">
+        <div class="stats-grid">
+            <div class="stat-item" onclick="showStatsDetail('monthly_xp')">
+                <i class="stat-icon bi bi-calendar-check-fill"></i>
+                <div class="stat-value" data-count="{{ xp_usuario_mes }}">{{ xp_usuario_mes }}</div>
+                <div class="stat-label">Seu XP em {{ mes_atual.split()[0] }}</div>
+            </div>
+            <div class="stat-item" onclick="showStatsDetail('monthly_position')">
+                <i class="stat-icon bi bi-award-fill"></i>
+                <div class="stat-value">
+                    {% if posicao_usuario %}#{{ posicao_usuario }}{% else %}--{% endif %}
+                </div>
+                <div class="stat-label">Sua Posição Mensal</div>
+            </div>
+            <div class="stat-item" onclick="showStatsDetail('active_users')">
+                <i class="stat-icon bi bi-people-fill"></i>
+                <div class="stat-value" data-count="{{ ranking_mensal|length * 100}}">{{ ranking_mensal|length * 100 }}</div>
+                <div class="stat-label">Usuários Ativos no Mês</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Podium Section -->
+    {% if ranking_mensal|length >= 3 %}
+    <section class="podium-section">
+        <h2 class="podium-title">
+            <i class="bi bi-award crown-icon"></i>
+            Pódio de {{ mes_atual.split()[0] }}
+        </h2>
+        
+        <div class="podium-grid">
+            <!-- 2º Lugar -->
+            <div class="podium-position second" onclick="showUserProfile({{ ranking_mensal[1].id }})">
+                <div class="rank-badge rank-2">2º</div>
+                <h3 class="podium-name">{{ ranking_mensal[1].nome_completo or ranking_mensal[1].username }}</h3>
+                <div class="podium-xp">{{ ranking_mensal[1].xp_mes }} XP</div>
+                <div class="podium-username">@{{ ranking_mensal[1].username }}</div>
+            </div>
+            
+            <!-- 1º Lugar -->
+            <div class="podium-position first" onclick="showUserProfile({{ ranking_mensal[0].id }})">
+                <div class="rank-badge rank-1">1º</div>
+                <h3 class="podium-name">
+                    {{ ranking_mensal[0].nome_completo or ranking_mensal[0].username }}
+                    <i class="bi bi-crown crown-icon"></i>
+                </h3>
+                <div class="podium-xp">{{ ranking_mensal[0].xp_mes }} XP</div>
+                <div class="podium-username">@{{ ranking_mensal[0].username }}</div>
+            </div>
+            
+            <!-- 3º Lugar -->
+            <div class="podium-position third" onclick="showUserProfile({{ ranking_mensal[2].id }})">
+                <div class="rank-badge rank-3">3º</div>
+                <h3 class="podium-name">{{ ranking_mensal[2].nome_completo or ranking_mensal[2].username }}</h3>
+                <div class="podium-xp">{{ ranking_mensal[2].xp_mes }} XP</div>
+                <div class="podium-username">@{{ ranking_mensal[2].username }}</div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Ranking List -->
+    <section class="ranking-card">
+        <div class="ranking-header">
+            <h2 class="ranking-title">
+                <i class="bi bi-list-ol"></i>
+                Classificação de {{ mes_atual }}
+            </h2>
+        </div>
+        
+        {% if ranking_mensal %}
+            <div class="ranking-list" id="rankingList">
+                {% for user in ranking_mensal %}
+                <div class="ranking-item {% if user.id == usuario_atual.id %}user-highlight{% endif %}"
+                     onclick="showUserProfile({{ user.id }})">
+                    <div class="rank-badge-small {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                        {{ loop.index }}
+                    </div>
+                    
+                    <div class="user-info">
+                        <h4 class="user-name">
+                            {{ user.nome_completo or user.username }}
+                            {% if user.id == usuario_atual.id %}
+                                <span class="badge-you">Você</span>
+                            {% endif %}
+                        </h4>
+                        <div class="user-username">@{{ user.username }}</div>
+                        
+                        <!-- Progress Bar -->
+                        {% if ranking_mensal[0].xp_mes > 0 %}
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar-custom" 
+                                     data-width="{{ (user.xp_mes / ranking_mensal[0].xp_mes * 100)|round }}"
+                                     style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="user-xp">
+                        <div class="xp-value">{{ user.xp_mes }} XP</div>
+                        <div class="xp-label">este mês</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- User Position if not in ranking -->
+            {% if posicao_usuario and posicao_usuario > 50 %}
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(40, 167, 69, 0.3);">
+                <div class="ranking-item user-highlight">
+                    <div class="rank-badge-small rank-other">{{ posicao_usuario }}</div>
+                    
+                    <div class="user-info">
+                        <h4 class="user-name">
+                            {{ usuario_atual.nome_completo or usuario_atual.username }}
+                            <span class="badge-you">Você</span>
+                        </h4>
+                        <div class="user-username">@{{ usuario_atual.username }}</div>
+                    </div>
+                    
+                    <div class="user-xp">
+                        <div class="xp-value">{{ xp_usuario_mes }} XP</div>
+                        <div class="xp-label">este mês</div>
+                    </div>
+                </div>
+            </div>
+            {% elif xp_usuario_mes == 0 %}
+            <div class="no-score-state">
+                <i class="bi bi-exclamation-circle" style="font-size: 3rem; color: var(--tertiary-color); margin-bottom: 1.5rem;"></i>
+                <h4>Você ainda não pontuou este mês</h4>
+                <p>Comece a estudar para aparecer no ranking mensal de {{ mes_atual.split()[0] }}!</p>
+                <a href="{{ url_for('simulados.index') }}" class="start-btn">
+                    <i class="bi bi-play-circle"></i>
+                    Começar a Estudar
+                </a>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <h4>Nenhum usuário ativo este mês</h4>
+                <p>Seja o primeiro a ganhar XP em {{ mes_atual }}!</p>
+                <a href="{{ url_for('simulados.index') }}" class="start-btn">
+                    <i class="bi bi-rocket"></i>
+                    Começar Agora
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Info Section -->
+    <section class="info-section">
+        <h3 class="info-title">
+            <i class="bi bi-info-circle-fill"></i>
+            Como funciona o ranking mensal?
+        </h3>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-header">
+                    <div class="info-icon calendar">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <h4 class="info-item-title">Reinício automático</h4>
+                </div>
+                <p class="info-description">O ranking mensal reinicia automaticamente no dia 1º de cada mês, dando a todos uma nova chance.</p>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-header">
+                    <div class="info-icon lightning">
+                        <i class="bi bi-lightning-fill"></i>
+                    </div>
+                    <h4 class="info-item-title">XP em tempo real</h4>
+                </div>
+                <p class="info-description">Todos os pontos XP ganhos no mês atual contam para este ranking, atualizados em tempo real.</p>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-header">
+                    <div class="info-icon target">
+                        <i class="bi bi-target"></i>
+                    </div>
+                    <h4 class="info-item-title">Competição justa</h4>
+                </div>
+                <p class="info-description">Todos começam do zero, independente do XP total acumulado. Consistência é a chave!</p>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-header">
+                    <div class="info-icon trophy">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <h4 class="info-item-title">Prêmios especiais</h4>
+                </div>
+                <p class="info-description">Os primeiros colocados podem receber recompensas exclusivas e reconhecimento especial!</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializações
+    initializeCounterAnimations();
+    initializeProgressBars();
+    setupRealTimeUpdates();
+    setupInteractiveElements();
+    setupEasterEggs();
+    
+    function initializeCounterAnimations() {
+        const counters = document.querySelectorAll('.stat-value[data-count]');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.dataset.count);
+                    
+                    animateValue(counter, 0, target, 2000);
+                    observer.unobserve(counter);
+                }
+            });
+        });
+        
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    }
+    
+    function initializeProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-bar-custom');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const targetWidth = bar.dataset.width + '%';
+                    
+                    setTimeout(() => {
+                        bar.style.width = targetWidth;
+                    }, index * 150);
+                    
+                    observer.unobserve(bar);
+                }
+            });
+        });
+        
+        progressBars.forEach(bar => {
+            observer.observe(bar);
+        });
+    }
+    
+    function animateValue(element, start, end, duration) {
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function updateValue(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            
+            const current = Math.floor(start + (range * easeOutQuart));
+            element.textContent = current.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateValue);
+            } else {
+                element.textContent = end.toLocaleString();
+            }
+        }
+        
+        requestAnimationFrame(updateValue);
+    }
+    
+    function setupRealTimeUpdates() {
+        // Atualizar ranking mensal a cada 60 segundos
+        setInterval(function() {
+            fetch('/ranking/api/posicao?tipo=mensal')
+                .then(response => response.json())
+                .then(data => {
+                    updateMonthlyPosition(data);
+                })
+                .catch(error => console.log('Erro ao atualizar posição mensal:', error));
+        }, 60000);
+    }
+    
+    function updateMonthlyPosition(data) {
+        const positionElements = document.querySelectorAll('.stat-value');
+        if (positionElements[1] && data.posicao) {
+            // Animação de mudança de posição
+            positionElements[1].style.transform = 'scale(1.2)';
+            positionElements[1].style.color = '#28a745';
+            positionElements[1].textContent = `#${data.posicao}`;
+            
+            setTimeout(() => {
+                positionElements[1].style.transform = 'scale(1)';
+                positionElements[1].style.color = '#004080';
+            }, 500);
+        }
+        
+        // Atualizar XP mensal se necessário
+        if (data.xp_mes && positionElements[0]) {
+            const currentXP = parseInt(positionElements[0].textContent);
+            if (data.xp_mes > currentXP) {
+                animateValue(positionElements[0], currentXP, data.xp_mes, 1000);
+                showNotification(`🎉 Você ganhou ${data.xp_mes - currentXP} XP este mês!`, 'success');
+            }
+        }
+    }
+    
+    function setupInteractiveElements() {
+        // Efeito hover melhorado nos cards do ranking
+        document.querySelectorAll('.ranking-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.zIndex = '10';
+                
+                // Acelerar animação da barra de progresso
+                const progressBar = this.querySelector('.progress-bar-custom');
+                if (progressBar) {
+                    progressBar.style.animationDuration = '1s';
+                }
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.zIndex = '1';
+                
+                // Restaurar animação da barra de progresso
+                const progressBar = this.querySelector('.progress-bar-custom');
+                if (progressBar) {
+                    progressBar.style.animationDuration = '2s';
+                }
+            });
+        });
+        
+        // Smooth scroll para seções
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    }
+    
+    function setupEasterEggs() {
+        // Easter egg no ícone de calendário
+        let calendarClicks = 0;
+        const calendar = document.querySelector('.calendar-icon');
+        
+        if (calendar) {
+            calendar.addEventListener('click', function() {
+                calendarClicks++;
+                
+                // Efeito visual imediato
+                this.style.animation = 'none';
+                this.style.transform = 'scale(1.3) rotate(360deg)';
+                this.style.color = '#0066cc';
+                
+                setTimeout(() => {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                    this.style.color = '#004080';
+                    this.style.animation = 'pulse 2s infinite';
+                }, 600);
+                
+                if (calendarClicks === 3) {
+                    createMonthlyConfetti();
+                    showNotification('📅 Parabéns! Você descobriu o easter egg mensal!', 'success');
+                    calendarClicks = 0;
+                }
+            });
+        }
+        
+        // Easter egg na estrela do destaque mensal
+        const star = document.querySelector('.star-icon');
+        if (star) {
+            star.addEventListener('click', function(e) {
+                e.stopPropagation();
+                createStarBurst();
+                showNotification('⭐ Brilhe como uma estrela no ranking!', 'warning');
+            });
+        }
+        
+        // Easter egg nas barras de progresso
+        document.querySelectorAll('.progress-bar-custom').forEach(bar => {
+            bar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                createProgressSparkles(this);
+            });
+        });
+    }
+    
+    function createMonthlyConfetti() {
+        const monthlyColors = ['#001233', '#003366', '#004080', '#0066cc', '#3399ff'];
+        
+        for (let i = 0; i < 40; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.background = monthlyColors[Math.floor(Math.random() * monthlyColors.length)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }, i * 60);
+        }
+    }
+    
+    function createStarBurst() {
+        const starColors = ['#FFD700', '#FFA500', '#FFFF00', '#DAA520', '#F0E68C'];
+        
+        for (let i = 0; i < 12; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'fixed';
+            star.style.left = '50%';
+            star.style.top = '30%';
+            star.style.width = '8px';
+            star.style.height = '8px';
+            star.style.background = starColors[Math.floor(Math.random() * starColors.length)];
+            star.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            star.style.pointerEvents = 'none';
+            star.style.zIndex = '9999';
+            
+            const angle = (i * 30) * Math.PI / 180;
+            const distance = 200;
+            const deltaX = Math.cos(angle) * distance;
+            const deltaY = Math.sin(angle) * distance;
+            
+            star.style.animation = `starBurst 2s ease-out forwards`;
+            star.style.setProperty('--deltaX', deltaX + 'px');
+            star.style.setProperty('--deltaY', deltaY + 'px');
+            
+            document.body.appendChild(star);
+            
+            setTimeout(() => {
+                if (star.parentNode) {
+                    star.parentNode.removeChild(star);
+                }
+            }, 2000);
+        }
+    }
+    
+    function createProgressSparkles(progressBar) {
+        const sparkleColors = ['#004080', '#0066cc', '#FFD700'];
+        
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const sparkle = document.createElement('div');
+                sparkle.style.position = 'absolute';
+                sparkle.style.left = Math.random() * progressBar.offsetWidth + 'px';
+                sparkle.style.top = '-4px';
+                sparkle.style.width = '4px';
+                sparkle.style.height = '4px';
+                sparkle.style.background = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+                sparkle.style.borderRadius = '50%';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '9999';
+                sparkle.style.animation = `sparkleFade 1.5s ease-out forwards`;
+                
+                progressBar.style.position = 'relative';
+                progressBar.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 1500);
+            }, i * 100);
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 350px;
+            animation: slideInRight 0.3s ease-out;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid currentColor;
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 4000);
+    }
+    
+    // Loading skeleton para atualizações
+    function showLoadingSkeleton() {
+        const rankingList = document.getElementById('rankingList');
+        if (rankingList) {
+            rankingList.classList.add('loading-skeleton');
+            setTimeout(() => {
+                rankingList.classList.remove('loading-skeleton');
+            }, 1000);
+        }
+    }
+});
+
+// Funções globais
+function showUserProfile(userId) {
+    window.location.href = `/user/profile/${userId}`;
+}
+
+function showStatsDetail(type) {
+    let message = '';
+    switch(type) {
+        case 'monthly_xp':
+            message = '📅 Seu XP do mês atual - reinicia todo dia 1º!';
+            break;
+        case 'monthly_position':
+            message = '🏆 Sua posição no ranking mensal - atualizada em tempo real!';
+            break;
+        case 'active_users':
+            message = '👥 Número de estudantes que pontuaram este mês!';
+            break;
+    }
+    
+    showNotification(message, 'info');
+}
+
+// CSS adicional para animações
+const additionalStyles = document.createElement('style');
+additionalStyles.textContent = `
+    @keyframes confettiFall {
+        to {
+            transform: translateY(${window.innerHeight + 50}px) rotate(720deg);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes starBurst {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(calc(-50% + var(--deltaX)), calc(-50% + var(--deltaY))) scale(0);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes sparkleFade {
+        0% {
+            opacity: 1;
+            transform: scale(0) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1) rotate(180deg);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0) rotate(360deg);
+        }
+    }
+`;
+document.head.appendChild(additionalStyles);
+</script>
+{% endblock %}

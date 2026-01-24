@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Plano de Estudos - Plataforma Launcher{% endblock %}
+
+{% block content %}
+
+<div class="plano-estudos"> <div class="d-flex justify-content-between align-items-center mb-4"> <h1>Plano de Estudos Personalizado</h1> <div> <a href="{{ url_for('simulados.index') }}" class="btn btn-outline-light"> <i class="bi bi-arrow-left"></i> Voltar para Simulados </a> </div> </div>
+<div class="alert alert-info mb-4">
+    <div class="d-flex">
+        <div class="me-3">
+            <i class="bi bi-info-circle-fill fs-4"></i>
+        </div>
+        <div>
+            <h5 class="alert-heading">Módulo em desenvolvimento</h5>
+            <p class="mb-0">O plano de estudos personalizado está sendo implementado e estará disponível em breve com mais funcionalidades.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Áreas Prioritárias -->
+<div class="card bg-dark mb-5">
+    <div class="card-header">
+        <h4 class="mb-0">Áreas Prioritárias para Estudo</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-dark">
+                <thead>
+                    <tr>
+                        <th>Área</th>
+                        <th>Desempenho</th>
+                        <th>Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for area in areas_prioritarias %}
+                    <tr>
+                        <td>{{ area.area }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ 'danger' if area.percentual < 50 else 'warning' }}" 
+                                     role="progressbar" 
+                                     style="width: {{ area.percentual }}%;" 
+                                     aria-valuenow="{{ area.percentual }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ area.percentual|round|int }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-inline-block">
+                                {% for i in range(1, 6) %}
+                                    <i class="bi bi-star-fill {{ 'text-warning' if i <= area.prioridade else 'text-secondary' }}"></i>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Plano Semanal Simples -->
+<h2 class="mb-4">Plano Semanal Sugerido</h2>
+<div class="row mb-5">
+    {% for dia, atividades in plano_semanal.items() %}
+    <div class="col-md-3 mb-4">
+        <div class="card bg-dark h-100">
+            <div class="card-header text-center">
+                <h5 class="mb-0">{{ dia }}</h5>
+            </div>
+            <div class="card-body">
+                {% if atividades %}
+                    {% for atividade in atividades %}
+                    <div class="mb-3">
+                        <h6>{{ atividade.area }}</h6>
+                        <p class="mb-2"><small class="text-muted">Duração: {{ atividade.horas }}h</small></p>
+                        
+                        {% if atividade.conteudos %}
+                        <div class="mt-2">
+                            <small class="text-muted">Conteúdos sugeridos:</small>
+                            <ul class="mb-0 ps-3">
+                                {% for conteudo in atividade.conteudos %}
+                                <li><small>{{ conteudo }}</small></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">Descanso</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Nota informativa -->
+<div class="card bg-dark mb-5">
+    <div class="card-header">
+        <h4 class="mb-0">Dicas para Maximizar seus Estudos</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card bg-dark h-100" style="border-left: 4px solid #007bff;">
+                    <div class="card-body">
+                        <h5><i class="bi bi-clock-history"></i> Técnica Pomodoro</h5>
+                        <p class="mb-0">Estude em blocos de 25 minutos com intervalos de 5 minutos. A cada 4 blocos, faça uma pausa maior de 15-30 minutos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card bg-dark h-100" style="border-left: 4px solid #28a745;">
+                    <div class="card-body">
+                        <h5><i class="bi bi-journal-text"></i> Resumos Ativos</h5>
+                        <p class="mb-0">Em vez de apenas ler, escreva resumos dos conteúdos com suas palavras. Isso fixa melhor o conhecimento.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card bg-dark h-100" style="border-left: 4px solid #ffc107;">
+                    <div class="card-body">
+                        <h5><i class="bi bi-graph-up"></i> Revisão Espaçada</h5>
+                        <p class="mb-0">Revise os conteúdos em intervalos crescentes: 1 dia, 3 dias, 1 semana, 2 semanas depois de estudá-los.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botão para ver análises detalhadas -->
+<div class="d-flex justify-content-center my-5">
+    <a href="{{ url_for('analise.index') }}" class="btn btn-primary">
+        <i class="bi bi-graph-up"></i> Ver Análises Detalhadas
+    </a>
+</div>
+</div> {% endblock %}

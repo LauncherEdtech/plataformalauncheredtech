@@ -1,0 +1,390 @@
+# app/routes/auth.py
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
+from flask_login import login_user, logout_user, current_user, login_required
+from app.models.user import User
+from app import db
+from werkzeug.security import generate_password_hash
+import logging
+import re
+from datetime import datetime, timedelta
+import secrets
+import smtplib
+from email.mime.text import MimeText
+from email.mime.multipart import MimeMultipart
+
+auth_bp = Blueprint('auth', __name__)
+logger = logging.getLogger(__name__)
+
+# Configurações de rate limiting simples (em produção, use Redis)
+login_attempts = {}
+
+def is_rate_limited(ip_address):
+    """Verifica se o IP está sendo rate limited"""
+    now = datetime.now()
+    if ip_address in login_attempts:
+        attempts, last_attempt = login_attempts[ip_address]
+        # Reset após 15 minutos
+        if now - last_attempt > timedelta(minutes=15):
+            del login_attempts[ip_address]
+            return False
+        return attempts >= 5
+    return False
+
+def record_login_attempt(ip_address):
+    """Registra tentativa de login"""
+    now = datetime.now()
+    if ip_address in login_attempts:
+        attempts, _ = login_attempts[ip_address]
+        login_attempts[ip_address] = (attempts + 1, now)
+    else:
+        login_attempts[ip_address] = (1, now)
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """Rota de login melhorada com tratamento de erros e rate limiting"""
+    if current_user.is_authenticated:
+        if current_user.needs_password_change():
+            return redirect(url_for('auth.change_password'))
+        return redirect(url_for('main.index'))
+    
+    if request.method == 'POST':
+        try:
+            # Rate limiting por IP
+            client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+            if is_rate_limited(client_ip):
+                flash('Muitas tentativas de login. Tente novamente em 15 minutos.', 'danger')
+                return render_template('auth/login.html'), 429
+            
+            email = request.form.get('email', '').strip().lower()
+            password = request.form.get('password', '')
+            remember = request.form.get('remember') == 'on'
+            
+            # Validações básicas
+            if not email or not password:
+                flash('Email e senha são obrigatórios.', 'warning')
+                return render_template('auth/login.html')
+            
+            # Validar formato do email
+            if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+                flash('Formato de email inválido.', 'warning')
+                return render_template('auth/login.html')
+            
+            # Buscar usuário
+            user = User.query.filter_by(email=email).first()
+            
+            if user and user.check_password(password):
+                # Verificar se conta está ativa
+                if not user.is_active:
+                    flash('Sua conta está temporariamente suspensa. Entre em contato com o suporte.', 'danger')
+                    logger.warning(f"Tentativa de login em conta suspensa: {email}")
+                    return render_template('auth/login.html')
+                
+                # Login bem-sucedido
+                login_user(user, remember=remember)
+                logger.info(f"Login bem-sucedido: {email}")
+                
+                # Limpar tentativas de login para este IP
+                if client_ip in login_attempts:
+                    del login_attempts[client_ip]
+                
+                # Verificar se precisa trocar senha
+                if user.needs_password_change():
+                    flash('Como este é seu primeiro acesso, você precisa alterar sua senha.', 'warning')
+                    return redirect(url_for('auth.change_password'))
+                
+                # Redirecionar para página solicitada ou dashboard
+                next_page = request.args.get('next')
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('dashboard.index'))
+            
+            else:
+                # Login falhou - registrar tentativa
+                record_login_attempt(client_ip)
+                flash('Email ou senha incorretos.', 'danger')
+                logger.warning(f"Tentativa de login falhada: {email} de IP {client_ip}")
+                
+        except Exception as e:
+            logger.error(f"Erro no processo de login: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+    
+    return render_template('auth/login.html')
+
+@auth_bp.route('/logout')
+def logout():
+    """Logout do usuário"""
+    user_email = current_user.email if current_user.is_authenticated else 'Anônimo'
+    logout_user()
+    logger.info(f"Logout realizado: {user_email}")
+    flash('Logout realizado com sucesso.', 'info')
+    return redirect(url_for('auth.login'))
+
+@auth_bp.route('/registro', methods=['GET', 'POST'])
+def registro():
+    """Registro de novo usuário"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+    
+    if request.method == 'POST':
+        try:
+            username = request.form.get('username', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            nome_completo = request.form.get('nome_completo', '').strip()
+            password = request.form.get('password', '')
+            confirm_password = request.form.get('confirm_password', '')
+            cpf = request.form.get('cpf', '').strip()
+            
+            # Validações
+            errors = []
+            
+            if not all([username, email, nome_completo, password]):
+                errors.append('Todos os campos são obrigatórios.')
+            
+            if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+                errors.append('Formato de email inválido.')
+            
+            if len(password) < 6:
+                errors.append('A senha deve ter pelo menos 6 caracteres.')
+            
+            if password != confirm_password:
+                errors.append('As senhas não coincidem.')
+            
+            if len(username) < 3:
+                errors.append('O nome de usuário deve ter pelo menos 3 caracteres.')
+            
+            if len(nome_completo) < 3:
+                errors.append('O nome completo deve ter pelo menos 3 caracteres.')
+            
+            # Verificar se usuário já existe
+            user_exists = User.query.filter(
+                (User.username == username) | (User.email == email)
+            ).first()
+            
+            if user_exists:
+                if user_exists.email == email:
+                    errors.append('Este email já está cadastrado.')
+                if user_exists.username == username:
+                    errors.append('Este nome de usuário já está em uso.')
+            
+            if errors:
+                for error in errors:
+                    flash(error, 'danger')
+                return render_template('auth/registro.html')
+            
+            # Criar usuário
+            user = User(
+                username=username,
+                email=email,
+                nome_completo=nome_completo,
+                is_active=True,
+                cpf=cpf,
+                password_changed=True,
+                data_registro=datetime.utcnow()
+            )
+            user.set_password(password)
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            logger.info(f"Novo usuário registrado: {email}")
+            flash('Cadastro realizado com sucesso! Faça login para continuar.', 'success')
+            return redirect(url_for('auth.login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro no registro: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+    
+    return render_template('auth/registro.html')
+
+@auth_bp.route('/esqueci-senha', methods=['GET', 'POST'])
+def esqueci_senha():
+    """Página para solicitar reset de senha"""
+    if request.method == 'POST':
+        try:
+            email = request.form.get('email', '').strip().lower()
+            
+            if not email:
+                flash('Email é obrigatório.', 'warning')
+                return render_template('auth/esqueci_senha.html')
+            
+            if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+                flash('Formato de email inválido.', 'warning')
+                return render_template('auth/esqueci_senha.html')
+            
+            user = User.query.filter_by(email=email).first()
+            
+            if user:
+                # Gerar token de reset
+                reset_token = secrets.token_urlsafe(32)
+                
+                # Salvar token no usuário (você precisa adicionar este campo ao modelo)
+                user.reset_token = reset_token
+                user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+                db.session.commit()
+                
+                # Enviar email (implementação básica)
+                try:
+                    send_password_reset_email(user.email, reset_token)
+                    flash('Instruções para redefinir sua senha foram enviadas para seu email.', 'success')
+                    logger.info(f"Email de reset enviado para: {email}")
+                except Exception as e:
+                    logger.error(f"Erro ao enviar email de reset: {str(e)}")
+                    flash('Erro ao enviar email. Tente novamente mais tarde.', 'danger')
+            else:
+                # Por segurança, sempre mostrar a mesma mensagem
+                flash('Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.', 'info')
+            
+            return redirect(url_for('auth.login'))
+            
+        except Exception as e:
+            logger.error(f"Erro no esqueci senha: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+    
+    return render_template('auth/esqueci_senha.html')
+
+@auth_bp.route('/reset-senha/<token>', methods=['GET', 'POST'])
+def reset_senha(token):
+    """Reset de senha com token"""
+    try:
+        user = User.query.filter_by(reset_token=token).first()
+        
+        if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+            flash('Token inválido ou expirado. Solicite um novo reset de senha.', 'danger')
+            return redirect(url_for('auth.esqueci_senha'))
+        
+        if request.method == 'POST':
+            password = request.form.get('password', '')
+            confirm_password = request.form.get('confirm_password', '')
+            
+            if not password or len(password) < 6:
+                flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
+                return render_template('auth/reset_senha.html', token=token)
+            
+            if password != confirm_password:
+                flash('As senhas não coincidem.', 'danger')
+                return render_template('auth/reset_senha.html', token=token)
+            
+            # Resetar senha
+            user.set_password(password)
+            user.reset_token = None
+            user.reset_token_expires = None
+            user.password_changed = True
+            db.session.commit()
+            
+            logger.info(f"Senha resetada para usuário: {user.email}")
+            flash('Sua senha foi alterada com sucesso!', 'success')
+            return redirect(url_for('auth.login'))
+        
+        return render_template('auth/reset_senha.html', token=token)
+        
+    except Exception as e:
+        logger.error(f"Erro no reset de senha: {str(e)}")
+        flash('Erro interno. Tente novamente.', 'danger')
+        return redirect(url_for('auth.esqueci_senha'))
+
+@auth_bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Alterar senha do usuário logado"""
+    if not current_user.needs_password_change() and not request.args.get('force'):
+        return redirect(url_for('dashboard.index'))
+        
+    if request.method == 'POST':
+        try:
+            current_password = request.form.get('current_password', '')
+            new_password = request.form.get('new_password', '')
+            confirm_password = request.form.get('confirm_password', '')
+            
+            # Verificar senha atual
+            if not current_user.check_password(current_password):
+                flash('Senha atual incorreta.', 'danger')
+                return render_template('auth/change_password.html', forced=current_user.needs_password_change())
+            
+            # Validar nova senha
+            if len(new_password) < 6:
+                flash('A nova senha deve ter pelo menos 6 caracteres.', 'danger')
+                return render_template('auth/change_password.html', forced=current_user.needs_password_change())
+            
+            if new_password != confirm_password:
+                flash('As senhas não coincidem.', 'danger')
+                return render_template('auth/change_password.html', forced=current_user.needs_password_change())
+            
+            # Verificar se não é igual ao CPF
+            if current_user.cpf and new_password == current_user.cpf:
+                flash('A nova senha não pode ser igual ao seu CPF.', 'danger')
+                return render_template('auth/change_password.html', forced=current_user.needs_password_change())
+            
+            # Atualizar senha
+            current_user.set_password(new_password)
+            current_user.password_changed = True
+            db.session.commit()
+            
+            logger.info(f"Senha alterada para usuário: {current_user.email}")
+            flash('Senha alterada com sucesso!', 'success')
+            return redirect(url_for('dashboard.index'))
+            
+        except Exception as e:
+            logger.error(f"Erro ao alterar senha: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+        
+    return render_template('auth/change_password.html', forced=current_user.needs_password_change())
+
+def send_password_reset_email(email, token):
+    """Enviar email de reset de senha - implementação básica"""
+    try:
+        # Configurar SMTP (você precisa configurar estas variáveis)
+        smtp_server = current_app.config.get('SMTP_SERVER', 'smtp.gmail.com')
+        smtp_port = current_app.config.get('SMTP_PORT', 587)
+        smtp_user = current_app.config.get('SMTP_USER')
+        smtp_password = current_app.config.get('SMTP_PASSWORD')
+        
+        if not smtp_user or not smtp_password:
+            raise Exception("Configurações de email não definidas")
+        
+        # Criar mensagem
+        msg = MimeMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = email
+        msg['Subject'] = 'Redefinição de Senha - Plataforma Launcher'
+        
+        reset_url = url_for('auth.reset_senha', token=token, _external=True)
+        
+        body = f"""
+        Olá,
+        
+        Você solicitou a redefinição de sua senha na Plataforma Launcher.
+        
+        Clique no link abaixo para definir uma nova senha:
+        {reset_url}
+        
+        Este link expira em 1 hora.
+        
+        Se você não solicitou esta redefinição, ignore este email.
+        
+        Atenciosamente,
+        Equipe Plataforma Launcher
+        """
+        
+        msg.attach(MimeText(body, 'plain'))
+        
+        # Enviar email
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+    except Exception as e:
+        logger.error(f"Erro ao enviar email: {str(e)}")
+        raise
+
+# Rota para verificar status de login (AJAX)
+@auth_bp.route('/api/login-status')
+def login_status():
+    """API para verificar status de login"""
+    return jsonify({
+        'authenticated': current_user.is_authenticated,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+        'needs_password_change': current_user.needs_password_change() if current_user.is_authenticated else False
+    })

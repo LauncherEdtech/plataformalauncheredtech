@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block title %}Ajustar Cronograma{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        min-height: 100vh;
+    }
+
+    .ajustar-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .section-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ajustar-container">
+    <div class="section-card">
+        <h1 class="section-title">⚙️ Ajustar Cronograma</h1>
+        
+        <div class="info-row">
+            <strong>Objetivo:</strong>
+            <span>{{ cronograma.objetivo }}</span>
+        </div>
+        
+        <div class="info-row">
+            <strong>Data de Início:</strong>
+            <span>{{ cronograma.data_inicio.strftime('%d/%m/%Y') }}</span>
+        </div>
+        
+        <div class="info-row">
+            <strong>Total de Aulas:</strong>
+            <span>{{ cronograma.itens.count() }}</span>
+        </div>
+        
+        <div class="info-row">
+            <strong>Progresso:</strong>
+            <span>{{ "%.0f"|format(cronograma.progresso_geral) }}%</span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h2 class="section-title">🔄 Opções</h2>
+        
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+            No momento, você pode excluir o cronograma atual e criar um novo. Em breve, teremos mais opções de ajuste!
+        </p>
+        
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{{ url_for('cronograma.index') }}" class="btn btn-secondary">
+                <span>←</span>
+                <span>Voltar</span>
+            </a>
+            
+            <form method="POST" action="{{ url_for('cronograma.excluir') }}" style="display: inline;" 
+                  onsubmit="return confirm('⚠️ Tem certeza? Esta ação não pode ser desfeita!');">
+                <button type="submit" class="btn btn-danger">
+                    <span>🗑️</span>
+                    <span>Excluir Cronograma</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

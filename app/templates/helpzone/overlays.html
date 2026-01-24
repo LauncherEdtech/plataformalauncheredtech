@@ -1,0 +1,290 @@
+<!-- ================================================================
+     HELPZONE OVERLAYS - HTML COMPONENTS
+     Modals e painéis laterais estilo Instagram
+     ================================================================ -->
+
+<!-- ==============================================
+     MODAL DE CRIAR POST (CENTRO)
+     ============================================== -->
+<div class="hz-overlay hz-create-modal" id="hzCreatePostOverlay" onclick="if(event.target === this) closeCreatePostModal()">
+    <div class="hz-create-modal-container">
+        <!-- Header -->
+        <div class="hz-modal-header">
+            <button type="button" class="hz-modal-back-btn" onclick="closeCreatePostModal()" aria-label="Voltar">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="hz-modal-title">Criar publicação</h2>
+            <button type="button" class="hz-modal-publish-btn" id="hzPublishBtn" onclick="submitCreatePost()" disabled>
+                Publicar
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="hz-modal-body">
+            <div class="hz-compose-area">
+                <!-- Avatar -->
+                <div class="hz-compose-avatar">
+                    {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                        <img src="{{ current_user.perfil_social.foto_perfil }}" alt="{{ current_user.nome_completo }}">
+                    {% else %}
+                        {{ current_user.nome_completo[0].upper() }}
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="hz-compose-content">
+                    <textarea 
+                        id="hzPostText" 
+                        class="hz-compose-textarea" 
+                        placeholder="O que você está estudando hoje?"
+                        maxlength="2000"
+                        aria-label="Texto da publicação"
+                    ></textarea>
+
+                    <!-- Preview de Mídia -->
+                    <div class="hz-media-preview" id="hzMediaPreview">
+                        <img id="hzMediaPreviewImg" alt="Preview" style="display: none;">
+                        <video id="hzMediaPreviewVid" controls style="display: none;"></video>
+                        <button type="button" class="hz-media-remove-btn" onclick="clearCreatePostMedia()" aria-label="Remover mídia">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="hz-modal-toolbar">
+            <button type="button" class="hz-tool-btn" onclick="triggerMediaUpload('image')" title="Adicionar foto" aria-label="Adicionar foto">
+                <i class="far fa-image"></i>
+            </button>
+            <button type="button" class="hz-tool-btn" onclick="triggerMediaUpload('video')" title="Adicionar vídeo" aria-label="Adicionar vídeo">
+                <i class="fas fa-video"></i>
+            </button>
+            <button type="button" class="hz-tool-btn disabled" title="Em breve" aria-label="GIF (em breve)">
+                <i class="fas fa-file-image"></i>
+            </button>
+            <button type="button" class="hz-tool-btn disabled" title="Em breve" aria-label="Enquete (em breve)">
+                <i class="fas fa-poll"></i>
+            </button>
+        </div>
+
+        <!-- Input de arquivo oculto -->
+        <input type="file" id="hzMediaInput" style="display: none;" aria-hidden="true">
+    </div>
+</div>
+
+<!-- ==============================================
+     OVERLAY PARA PAINEL DE NOTIFICAÇÕES
+     ============================================== -->
+<div class="hz-overlay" id="hzNotificationsOverlay" onclick="closeNotificationsPanel()" style="background: rgba(0,0,0,0.5);"></div>
+
+<!-- ==============================================
+     PAINEL LATERAL DE NOTIFICAÇÕES
+     ============================================== -->
+<div class="hz-notifications-panel" id="hzNotificationsPanel">
+    <!-- Header -->
+    <div class="hz-panel-header">
+        <h2 class="hz-panel-title">Notificações</h2>
+        <button type="button" class="hz-modal-close-btn" onclick="closeNotificationsPanel()" aria-label="Fechar">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="hz-notifications-tabs">
+        <button type="button" class="hz-notification-tab active" onclick="switchNotificationTab('all')">
+            Todas
+        </button>
+        <button type="button" class="hz-notification-tab" onclick="switchNotificationTab('mentions')">
+            Menções
+        </button>
+        <button type="button" class="hz-notification-tab" onclick="switchNotificationTab('follows')">
+            Seguidores
+        </button>
+    </div>
+
+    <!-- Body -->
+    <div class="hz-panel-body">
+        <div id="hzNotificationsList" class="hz-notifications-list">
+            <div class="hz-loading">
+                <div class="hz-spinner"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================
+     MODAL DE BUSCA (CENTRO)
+     ============================================== -->
+<div class="hz-overlay hz-search-modal" id="hzSearchOverlay" onclick="if(event.target === this) closeSearchModal()">
+    <div class="hz-search-modal-container">
+        <!-- Header com Input de Busca -->
+        <div class="hz-search-input-wrapper">
+            <div class="hz-search-input-group">
+                <span class="hz-search-icon">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input 
+                    type="text" 
+                    id="hzSearchInput" 
+                    class="hz-search-input" 
+                    placeholder="Buscar pessoas, posts ou #hashtags..."
+                    autocomplete="off"
+                    aria-label="Campo de busca"
+                >
+                <button type="button" class="hz-search-clear-btn" id="hzSearchClearBtn" onclick="clearSearchInput()" aria-label="Limpar busca">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs de Busca -->
+        <div class="hz-search-tabs">
+            <button type="button" class="hz-search-tab active" onclick="switchSearchTab('all')">
+                Tudo
+            </button>
+            <button type="button" class="hz-search-tab" onclick="switchSearchTab('people')">
+                Pessoas
+            </button>
+            <button type="button" class="hz-search-tab" onclick="switchSearchTab('posts')">
+                Posts
+            </button>
+            <button type="button" class="hz-search-tab" onclick="switchSearchTab('hashtags')">
+                Hashtags
+            </button>
+        </div>
+
+        <!-- Resultados -->
+        <div class="hz-search-results" id="hzSearchResults">
+            <div class="hz-empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Buscar na HelpZone</h3>
+                <p>Encontre pessoas, posts e hashtags</p>
+            </div>
+        </div>
+
+        <!-- Botão Fechar (Mobile) -->
+        <button type="button" class="hz-modal-close-btn" onclick="closeSearchModal()" aria-label="Fechar" style="position: absolute; top: 24px; right: 24px; display: none;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<!-- ==============================================
+     ESTILOS INLINE ADICIONAIS (OPCIONAL)
+     ============================================== -->
+<style>
+    /* Ajustes finos para integração */
+    @media (max-width: 768px) {
+        .hz-search-modal-container .hz-modal-close-btn {
+            display: flex !important;
+        }
+    }
+
+    /* Garantir que overlays fiquem acima de tudo */
+    .hz-overlay {
+        z-index: 9999;
+    }
+
+    .hz-notifications-panel {
+        z-index: 10001;
+    }
+
+    /* Transições suaves */
+    .hz-overlay,
+    .hz-overlay * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Prevenir seleção de texto em botões */
+    .hz-modal-close-btn,
+    .hz-modal-back-btn,
+    .hz-modal-publish-btn,
+    .hz-tool-btn,
+    .hz-notification-tab,
+    .hz-search-tab {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Loading spinner melhorado */
+    .hz-spinner {
+        border-width: 2px;
+    }
+
+    /* Ajuste para botão publish quando loading */
+    .hz-modal-publish-btn .fa-spinner {
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Smooth scroll para resultados */
+    .hz-search-results,
+    .hz-panel-body,
+    .hz-modal-body {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Highlight de foco acessível */
+    .hz-search-input:focus {
+        outline: none;
+    }
+
+    /* Prevenir bounce no iOS */
+    .hz-modal-body,
+    .hz-panel-body,
+    .hz-search-results {
+        overscroll-behavior: contain;
+    }
+
+    /* Badge de notificação não lida */
+    .hz-notification-item.unread::after {
+        content: '';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
+        border-radius: 50%;
+    }
+
+    /* Posição relativa para indicador */
+    .hz-notification-item {
+        position: relative;
+    }
+</style>
+
+<!-- ==============================================
+     SCRIPTS INLINE (OPCIONAL)
+     ============================================== -->
+<script>
+    // Garantir que elementos estejam disponíveis ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        // Log para debug
+        console.log('🎨 HelpZone Overlays HTML carregado');
+        
+        // Verificar se todos os elementos necessários existem
+        const requiredElements = [
+            'hzCreatePostOverlay',
+            'hzNotificationsPanel',
+            'hzNotificationsOverlay',
+            'hzSearchOverlay'
+        ];
+
+        requiredElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`⚠️ Elemento ${id} não encontrado`);
+            }
+        });
+    });
+</script>

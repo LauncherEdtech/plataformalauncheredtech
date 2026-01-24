@@ -1,0 +1,518 @@
+<!-- app/templates/estudo/admin/secoes.html -->
+{% extends "layout.html" %}
+
+{% block title %}Gerenciar Seções - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .admin-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: #00b4d8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #0084ff;
+        text-decoration: underline;
+    }
+
+    .admin-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+    }
+
+    /* Estatísticas */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00b4d8;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+
+    /* Seções */
+    .secoes-container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 0.875rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-add:hover {
+        background: linear-gradient(135deg, #218838, #1ca085);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Lista de Seções */
+    .secoes-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .secao-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .secao-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .secao-card.inativa {
+        opacity: 0.6;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .secao-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .secao-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .secao-details {
+        flex: 1;
+    }
+
+    .secao-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .secao-subtitle {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 0.5rem;
+    }
+
+    .secao-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-ativa {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-inativa {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+
+    /* Ações */
+    .secao-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .btn-primary {
+        background: #0084ff;
+        color: white;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .btn-primary:hover { background: #0056b3; color: white; }
+    .btn-success:hover { background: #218838; color: white; }
+    .btn-warning:hover { background: #e0a800; color: #333; }
+    .btn-danger:hover { background: #c82333; color: white; }
+
+    /* Estado Vazio */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .empty-subtitle {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 2rem;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .admin-header {
+            padding: 1.5rem;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .secoes-container {
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .secao-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .secao-actions {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .secao-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .secao-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> › Gerenciar Seções
+        </div>
+        <h1 class="admin-title">🧩 Gerenciar Seções</h1>
+        <p class="admin-subtitle">Organize o conteúdo em seções independentes com suas próprias matérias</p>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ estatisticas.total_secoes }}</div>
+            <div class="stat-label">Total de Seções</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estatisticas.secoes_ativas }}</div>
+            <div class="stat-label">Seções Ativas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ estatisticas.total_materias_secoes }}</div>
+            <div class="stat-label">Matérias em Seções</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ (estatisticas.secoes_ativas / estatisticas.total_secoes * 100) | round(0) if estatisticas.total_secoes > 0 else 0 }}%</div>
+            <div class="stat-label">Taxa de Ativação</div>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="secoes-container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>📚</span>
+                Seções Cadastradas
+            </h2>
+            <a href="{{ url_for('estudo.nova_secao') }}" class="btn-add">
+                <span>➕</span>
+                <span>Nova Seção</span>
+            </a>
+        </div>
+
+        {% if secoes %}
+            <div class="secoes-grid">
+                {% for secao in secoes %}
+                <div class="secao-card {{ 'inativa' if not secao.ativo else '' }}">
+                    <div class="secao-info">
+                        <div class="secao-icon" style="background: {{ secao.cor }};">
+                            {{ secao.icone }}
+                        </div>
+                        <div class="secao-details">
+                            <h3 class="secao-title">{{ secao.titulo }}</h3>
+                            {% if secao.subtitulo %}
+                                <p class="secao-subtitle">{{ secao.subtitulo }}</p>
+                            {% endif %}
+                            <div class="secao-meta">
+                                <div class="meta-item">
+                                    <span>📊</span>
+                                    <span>Ordem: {{ secao.ordem }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📚</span>
+                                    <span>{{ secao.total_materias }} matérias</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📖</span>
+                                    <span>{{ secao.total_modulos }} módulos</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>🎓</span>
+                                    <span>{{ secao.total_aulas }} aulas</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>🎨</span>
+                                    <span>{{ secao.grid_cols }} colunas</span>
+                                </div>
+                                <div class="status-badge {{ 'status-ativa' if secao.ativo else 'status-inativa' }}">
+                                    <span>{{ '✅' if secao.ativo else '❌' }}</span>
+                                    <span>{{ 'Ativa' if secao.ativo else 'Inativa' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="secao-actions">
+                        <a href="{{ url_for('estudo.admin_secao_materias', secao_id=secao.id) }}" 
+                           class="btn btn-primary" 
+                           title="Gerenciar matérias desta seção">
+                            <span>📚</span>
+                            <span>Matérias</span>
+                        </a>
+                        <a href="{{ url_for('estudo.admin_nova_materia_secao', secao_id=secao.id) }}" 
+                           class="btn btn-success" 
+                           title="Criar nova matéria nesta seção">
+                            <span>➕</span>
+                            <span>Nova Matéria</span>
+                        </a>
+                        <a href="{{ url_for('estudo.editar_secao', secao_id=secao.id) }}" 
+                           class="btn btn-warning" 
+                           title="Editar seção">
+                            <span>✏️</span>
+                            <span>Editar</span>
+                        </a>
+                        <form action="{{ url_for('estudo.excluir_secao', secao_id=secao.id) }}" 
+                              method="POST" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('⚠️ ATENÇÃO: Excluir a seção \"{{ secao.titulo }}\" irá remover permanentemente todas as {{ secao.total_materias }} matérias, {{ secao.total_modulos }} módulos e {{ secao.total_aulas }} aulas desta seção. Esta ação NÃO pode ser desfeita. Tem certeza?')">
+                            <button type="submit" class="btn btn-danger" title="Excluir seção e todo seu conteúdo">
+                                <span>🗑️</span>
+                                <span>Excluir</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🧩</div>
+                <h3 class="empty-title">Nenhuma seção cadastrada</h3>
+                <p class="empty-subtitle">
+                    Crie sua primeira seção para organizar o conteúdo em áreas independentes.<br>
+                    Cada seção terá suas próprias matérias, módulos e aulas exclusivos.
+                </p>
+                <a href="{{ url_for('estudo.nova_secao') }}" class="btn-add">
+                    <span>🚀</span>
+                    <span>Criar Primeira Seção</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

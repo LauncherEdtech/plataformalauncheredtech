@@ -1,0 +1,222 @@
+# app/routes/shop.py - VERSÃO COMPLETA CORRIGIDA PARA DIAMANTES
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app, abort
+from flask_login import login_required, current_user
+from app.models.shop import Produto, Resgate
+from app.models.user import User
+from app import db
+from datetime import datetime, timedelta
+import os
+from werkzeug.utils import secure_filename
+from functools import wraps
+
+import pytz
+
+# Definir timezone de Brasília
+timezone_brasil = pytz.timezone('America/Sao_Paulo')
+
+# Funções para trabalhar com datas no fuso horário do Brasil
+def get_datetime_brasil():
+    """Retorna a data e hora atual no fuso horário do Brasil"""
+    return datetime.now(timezone_brasil)
+
+def format_datetime_brasil(dt):
+    """Converte um datetime para o timezone do Brasil"""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        # Se a data não tem timezone, assume UTC
+        dt = pytz.utc.localize(dt)
+    return dt.astimezone(timezone_brasil)
+
+shop_bp = Blueprint('shop', __name__, url_prefix='/shop')
+
+# Decorador para verificar se o usuário é administrador
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)  # Acesso negado
+        return f(*args, **kwargs)
+    return decorated_function
+
+@shop_bp.route('/')
+def index():
+    """
+    Exibe a página principal da loja com os produtos disponíveis.
+    Permite filtrar e ordenar os produtos.
+    *** ATUALIZADO PARA DIAMANTES ***
+    """
+    # Obter parâmetros de filtragem e ordenação
+    search = request.args.get('search', '')
+    categoria = request.args.get('categoria', '')
+    preco_min = request.args.get('preco_min', '')
+    preco_max = request.args.get('preco_max', '')
+    ordenar = request.args.get('ordenar', 'todos')
+    disponibilidade = request.args.get('disponibilidade', 'todos')
+    
+    # Consulta base
+    query = Produto.query
+    
+    # Aplicar filtros
+    if search:
+        query = query.filter(Produto.nome.ilike(f'%{search}%'))
+    
+    if categoria:
+        query = query.filter(Produto.categoria == categoria)
+    
+    # MUDANÇA: Usar preco_diamantes ao invés de preco_xp
+    if preco_min:
+        if hasattr(Produto, 'preco_diamantes'):
+            query = query.filter(Produto.preco_diamantes >= int(preco_min))
+        else:
+            # Fallback para compatibilidade - converter XP para diamantes
+            query = query.filter(Produto.preco_xp >= int(preco_min) * 2)
+    
+    if preco_max:
+        if hasattr(Produto, 'preco_diamantes'):
+            query = query.filter(Produto.preco_diamantes <= int(preco_max))
+        else:
+            # Fallback para compatibilidade
+            query = query.filter(Produto.preco_xp <= int(preco_max) * 2)
+    
+    if disponibilidade == 'disponivel':
+        query = query.filter(Produto.disponivel == True, Produto.estoque > 0)
+    elif disponibilidade == 'esgotado':
+        query = query.filter((Produto.disponivel == False) | (Produto.estoque <= 0))
+    
+    # MUDANÇA: Aplicar ordenação por diamantes
+    if ordenar == 'menor_preco':
+        if hasattr(Produto, 'preco_diamantes'):
+            query = query.order_by(Produto.preco_diamantes)
+        else:
+            query = query.order_by(Produto.preco_xp)
+    elif ordenar == 'maior_preco':
+        if hasattr(Produto, 'preco_diamantes'):
+            query = query.order_by(Produto.preco_diamantes.desc())
+        else:
+            query = query.order_by(Produto.preco_xp.desc())
+    elif ordenar == 'mais_recentes':
+        query = query.order_by(Produto.data_criacao.desc())
+    
+    # Executar consulta
+    produtos = query.all()
+    
+    # Garantir que produtos têm preço em diamantes
+    for produto in produtos:
+        if hasattr(produto, 'preco_diamantes') and produto.preco_diamantes:
+            continue
+        elif hasattr(produto, 'preco_xp') and produto.preco_xp:
+            # Converter XP para diamantes na exibição (1 diamante = 2 XP)
+            produto.preco_diamantes_display = produto.preco_xp // 2
+        else:
+            produto.preco_diamantes_display = 50  # Valor padrão
+    
+    # Obter categorias disponíveis para o filtro
+    categorias = db.session.query(Produto.categoria).distinct().all()
+    categorias = [cat[0] for cat in categorias if cat[0]]
+    
+    # MUDANÇA: Obter valores mínimos e máximos de preço em diamantes
+    if hasattr(Produto, 'preco_diamantes'):
+        min_preco = db.session.query(db.func.min(Produto.preco_diamantes)).scalar() or 0
+        max_preco = db.session.query(db.func.max(Produto.preco_diamantes)).scalar() or 1000
+    else:
+        # Fallback: converter XP para diamantes
+        min_preco_xp = db.session.query(db.func.min(Produto.preco_xp)).scalar() or 0
+        max_preco_xp = db.session.query(db.func.max(Produto.preco_xp)).scalar() or 2000
+        min_preco = min_preco_xp // 2
+        max_preco = max_preco_xp // 2
+    
+    # MUDANÇA: Verificar diamantes do usuário atual + reset mensal
+    diamantes_atual = 0
+    if current_user.is_authenticated:
+        # Verificar reset mensal automático
+        try:
+            from app.services.xp_service import XpService
+            XpService.verificar_e_resetar_diamantes_mensais(current_user)
+        except ImportError:
+            # Se XpService não estiver disponível, usar valor atual
+            pass
+        
+        diamantes_atual = current_user.diamantes or 0
+    
+    return render_template('shop/index.html',
+                          produtos=produtos,
+                          diamantes_atual=diamantes_atual,  # MUDANÇA: xp_atual → diamantes_atual
+                          ordenar=ordenar,
+                          categoria=categoria,
+                          disponibilidade=disponibilidade,
+                          categorias=categorias,
+                          min_preco=min_preco,
+                          max_preco=max_preco)
+
+@shop_bp.route('/produto/<int:produto_id>')
+def produto(produto_id):
+    """
+    Exibe os detalhes de um produto específico.
+    *** ATUALIZADO PARA DIAMANTES ***
+    """
+    produto = Produto.query.get_or_404(produto_id)
+    
+    # Garantir que produto tem preço em diamantes
+    if not hasattr(produto, 'preco_diamantes') or not produto.preco_diamantes:
+        if hasattr(produto, 'preco_xp') and produto.preco_xp:
+            produto.preco_diamantes_display = produto.preco_xp // 2
+        else:
+            produto.preco_diamantes_display = 50
+    
+    # MUDANÇA: Verificar diamantes do usuário atual + reset mensal
+    diamantes_atual = 0
+    pode_resgatar = False
+    if current_user.is_authenticated:
+        # Verificar reset mensal automático
+        try:
+            from app.services.xp_service import XpService
+            XpService.verificar_e_resetar_diamantes_mensais(current_user)
+        except ImportError:
+            pass
+        
+        diamantes_atual = current_user.diamantes or 0
+        
+        # MUDANÇA: Verificar se pode resgatar baseado em diamantes
+        preco_produto = getattr(produto, 'preco_diamantes', None) or getattr(produto, 'preco_diamantes_display', 50)
+        pode_resgatar = diamantes_atual >= preco_produto
+    
+    # Verificar se o usuário já possui um resgate ativo deste produto
+    ja_possui_resgate = False
+    if current_user.is_authenticated:
+        resgates_ativos = Resgate.query.filter_by(
+            user_id=current_user.id,
+            produto_id=produto.id,
+            status='Pendente'
+        ).first()
+        ja_possui_resgate = resgates_ativos is not None
+    
+    # MUDANÇA: Produtos similares baseados em preço de diamantes
+    preco_base = getattr(produto, 'preco_diamantes', None) or getattr(produto, 'preco_diamantes_display', 50)
+    
+    if hasattr(Produto, 'preco_diamantes'):
+        produtos_similares = Produto.query.filter(
+            Produto.id != produto.id, 
+            Produto.disponivel == True,
+            Produto.estoque > 0,
+            (Produto.categoria == produto.categoria) | 
+            (Produto.preco_diamantes.between(preco_base * 0.7, preco_base * 1.3))
+        ).limit(4).all()
+    else:
+        # Fallback para preco_xp
+        produtos_similares = Produto.query.filter(
+            Produto.id != produto.id, 
+            Produto.disponivel == True,
+            Produto.estoque > 0,
+            (Produto.categoria == produto.categoria) | 
+            (Produto.preco_xp.between(preco_base * 1.4, preco_base * 2.6))  # Convertido para XP
+        ).limit(4).all()
+    
+    return render_template('shop/produto.html',
+                          produto=produto,
+                          produtos_similares=produtos_similares,
+                          diamantes_atual=diamantes_atual,  # MUDANÇA
+                          pode_resgatar=pode_resgatar,
+                          ja_possui_resgate=ja_possui_resgate)
+
+

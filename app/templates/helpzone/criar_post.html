@@ -1,0 +1,997 @@
+<!-- app/templates/helpzone/criar_post.html - VERSÃO ULTRA-MODERNA -->
+{% extends "layout.html" %}
+
+{% block title %}Criar Post - HelpZone{% endblock %}
+
+{% block styles %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* ==================== VARIÁVEIS DARK MODE ==================== */
+    :root {
+        --bg-main: #000000;
+        --bg-elevated: #0a0a0a;
+        --bg-card: #141414;
+        --bg-hover: #1a1a1a;
+        
+        --border-subtle: #1f1f1f;
+        --border-default: #2a2a2a;
+        --border-strong: #404040;
+        
+        --text-primary: #ffffff;
+        --text-secondary: #9ca3af;
+        --text-tertiary: #6b7280;
+        --text-disabled: #4b5563;
+        
+        --accent-purple: #8b5cf6;
+        --accent-purple-hover: #7c3aed;
+        --accent-glow: rgba(139, 92, 246, 0.15);
+        
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        
+        --transition-fast: 0.15s ease;
+        --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ==================== RESET & BASE ==================== */
+    html, body, .bg-dark {
+        background-color: var(--bg-main) !important;
+        color: var(--text-primary) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    main, .content-wrapper, .wrapper {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+
+    /* ==================== CONTAINER PRINCIPAL ==================== */
+    .create-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 0;
+        background: var(--bg-main);
+    }
+
+    /* ==================== HEADER FIXO (ESTILO INSTAGRAM/TWITTER) ==================== */
+    .create-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 54px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-back {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-primary);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+        font-size: 20px;
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: var(--bg-hover);
+    }
+
+    .header-title {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+    }
+
+    .btn-publish {
+        background: var(--accent-purple);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        letter-spacing: -0.2px;
+    }
+
+    .btn-publish:hover:not(:disabled) {
+        background: var(--accent-purple-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-publish:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .btn-publish.loading {
+        position: relative;
+        color: transparent;
+    }
+
+    .btn-publish.loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* ==================== ÁREA DE COMPOSIÇÃO ==================== */
+    .compose-area {
+        flex: 1;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Profile Row */
+    .profile-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .profile-avatar {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        color: white;
+        overflow: hidden;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .compose-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-name {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .privacy-select {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border-default);
+        background: transparent;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .privacy-select:hover {
+        border-color: var(--border-strong);
+        background: var(--bg-hover);
+    }
+
+    /* Textarea */
+    .compose-textarea {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 17px;
+        line-height: 1.6;
+        min-height: 140px;
+        resize: none;
+        outline: none;
+        font-weight: 400;
+    }
+
+    .compose-textarea::placeholder {
+        color: var(--text-tertiary);
+        font-weight: 400;
+    }
+
+    /* Character Counter */
+    .char-counter {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: -8px;
+        padding: 0 0 8px 52px;
+    }
+
+    .char-count {
+        font-size: 13px;
+        color: var(--text-tertiary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .char-count.warning { color: var(--warning); }
+    .char-count.danger { color: var(--danger); }
+
+    .char-progress {
+        width: 20px;
+        height: 20px;
+        position: relative;
+    }
+
+    .char-progress svg {
+        transform: rotate(-90deg);
+    }
+
+    .char-progress circle {
+        fill: none;
+        stroke: var(--border-default);
+        stroke-width: 2;
+    }
+
+    .char-progress .progress-ring {
+        stroke: var(--accent-purple);
+        stroke-linecap: round;
+        transition: stroke-dashoffset var(--transition-smooth), stroke var(--transition-smooth);
+    }
+
+    .char-progress .progress-ring.warning { stroke: var(--warning); }
+    .char-progress .progress-ring.danger { stroke: var(--danger); }
+
+    /* ==================== PREVIEW DE MÍDIA ==================== */
+    .media-preview-container {
+        display: none;
+        margin: 8px 0 0 52px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--bg-card);
+        border: 1px solid var(--border-default);
+        position: relative;
+    }
+
+    .media-preview-container.show {
+        display: block;
+        animation: slideDown var(--transition-smooth);
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .media-preview-wrapper {
+        position: relative;
+        width: 100%;
+        background: black;
+    }
+
+    .media-preview-content {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        display: block;
+        object-fit: contain;
+    }
+
+    .media-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.6) 100%);
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        pointer-events: none;
+    }
+
+    .media-preview-wrapper:hover .media-overlay {
+        opacity: 1;
+    }
+
+    .btn-remove-media {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        z-index: 10;
+        opacity: 0;
+    }
+
+    .media-preview-wrapper:hover .btn-remove-media {
+        opacity: 1;
+    }
+
+    .btn-remove-media:hover {
+        background: var(--danger);
+        transform: scale(1.1);
+    }
+
+    .media-info {
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-elevated);
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .media-type {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .media-size {
+        font-size: 12px;
+        color: var(--text-tertiary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ==================== TOOLBAR (ESTILO THREADS/TWITTER) ==================== */
+	/* Toolbar mais premium */
+	.compose-toolbar {
+	  position: sticky;
+	  bottom: 0;
+	  background: rgba(0, 0, 0, 0.88);
+	  backdrop-filter: blur(16px) saturate(140%);
+	  -webkit-backdrop-filter: blur(16px) saturate(140%);
+	  border-top: 1px solid var(--border-subtle);
+	}
+
+    .toolbar-content {
+        max-width: 680px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toolbar-left {
+        display: flex;
+        gap: 4px;
+    }
+
+    .tool-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-purple);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-size: 20px;
+        position: relative;
+    }
+
+    .tool-btn:hover {
+        background: var(--accent-glow);
+    }
+
+    .tool-btn:active {
+        transform: scale(0.95);
+    }
+
+    .tool-btn.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .tool-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 16px;
+        height: 16px;
+        background: var(--accent-purple);
+        border: 2px solid var(--bg-main);
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Input de arquivo oculto */
+    input[type="file"] {
+        display: none;
+    }
+
+    /* ==================== TOOLTIP ==================== */
+    .tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-fast);
+        border: 1px solid var(--border-default);
+        box-shadow: var(--shadow-md);
+        z-index: 1000;
+    }
+
+    .tool-btn:hover .tooltip {
+        opacity: 1;
+    }
+
+    /* ==================== HASHTAG & MENTION HIGHLIGHT ==================== */
+    .compose-textarea {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ==================== ANIMATIONS ==================== */
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* ==================== RESPONSIVE MOBILE ==================== */
+    @media (max-width: 768px) {
+        .create-wrapper {
+            max-width: 100%;
+        }
+
+        .create-header {
+            padding: 10px 12px;
+            height: 50px;
+        }
+
+        .header-title {
+            font-size: 16px;
+        }
+
+		.compose-area {
+		  padding-bottom: 92px; /* espaço pro rodapé */
+		}
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            font-size: 14px;
+        }
+
+        .compose-textarea {
+            font-size: 16px; /* iOS zoom prevention */
+            min-height: 120px;
+        }
+
+        .media-preview-container {
+            margin-left: 48px;
+            border-radius: 12px;
+        }
+
+        .media-preview-content {
+            max-height: 400px;
+        }
+
+        .compose-toolbar {
+            padding: 10px 12px;
+        }
+
+        .tool-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+        }
+
+        .char-counter {
+            padding-left: 48px;
+        }
+    }
+
+    /* ==================== DARK MODE REFINEMENTS ==================== */
+    @media (prefers-color-scheme: dark) {
+        ::selection {
+            background: var(--accent-purple);
+            color: white;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #525252;
+        }
+    }
+
+    /* ==================== ACCESSIBILITY ==================== */
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    /* Focus states */
+    .btn-back:focus-visible,
+    .btn-publish:focus-visible,
+    .tool-btn:focus-visible,
+    .privacy-select:focus-visible {
+        outline: 2px solid var(--accent-purple);
+        outline-offset: 2px;
+    }
+
+
+    .compose-textarea:focus {
+        outline: none;
+    }
+	
+	
+	  .toolbar-right {
+	  display: flex;
+	  align-items: center;
+	}
+
+	.toolbar-right .btn-publish {
+	  padding: 10px 18px;
+	  border-radius: 14px; /* menos “pílula”, mais moderno */
+	  box-shadow: 0 10px 24px rgba(139, 92, 246, 0.18);
+	}
+	
+	@media (max-width: 768px) {
+  .toolbar-content {
+    gap: 10px;
+  }
+
+  .toolbar-right .btn-publish {
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+}
+
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="create-wrapper">
+    
+    <!-- ==================== HEADER FIXO ==================== -->
+    <header class="create-header">
+        <div class="header-left">
+            <a href="{{ url_for('helpzone.feed') }}" class="btn-back" title="Voltar" aria-label="Voltar ao feed">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="header-title">Criar publicação</h1>
+        </div>
+    </header>
+
+    <!-- ==================== FORMULÁRIO PRINCIPAL ==================== -->
+    <form id="createPostForm" method="POST" enctype="multipart/form-data">
+        
+        <div class="compose-area">
+            
+            <!-- Profile + Compose -->
+            <div class="profile-row">
+                <div class="profile-avatar">
+                    {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
+                        <img src="{{ current_user.perfil_social.foto_perfil }}" alt="{{ current_user.nome_completo }}">
+                    {% else %}
+                        {{ current_user.nome_completo[0].upper() }}
+                    {% endif %}
+                </div>
+                
+                <div class="compose-content">
+                    <div class="profile-info">
+                        <span class="profile-name">{{ current_user.nome_completo }}</span>
+                        <button type="button" class="privacy-select" aria-label="Configurações de privacidade">
+                            <i class="fas fa-globe-americas"></i>
+                            <span>Público</span>
+                            <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                        </button>
+                    </div>
+                    
+                    <textarea 
+                        name="texto" 
+                        id="postText" 
+                        class="compose-textarea" 
+                        placeholder="O que você está estudando hoje?"
+                        autofocus
+                        maxlength="2000"
+                        aria-label="Texto da publicação"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Character Counter -->
+            <div class="char-counter" id="charCounter" style="display: none;">
+                <span class="char-count" id="charCount">0/2000</span>
+                <div class="char-progress">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="9"></circle>
+                        <circle 
+                            cx="10" 
+                            cy="10" 
+                            r="9" 
+                            class="progress-ring"
+                            id="progressRing"
+                            stroke-dasharray="56.5"
+                            stroke-dashoffset="56.5"
+                        ></circle>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Hidden Inputs -->
+            <input type="hidden" name="tipo_midia" id="tipoMidia" value="texto">
+            <input type="file" name="arquivo" id="fileInput" accept="">
+
+            <!-- Preview de Mídia -->
+            <div class="media-preview-container" id="previewContainer">
+                <div class="media-preview-wrapper">
+                    <div class="media-overlay"></div>
+                    <img id="imgPreview" class="media-preview-content" style="display:none;" alt="Preview">
+                    <video id="vidPreview" class="media-preview-content" controls style="display:none;"></video>
+                    <button type="button" class="btn-remove-media" onclick="clearMedia()" aria-label="Remover mídia">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="media-info">
+                    <div class="media-type">
+                        <i class="fas fa-image" id="mediaIcon"></i>
+                        <span id="mediaTypeName">Imagem</span>
+                    </div>
+                    <div class="media-size" id="mediaSize">0 KB</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TOOLBAR FLUTUANTE ==================== -->
+        <div class="compose-toolbar">
+            <div class="toolbar-content">
+                <div class="toolbar-left">
+                    <button type="button" class="tool-btn" onclick="triggerUpload('imagem')" title="Adicionar foto" aria-label="Adicionar foto">
+                        <i class="far fa-image"></i>
+                        <span class="tooltip">Foto</span>
+                    </button>
+                    
+                    <button type="button" class="tool-btn" onclick="triggerUpload('video')" title="Adicionar vídeo" aria-label="Adicionar vídeo (máx 20s)">
+                        <i class="fas fa-video"></i>
+                        <span class="tooltip">Vídeo</span>
+                    </button>
+                    
+                    <button type="button" class="tool-btn disabled" title="Em breve" aria-label="GIF (em breve)">
+                        <i class="fas fa-file-image"></i>
+                        <span class="tooltip">GIF</span>
+                    </button>
+                    
+                    <button type="button" class="tool-btn disabled" title="Em breve" aria-label="Enquete (em breve)">
+                        <i class="fas fa-poll"></i>
+                        <span class="tooltip">Enquete</span>
+                    </button>
+                    
+					<div class="toolbar-right">
+					  <button type="submit" form="createPostForm" class="btn-publish" id="submitBtn" disabled>
+						Publicar
+					  </button>
+                    </div>
+                </div>
+		    </div>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    'use strict';
+
+    // ==================== ELEMENTOS DOM ====================
+    const fileInput = document.getElementById('fileInput');
+    const tipoInput = document.getElementById('tipoMidia');
+    const previewContainer = document.getElementById('previewContainer');
+    const imgPreview = document.getElementById('imgPreview');
+    const vidPreview = document.getElementById('vidPreview');
+    const submitBtn = document.getElementById('submitBtn');
+    const postText = document.getElementById('postText');
+    const charCounter = document.getElementById('charCounter');
+    const charCount = document.getElementById('charCount');
+    const progressRing = document.getElementById('progressRing');
+    const mediaIcon = document.getElementById('mediaIcon');
+    const mediaTypeName = document.getElementById('mediaTypeName');
+    const mediaSize = document.getElementById('mediaSize');
+    const form = document.getElementById('createPostForm');
+
+    // ==================== VALIDAÇÃO & BOTÃO PUBLICAR ====================
+    function validateForm() {
+        const text = postText.value.trim();
+        const hasFile = fileInput.files.length > 0;
+        submitBtn.disabled = !text && !hasFile;
+    }
+
+    postText.addEventListener('input', function() {
+        validateForm();
+        updateCharCounter();
+    });
+
+    // ==================== CONTADOR DE CARACTERES ====================
+    function updateCharCounter() {
+        const length = postText.value.length;
+        const maxLength = 2000;
+        const percentage = (length / maxLength) * 100;
+        
+        if (length > 0) {
+            charCounter.style.display = 'flex';
+            charCount.textContent = `${length}/${maxLength}`;
+            
+            // Atualiza círculo de progresso
+            const circumference = 56.5;
+            const offset = circumference - (percentage / 100) * circumference;
+            progressRing.style.strokeDashoffset = offset;
+            
+            // Muda cor baseado no limite
+            charCount.classList.remove('warning', 'danger');
+            progressRing.classList.remove('warning', 'danger');
+            
+            if (percentage >= 95) {
+                charCount.classList.add('danger');
+                progressRing.classList.add('danger');
+            } else if (percentage >= 85) {
+                charCount.classList.add('warning');
+                progressRing.classList.add('warning');
+            }
+        } else {
+            charCounter.style.display = 'none';
+        }
+    }
+
+    // ==================== UPLOAD DE MÍDIA ====================
+    window.triggerUpload = function(type) {
+        fileInput.value = '';
+        
+        if (type === 'imagem') {
+            fileInput.accept = 'image/png,image/jpeg,image/jpg,image/gif,image/webp';
+            tipoInput.value = 'imagem';
+        } else if (type === 'video') {
+            fileInput.accept = 'video/mp4,video/webm,video/mov';
+            tipoInput.value = 'video';
+        }
+        
+        fileInput.click();
+    };
+
+    // ==================== PREVIEW DE MÍDIA ====================
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        // Validação de tamanho
+        const maxSize = tipoInput.value === 'imagem' ? 5 * 1024 * 1024 : 50 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert(`Arquivo muito grande! Limite: ${maxSize / (1024 * 1024)}MB`);
+            clearMedia();
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            previewContainer.classList.add('show');
+            
+            if (tipoInput.value === 'imagem') {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+                vidPreview.style.display = 'none';
+                vidPreview.src = '';
+                
+                mediaIcon.className = 'far fa-image';
+                mediaTypeName.textContent = 'Imagem';
+                
+            } else if (tipoInput.value === 'video') {
+                vidPreview.src = e.target.result;
+                vidPreview.style.display = 'block';
+                imgPreview.style.display = 'none';
+                imgPreview.src = '';
+                
+                mediaIcon.className = 'fas fa-video';
+                mediaTypeName.textContent = 'Vídeo';
+                
+                // Validação de duração
+                vidPreview.onloadedmetadata = function() {
+                    if (this.duration > 20) {
+                        alert('Vídeo muito longo! Limite: 20 segundos.');
+                        clearMedia();
+                    }
+                };
+            }
+            
+            // Exibir tamanho do arquivo
+            const sizeKB = (file.size / 1024).toFixed(1);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            mediaSize.textContent = file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+            
+            validateForm();
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    // ==================== REMOVER MÍDIA ====================
+    window.clearMedia = function() {
+        fileInput.value = '';
+        tipoInput.value = 'texto';
+        previewContainer.classList.remove('show');
+        imgPreview.src = '';
+        vidPreview.src = '';
+        imgPreview.style.display = 'none';
+        vidPreview.style.display = 'none';
+        validateForm();
+    };
+
+    // ==================== SUBMIT DO FORMULÁRIO ====================
+    form.addEventListener('submit', function(e) {
+        const text = postText.value.trim();
+        const hasFile = fileInput.files.length > 0;
+
+        if (!text && !hasFile) {
+            e.preventDefault();
+            alert('Escreva algo ou adicione uma foto/vídeo!');
+            return;
+        }
+
+        // Loading state
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+    });
+
+    // ==================== ATALHOS DE TECLADO ====================
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter para publicar
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if (!submitBtn.disabled) {
+                form.submit();
+            }
+        }
+        
+        // Esc para voltar
+        if (e.key === 'Escape') {
+            if (confirm('Descartar publicação?')) {
+                window.location.href = '{{ url_for("helpzone.feed") }}';
+            }
+        }
+    });
+
+    // ==================== AUTO-RESIZE TEXTAREA ====================
+    postText.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 400) + 'px';
+    });
+
+    // ==================== PREVENÇÃO DE PERDA DE DADOS ====================
+    let formChanged = false;
+    
+    postText.addEventListener('input', () => formChanged = true);
+    fileInput.addEventListener('change', () => formChanged = true);
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged && !submitBtn.classList.contains('loading')) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+    
+    form.addEventListener('submit', () => formChanged = false);
+
+    // ==================== INICIALIZAÇÃO ====================
+    validateForm();
+    postText.focus();
+
+})();
+</script>
+{% endblock %}
+

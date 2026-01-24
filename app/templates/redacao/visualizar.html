@@ -1,0 +1,1598 @@
+<!-- app/templates/redacao/visualizar.html -->
+{% extends "layout.html" %}
+
+{% block title %}Redação: {{ redacao.titulo }} - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-light: #60a5fa;
+        --secondary: #6b7280;
+        --accent: #00d9ff;
+        --accent-light: #0ea5e9;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --background: #000000;
+        --surface: #111111;
+        --surface-light: #1a1a1a;
+        --text: #ffffff;
+        --text-muted: #a1a1aa;
+        --border: #262626;
+        --border-light: #404040;
+        --shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+        --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        --radius: 16px;
+        --radius-lg: 24px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at top, #111111 0%, #000000 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .visualizar-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .header-content h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1.125rem;
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        border: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-success {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+    .btn-warning {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #d97706;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        color: white;
+    }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+
+    .btn-outline-light:hover {
+        background: var(--surface-light);
+        border-color: var(--border-light);
+        color: var(--text);
+    }
+
+    /* Essay Hero Section */
+    .essay-hero {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .essay-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+        opacity: 0.8;
+    }
+
+    .essay-hero-content {
+        padding: 3rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    .essay-info {
+        flex: 1;
+    }
+
+    .essay-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .essay-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-muted);
+    }
+
+    .essay-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .essay-meta-item i {
+        color: var(--accent);
+        font-size: 1.1rem;
+    }
+
+    .essay-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .essay-stat {
+        text-align: center;
+        padding: 1rem;
+        background: var(--surface-light);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+
+    .essay-stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .essay-stat-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .score-circle-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .score-circle {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, var(--primary) 0%, var(--accent) var(--score-percentage, 75%), var(--border) var(--score-percentage, 75%));
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: rotateIn 1s ease-out 0.5s both;
+    }
+
+    .score-circle-inner {
+        width: 100%;
+        height: 100%;
+        background: var(--surface);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .score-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .score-max {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .score-status {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .score-excellent {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .score-good {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .score-needs-improvement {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .score-pending {
+        background: rgba(0, 217, 255, 0.2);
+        color: var(--accent);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    /* Main Content Grid */
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    /* Essay Text Card */
+    .essay-text-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .essay-text-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .essay-text-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .essay-text-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .essay-text-header i {
+        color: var(--accent);
+    }
+
+    .essay-text-content {
+        padding: 2rem;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .essay-text {
+        color: var(--text-muted);
+        line-height: 1.8;
+        font-size: 1rem;
+        white-space: pre-wrap;
+    }
+
+    .essay-text::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .essay-text::-webkit-scrollbar-track {
+        background: var(--surface-light);
+        border-radius: 3px;
+    }
+
+    .essay-text::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 3px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Status Card */
+    .status-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .status-card-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .status-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--warning), #d97706);
+        opacity: 0.8;
+    }
+
+    .status-card-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-card-header i {
+        color: var(--warning);
+    }
+
+    .status-card-content {
+        padding: 2rem;
+    }
+
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .status-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .status-label {
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .status-value {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-info {
+        background: rgba(0, 217, 255, 0.2);
+        color: var(--accent);
+        border: 1px solid rgba(0, 217, 255, 0.3);
+    }
+
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-secondary {
+        background: rgba(107, 114, 128, 0.2);
+        color: var(--secondary);
+        border: 1px solid rgba(107, 114, 128, 0.3);
+    }
+
+    /* Loading State */
+    .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 2rem;
+    }
+
+    .loading-state h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .loading-state p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Chart Card */
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .chart-card-header {
+        background: var(--surface-light);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+    }
+
+    .chart-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--success), #059669);
+        opacity: 0.8;
+    }
+
+    .chart-card-header h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-card-header i {
+        color: var(--success);
+    }
+
+    .chart-content {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .radar-chart-container {
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+
+    .competencias-summary {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .competencia-mini {
+        text-align: center;
+        padding: 1rem;
+        background: var(--surface-light);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .competencia-mini:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-light);
+    }
+
+    .competencia-mini-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .competencia-mini-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Competencias Section */
+    .competencias-section {
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-header h2 i {
+        color: var(--accent);
+        font-size: 1.5rem;
+    }
+
+    .competencias-tabs {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .tabs-header {
+        display: flex;
+        background: var(--surface-light);
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        padding: 1.25rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        font-size: 0.9rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .tab-btn:hover {
+        color: var(--text);
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: rgba(0, 217, 255, 0.1);
+    }
+
+    .tabs-content {
+        padding: 2rem;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .competencia-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .competencia-title {
+        flex: 1;
+    }
+
+    .competencia-title h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .competencia-description {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .competencia-score-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .competencia-score-display:hover {
+        transform: scale(1.05);
+    }
+
+    .score-excelente {
+        background: linear-gradient(135deg, var(--success), #059669);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .score-bom {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .score-regular {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .feedback-sections {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .feedback-section {
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feedback-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        opacity: 0.8;
+    }
+
+    .feedback-justificativa {
+        background: rgba(0, 217, 255, 0.05);
+        border-color: rgba(0, 217, 255, 0.2);
+    }
+
+    .feedback-justificativa::before {
+        background: var(--accent);
+    }
+
+    .feedback-pontos-fortes {
+        background: rgba(16, 185, 129, 0.05);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .feedback-pontos-fortes::before {
+        background: var(--success);
+    }
+
+    .feedback-pontos-fracos {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .feedback-pontos-fracos::before {
+        background: var(--danger);
+    }
+
+    .feedback-sugestoes {
+        background: rgba(245, 158, 11, 0.05);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .feedback-sugestoes::before {
+        background: var(--warning);
+    }
+
+    .feedback-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .feedback-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .feedback-icon {
+        font-size: 1.125rem;
+    }
+
+    .feedback-justificativa .feedback-icon {
+        color: var(--accent);
+    }
+
+    .feedback-pontos-fortes .feedback-icon {
+        color: var(--success);
+    }
+
+    .feedback-pontos-fracos .feedback-icon {
+        color: var(--danger);
+    }
+
+    .feedback-sugestoes .feedback-icon {
+        color: var(--warning);
+    }
+
+    .feedback-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-muted);
+    }
+
+    .feedback-list li {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .feedback-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .feedback-text {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Action Section */
+    .action-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .action-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        opacity: 0.8;
+    }
+
+    .action-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+    }
+
+    .action-section p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Print Area */
+    .print-area {
+        display: none;
+    }
+
+    @media print {
+        .print-area {
+            display: block;
+        }
+        
+        .visualizar-container {
+            display: none;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .main-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .sidebar {
+            order: -1;
+            flex-direction: row;
+        }
+        
+        .sidebar > * {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .visualizar-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+        }
+
+        .essay-hero-content {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .essay-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .essay-meta {
+            justify-content: center;
+        }
+
+        .competencias-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tabs-header {
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .competencia-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .sidebar {
+            flex-direction: column;
+        }
+
+        .action-section {
+            padding: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .essay-hero-content {
+            padding: 1.5rem;
+        }
+
+        .feedback-section {
+            padding: 1rem;
+        }
+
+        .competencias-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+        }
+
+        .score-value {
+            font-size: 2rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes rotateIn {
+        from {
+            opacity: 0;
+            transform: rotate(-180deg) scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+</style>
+
+<div class="visualizar-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Análise da Redação</h1>
+            <p class="page-subtitle">Visualização completa da redação e feedback detalhado</p>
+        </div>
+        <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Voltar às Redações
+        </a>
+    </div>
+
+    <!-- Essay Hero Section -->
+    <div class="essay-hero" style="--score-percentage: {{ (redacao.nota_final / 1000 * 100) if redacao.nota_final else 0 }}%">
+        <div class="essay-hero-content">
+            <div class="essay-info">
+                <h2 class="essay-title">{{ redacao.titulo or "Redação sem título" }}</h2>
+                
+                <div class="essay-meta">
+                    <div class="essay-meta-item">
+                        <i class="bi bi-calendar-event"></i>
+                        {{ redacao.data_envio.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    {% if redacao.tema %}
+                    <div class="essay-meta-item">
+                        <i class="bi bi-bookmark-fill"></i>
+                        {{ redacao.tema }}
+                    </div>
+                    {% endif %}
+                    <div class="essay-meta-item">
+                        <i class="bi bi-file-text"></i>
+                        {{ redacao.conteudo|length }} caracteres
+                    </div>
+                    <div class="essay-meta-item">
+                        <i class="bi bi-chat-square-text"></i>
+                        {{ (redacao.conteudo.split()|length) }} palavras
+                    </div>
+                </div>
+
+                <div class="essay-stats">
+                    <div class="essay-stat">
+                        <span class="essay-stat-value">{{ redacao.conteudo|length }}</span>
+                        <span class="essay-stat-label">Caracteres</span>
+                    </div>
+                    <div class="essay-stat">
+                        <span class="essay-stat-value">{{ (redacao.conteudo.split()|length) }}</span>
+                        <span class="essay-stat-label">Palavras</span>
+                    </div>
+                    <div class="essay-stat">
+                        <span class="essay-stat-value">{{ (redacao.conteudo.split('\n\n')|length) }}</span>
+                        <span class="essay-stat-label">Parágrafos</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-circle-container">
+                {% if redacao.nota_final %}
+                    <div class="score-circle">
+                        <div class="score-circle-inner">
+                            <span class="score-value">{{ redacao.nota_final|int }}</span>
+                            <span class="score-max">/1000</span>
+                        </div>
+                    </div>
+                    
+                    {% if redacao.nota_final >= 800 %}
+                        <div class="score-status score-excellent">Excelente</div>
+                    {% elif redacao.nota_final >= 600 %}
+                        <div class="score-status score-good">Boa Redação</div>
+                    {% else %}
+                        <div class="score-status score-needs-improvement">Pode Melhorar</div>
+                    {% endif %}
+                {% else %}
+                    <div class="score-circle">
+                        <div class="score-circle-inner">
+                            <i class="bi bi-clock" style="font-size: 2rem; color: var(--accent);"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="score-status score-pending">
+                        {% if redacao.status == "Em análise" %}
+                            Em Análise
+                        {% else %}
+                            Aguardando
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Essay Text -->
+        <div class="essay-text-card">
+            <div class="essay-text-header">
+                <h3><i class="bi bi-file-earmark-text"></i> Texto Original</h3>
+            </div>
+            <div class="essay-text-content">
+                <div class="essay-text">{{ redacao.conteudo }}</div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="status-card-header">
+                    <h3><i class="bi bi-info-circle"></i> Status da Redação</h3>
+                </div>
+                <div class="status-card-content">
+                    <div class="status-item">
+                        <span class="status-label">Status Atual:</span>
+                        <span class="status-value">
+                            {% if redacao.status == "Avaliada" %}
+                                <span class="badge badge-success">Avaliada</span>
+                            {% elif redacao.status == "Em análise" %}
+                                <span class="badge badge-info">Em análise</span>
+                            {% elif redacao.status == "Erro" %}
+                                <span class="badge badge-danger">Erro</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Enviada</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <span class="status-label">Data de Envio:</span>
+                        <span class="status-value">{{ redacao.data_envio.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                    
+                    {% if redacao.nota_final %}
+                    <div class="status-item">
+                        <span class="status-label">Nota Final:</span>
+                        <span class="status-value">{{ redacao.nota_final|int }}/1000</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if redacao.tema %}
+                    <div class="status-item">
+                        <span class="status-label">Tema:</span>
+                        <span class="status-value">{{ redacao.tema }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chart Card -->
+            {% if redacao.status == "Avaliada" %}
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3><i class="bi bi-radar"></i> Radar de Competências</h3>
+                </div>
+                <div class="chart-content">
+                    <div class="radar-chart-container">
+                        <canvas id="competenciasChart"></canvas>
+                    </div>
+                    
+                    <div class="competencias-summary">
+                        {% for i in range(1, 6) %}
+                        <div class="competencia-mini">
+                            <span class="competencia-mini-value">{{ redacao['competencia' ~ i] or 0 }}</span>
+                            <span class="competencia-mini-label">Comp. {{ i }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% elif redacao.status == "Em análise" %}
+            <div class="status-card">
+                <div class="status-card-content">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <h4>Analisando Redação</h4>
+                        <p>Sua redação está sendo avaliada por nossa IA. Isso pode levar alguns instantes.</p>
+                        <p>A página será atualizada automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="status-card">
+                <div class="status-card-content">
+                    <div class="loading-state">
+                        <i class="bi bi-hourglass-split" style="font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem;"></i>
+                        <h4>Aguardando Avaliação</h4>
+                        <p>Sua redação ainda não foi enviada para avaliação.</p>
+                        <p>Use o botão "Editar" para finalizar e enviar.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Competencias Section -->
+    {% if redacao.status == "Avaliada" %}
+    <div class="competencias-section">
+        <div class="section-header">
+            <h2><i class="bi bi-clipboard-check"></i> Feedback por Competência</h2>
+        </div>
+
+        <div class="competencias-tabs">
+            <div class="tabs-header">
+                {% for i in range(1, 6) %}
+                <button class="tab-btn {% if loop.first %}active{% endif %}" data-tab="tab-{{ i }}">
+                    Competência {{ i }}
+                </button>
+                {% endfor %}
+            </div>
+            
+            <div class="tabs-content">
+                {% for i in range(1, 6) %}
+                {% set comp_names = [
+                    "Domínio da modalidade escrita formal da língua portuguesa",
+                    "Compreender a proposta de redação e aplicar conceitos das várias áreas de conhecimento", 
+                    "Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos",
+                    "Demonstrar conhecimento dos mecanismos linguísticos necessários para a construção da argumentação",
+                    "Elaborar proposta de intervenção para o problema abordado, respeitando os direitos humanos"
+                ] %}
+                <div class="tab-content {% if loop.first %}active{% endif %}" id="tab-{{ i }}">
+                    <div class="competencia-header">
+                        <div class="competencia-title">
+                            <h3>Competência {{ i }}</h3>
+                            <p class="competencia-description">{{ comp_names[i-1] }}</p>
+                        </div>
+                        
+                        {% set comp_nota = redacao['competencia' ~ i] or 0 %}
+                        {% if comp_nota >= 160 %}
+                            <div class="competencia-score-display score-excelente">{{ comp_nota }}</div>
+                        {% elif comp_nota >= 120 %}
+                            <div class="competencia-score-display score-bom">{{ comp_nota }}</div>
+                        {% else %}
+                            <div class="competencia-score-display score-regular">{{ comp_nota }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="feedback-sections">
+                        <!-- Justificativa -->
+                        <div class="feedback-section feedback-justificativa">
+                            <div class="feedback-header">
+                                <i class="bi bi-info-circle feedback-icon"></i>
+                                <h4>Justificativa da Avaliação</h4>
+                            </div>
+                            <p class="feedback-text">{{ redacao['feedback_comp' ~ i] or "Justificativa não disponível para esta competência." }}</p>
+                        </div>
+                        
+                        <!-- Pontos Fortes -->
+                        <div class="feedback-section feedback-pontos-fortes">
+                            <div class="feedback-header">
+                                <i class="bi bi-check-circle-fill feedback-icon"></i>
+                                <h4>Pontos Fortes</h4>
+                            </div>
+                            {% set pontos_fortes = redacao.get_pontos_fortes(i) if redacao.get_pontos_fortes else [] %}
+                            {% if pontos_fortes %}
+                                <ul class="feedback-list">
+                                    {% for ponto in pontos_fortes %}
+                                        <li>{{ ponto }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="feedback-text">Continue praticando para desenvolver mais pontos fortes nesta competência.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Pontos de Atenção -->
+                        <div class="feedback-section feedback-pontos-fracos">
+                            <div class="feedback-header">
+                                <i class="bi bi-exclamation-triangle-fill feedback-icon"></i>
+                                <h4>Pontos de Atenção</h4>
+                            </div>
+                            {% set pontos_fracos = redacao.get_pontos_fracos(i) if redacao.get_pontos_fracos else [] %}
+                            {% if pontos_fracos %}
+                                <ul class="feedback-list">
+                                    {% for ponto in pontos_fracos %}
+                                        <li>{{ ponto }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="feedback-text">Parabéns! Não identificamos pontos críticos nesta competência.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Sugestões de Melhoria -->
+                        <div class="feedback-section feedback-sugestoes">
+                            <div class="feedback-header">
+                                <i class="bi bi-lightbulb-fill feedback-icon"></i>
+                                <h4>Sugestões de Melhoria</h4>
+                            </div>
+                            {% set sugestoes = redacao.get_sugestoes(i) if redacao.get_sugestoes else [] %}
+                            {% if sugestoes %}
+                                <ul class="feedback-list">
+                                    {% for sugestao in sugestoes %}
+                                        <li>{{ sugestao }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="feedback-text">Continue estudando e praticando para aprimorar ainda mais esta competência.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Section -->
+    <div class="action-section">
+        <h3>Próximos Passos</h3>
+        <p>
+            {% if redacao.status == "Avaliada" %}
+                Continue praticando para melhorar ainda mais suas habilidades de redação!
+            {% elif redacao.status == "Em análise" %}
+                Aguarde a finalização da análise para ver seu feedback completo.
+            {% else %}
+                Edite e finalize sua redação para receber o feedback completo.
+            {% endif %}
+        </p>
+        
+        <div class="action-buttons">
+            {% if redacao.status == "Avaliada" %}
+                <form method="POST" action="{{ url_for('redacao.reavaliar', redacao_id=redacao.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Deseja realmente reavaliar esta redação?')">
+                        <i class="bi bi-arrow-clockwise"></i> Reavaliar
+                    </button>
+                </form>
+            {% elif redacao.status != "Em análise" %}
+                <a href="{{ url_for('redacao.editar', redacao_id=redacao.id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil-square"></i> Editar Redação
+                </a>
+            {% endif %}
+            
+            <button class="btn btn-outline-light" onclick="printRedacao()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+            
+            <a href="{{ url_for('redacao.nova_redacao') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Nova Redação
+            </a>
+            
+            <a href="{{ url_for('redacao.index') }}" class="btn btn-outline-light">
+                <i class="bi bi-list-ul"></i> Minhas Redações
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Print Area -->
+<div class="print-area" id="printArea">
+    <h1>{{ redacao.titulo or "Redação sem título" }}</h1>
+    <p><strong>Tema:</strong> {{ redacao.tema or "Não especificado" }}</p>
+    <p><strong>Data:</strong> {{ redacao.data_envio.strftime('%d/%m/%Y') }}</p>
+    <hr>
+    <div style="white-space: pre-wrap; line-height: 1.8; margin: 2rem 0;">{{ redacao.conteudo }}</div>
+    
+    {% if redacao.status == "Avaliada" %}
+        <hr>
+        <h2>Avaliação</h2>
+        <p><strong>Nota Final:</strong> {{ redacao.nota_final|int }}/1000</p>
+        {% if redacao.parecer_geral %}
+            <p><strong>Parecer Geral:</strong> {{ redacao.parecer_geral }}</p>
+        {% endif %}
+        
+        <h3>Competências</h3>
+        {% for i in range(1, 6) %}
+            <p><strong>Competência {{ i }}:</strong> {{ redacao['competencia' ~ i] or 0 }}/200</p>
+            {% if redacao['feedback_comp' ~ i] %}
+                <p style="margin-left: 1rem; color: #666;">{{ redacao['feedback_comp' ~ i] }}</p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Controle das abas
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove a classe ativa de todos os botões e conteúdos
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Adiciona a classe ativa ao botão clicado
+            button.classList.add('active');
+            
+            // Ativa o conteúdo correspondente
+            const tabId = button.getAttribute('data-tab');
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+    
+    {% if redacao.status == "Avaliada" %}
+    // Gráfico radar de competências
+    const ctx = document.getElementById('competenciasChart');
+    if (ctx) {
+        const chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    'Domínio da\nNorma Culta',
+                    'Compreensão\ndo Tema',
+                    'Organização\nTextual',
+                    'Mecanismos\nLinguísticos',
+                    'Proposta de\nIntervenção'
+                ],
+                datasets: [{
+                    label: 'Suas Competências',
+                    data: [
+                        {{ redacao.competencia1 or 0 }}, 
+                        {{ redacao.competencia2 or 0 }}, 
+                        {{ redacao.competencia3 or 0 }}, 
+                        {{ redacao.competencia4 or 0 }}, 
+                        {{ redacao.competencia5 or 0 }}
+                    ],
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Nota: ${context.parsed.r}/200`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 200,
+                        stepSize: 40,
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        },
+                        pointLabels: {
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            font: {
+                                size: 11,
+                                weight: '500'
+                            }
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            backdropColor: 'transparent',
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+    
+    {% if redacao.status == "Em análise" %}
+    // Atualizar a página automaticamente se estiver em análise
+    setTimeout(function() {
+        location.reload();
+    }, 15000); // Recarregar após 15 segundos
+    {% endif %}
+
+    // Smooth scroll animations
+    const cards = document.querySelectorAll('.essay-hero, .essay-text-card, .status-card, .chart-card, .competencias-tabs');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    cards.forEach(card => {
+        observer.observe(card);
+    });
+});
+
+// Função para impressão
+function printRedacao() {
+    window.print();
+}
+</script>
+{% endblock %}

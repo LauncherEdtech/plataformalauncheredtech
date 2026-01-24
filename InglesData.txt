@@ -1,0 +1,202 @@
+[
+{
+"question": "(Enem 2019) 5 Ways Pets Can Improve Your Health\nA pet is certainly a great friend. After a difficult day, pet owners quite literally feel the\nlove. In fact, for nearly 25 years, research has shown that living with pets provides\ncertain health benefits. Pets help lower blood pressure and lessen anxiety. They\nboost our immunity. They can even help you get dates.\nAllergy Fighters: A growing number of studies have suggested that kids growing up\nin a home with “furred animals” will have less risk of allergies and asthma.\nDate Magnets: Dogs are great for making love connections. Forget Internet\nmatchmaking — a dog is a natural conversation starter.\nDogs for the Aged: Walking a dog or just caring for a pet — for elderly people who\nare able — can provide exercise and companionship.\nGood for Mind and Soul: Like any enjoyable activity, playing with a dog can elevate\nlevels of serotonin and dopamine — nerve transmitters that are known to have\npleasurable and calming properties.\nGood for the Heart: Heart attack patients who have pets survive longer than those\nwithout, according to several studies.\nDAVIS, J. L. Disponível em: www.webmd.com. Acesso em: 21 abr. 2013 (adaptado).\nAo discutir sobre a influência de animais de estimação no bem-estar do ser humano,\na autora, a fim de fortalecer seus argumentos, utiliza palavras e expressões como\nresearch, a growing number of research e several studies com o objetivo de\n",
+"answerA": "Mostrar que animais de estimação ajudam na cura de doenças como\nalergias e asma.",
+"answerB": "Convencer sobre os benefícios da adoção de animais de estimação\npara a saúde.",
+"answerC": "Fornecer dados sobre os impactos de animais de estimação nas\nrelações amorosas.",
+"answerD": "Explicar como o contato com animais de estimação pode prevenir\nataques cardíacos.",
+"answerE": "Esclarecer sobre o modo como idosos devem se relacionar com\nanimais de estimação.",
+"correctAnswer": "B",
+"correctAnswermessage": "A autora usa termos como “research”, “a growing\nnumber of studies” e “several studies” no texto para convencer os leitores sobre os\nbenefícios de ter animais de estimação para a saúde. Ela apresenta várias\nevidências que ligam a posse de animais de estimação a vários benefícios para a\nsaúde, incluindo redução da pressão arterial e ansiedade, aumento da imunidade, e\naté mesmo auxílio na socialização e conexões amorosas. Portanto, o objetivo\nprincipal dessas expressões é dar credibilidade às suas afirmações e persuadir os\nleitores da validade de seus argumentos.",
+"image": ""
+},
+{
+"question": "(Enem 2019) LETTER TO THE EDITOR: Sugar fear-mongering\nunhelpful\nBy The Washington Times Tuesday, June 25, 2013\nIn his recent piece “Is obesity a disease?” (Web, June 19), Dr. Peter Lind refers to\nhigh-fructose corn syrup and other “manufactured sugars” as “poison” that will\n“guarantee storage of fat in the body.” Current scientific research strongly indicates\nthat obesity results from excessive calorie intake combined with a sedentary lifestyle.\nThe fact is Americans are consuming more total calories now than ever before.\nAccording to the U.S. Department of Agriculture, our total per-capita daily caloric\nintake increased by 22 percent from 2,076 calories per day in 1970 to 2,534 calories\nper day in 2010 — an additional 458 calories, only 34 of which come from increased\nadded sugar intake. A vast majority of these calories come from increased fats and\nflour/ cereals. Surprisingly, the amount of caloric sweeteners (i.e. sugar,\nhigh-fructose, corn syrup, honey, etc.). Americans consume has actually decreased\nover the past decade. We need to continue to study the obesity epidemic to see\nwhat more can be done, but demonizing one specific ingredient accomplishes\nnothing and raises unnecessary fears that get in the way of real solutions.\nJAMES M. RIPPE Shrewsbury, Mass.\nDisponível em: www.washingtontimes.com. Acesso em: 29 jul. 2013 (adaptado).\nAo abordar o assunto “obesidade”, em uma seção de jornal, o autor",
+"answerA": "Defende o consumo liberado de açúcar.",
+"answerB": "Aponta a gordura como o grande vilão da saúde.",
+"answerC": "Demonstra acreditar que a obesidade não é preocupante.",
+"answerD": "Indica a necessidade de mais pesquisas sobre o assunto.",
+"answerE": "Denfatiza a redução de ingestão de calorias pelos americanos.",
+"correctAnswer": "D",
+"correctAnswermessage": "Ao abordar o assunto “obesidade” em uma seção de\njornal, o autor indica a necessidade de mais pesquisas sobre o assunto. Ele\nargumenta que a obesidade resulta de uma ingestão excessiva de calorias\ncombinada com um estilo de vida sedentário, e que os americanos estão\nconsumindo mais calorias totais agora do que nunca. Ele também menciona que a\nquantidade de adoçantes calóricos que os americanos consomem na verdade\ndiminuiu na última década. Portanto, ele enfatiza a necessidade de continuar\nestudando a epidemia de obesidade para ver o que mais pode ser feito, em vez de\ndemonizar um ingrediente específico.",
+"image": ""
+},
+{
+"question": "(Enem 2019) In this life\nSitting on a park bench\nThinking about a friend of mine\nHe was only twenty-three\nGone before he had his time.\nIt came without a warning\nDidnꞌt want his friends to see him cry\nHe knew the day was dawning\nAnd I didnꞌt have a chance to say goodbye.\nMADONNA. Erotica. Estados Unidos: Maverick, 1992.\nA canção, muitas vezes, é uma forma de manifestar sentimentos e emoções da vida\ncotidiana. Por exemplo, o sofrimento retratado nessa canção foi causado",
+"answerA": "Pela morte precoce de um amigo jovem.",
+"answerB": "Pelo término de um relacionamento amoroso.",
+"answerC": "Pela mudança de um amigo para outro país.",
+"answerD": "Pelo fim de uma amizade de mais de vinte anos.",
+"answerE": "Pela traição por parte de pessoa próxima.",
+"correctAnswer": "A",
+"correctAnswermessage": "O sofrimento retratado na canção foi causado pela\nmorte precoce de um amigo jovem. A letra menciona um amigo que se foi antes do\ntempo, aos vinte e três anos, e que a partida veio sem aviso, sem dar ao narrador a\nchance de se despedir. Isso indica uma perda repentina, como uma morte precoce.",
+"image": ""
+},
+{
+"question": "(Enem 2019) If children live with criticism, they learn to condemn.\nIf children live with fear, they learn to be apprehensive.\nIf children live with pity, they learn to feel sorry for themselves.\nIf children live with ridicule, they learn to feel shy.\nIf children live with tolerance, they learn patience.\nIf children live with praise, they learn appreciation.\nIf children live with acceptance, they learn to love.\nIf children live with approval, they learn to like themselves.\nIf children live with recognition, they learn it is good to have a goal.\nIf children live with sharing, they learn generosity. If children live with fairness, they\nlearn justice.\nIf children live with kindness and consideration, they learn respect.\nIf children live with friendliness, they learn the world is a nice place in which to live.\nNOLTE, D. L. Disponível em: www.americanfamilytraditions.com. Acesso em: 30 jul. 2012.\nValores culturais de um povo revelam sua forma de ser, agir e pensar. Na\nconcepção da autora, as diferentes formas de educar crianças nos Estados Unidos\nconfirmam que as crianças",
+"answerA": "Temem quem as amedronta.",
+"answerB": "Aprendem com o que vivem.",
+"answerC": "Amam aqueles que as aceitam.",
+"answerD": "São gentis quando respeitadas.",
+"answerE": "Ridicularizam quem as intimida.",
+"correctAnswer": "B",
+"correctAnswermessage": "Na concepção da autora, as diferentes formas de\neducar crianças nos Estados Unidos confirmam que as crianças aprendem com o\nque vivem. O texto sugere que as experiências e o ambiente em que as crianças\nsão criadas moldam seu comportamento e atitudes. Se elas vivem com crítica,\naprendem a condenar; se vivem com medo, aprendem a ser apreensivas; se vivem\ncom aceitação, aprendem a amar, e assim por diante. Portanto, as crianças são\nprofundamente influenciadas pelo ambiente em que vivem e pelas experiências que\ntêm.",
+"image": ""
+},
+{
+"question": "(Enem 2018) Lava Mae: Creating Showers on Wheels for the\nHomeless\nSan Francisco, according to recent city numbers, has 4,300 people living on the\nstreets. Among the many problems the homeless face is little or no access to\nshowers. San Francisco only has about 16 to 20 shower stalls to accommodate\nthem. But Doniece Sandoval has made it her mission to change that. The 51\n-year-old former marketing executive started Lava Mae, a sort of showers on wheels,\na new project that aims to turn decommissioned city buses into shower stations for\nthe homeless. Each bus will have two shower stations and Sandoval expects that\nthey’ll be able to provide 2,000 showers a week.\nANDREANO, C. Disponível em: http://abcnews.go. Acesso em: 26 jun, 2018 (adaptado)\nA relação dos vocábulos shower, bus e homeless, no texto, refere-se a",
+"answerA": "Empregar moradores de rua em lava a jatos para ônibus.",
+"answerB": "Criar acesso a banhos gratuitos para moradores de rua.",
+"answerC": "Comissionar sem-teto para dirigir os ônibus da cidade.",
+"answerD": "Exigir das autoridades que os ônibus municipais tenham banheiros.",
+"answerE": "Abrigar dois mil moradores de rua em ônibus que foram adaptados.",
+"correctAnswer": "B",
+"correctAnswermessage": "A relação dos vocábulos “shower”, “bus” e “homeless”\nno texto refere-se a criar acesso a banhos gratuitos para moradores de rua. O texto\ndescreve um projeto chamado Lava Mae, iniciado por Doniece Sandoval, que visa\ntransformar ônibus da cidade desativados em estações de banho para pessoas\nsem-teto. Cada ônibus terá duas estações de banho e Sandoval espera que eles\npossam fornecer 2.000 banhos por semana.",
+"image": ""
+},
+{
+"question": "(Enem 2018)\nDon’t write in English, they said,\nEnglish is not your mother tongue…\n…The language I speak\nBecomes mine, its distortions, its queerness\nAll mine, mine alone, it is half English, half\nIndian, funny perhaps, but it is honest,\nIt is as human as I am human…\n…It voices my joys, my longings my\nHopes…\n(Kamala Das, 1965:10)\nGARGESH, R. South Asian Englishes. In: KACHRU, B. B.; KACHRU, Y.; NELSON, C. L.\n(Eds.). The Handbook of World Englishes. Singapore: Blackwell, 2006.\nA poetisa Kamala Das, como muitos escritores indianos, escreve suas obras em\ninglês, apesar de essa não ser sua primeira língua. Nesses versos, ela",
+"answerA": "Usa a língua inglesa com efeito humorístico.",
+"answerB": "Recorre a vozes de vários escritores ingleses.",
+"answerC": "Adverte sobre o uso distorcido da língua inglesa.",
+"answerD": "Demonstra consciência de sua identidade linguística.",
+"answerE": "Reconhece a incompreensão na sua maneira de falar inglês.",
+"correctAnswer": "D",
+"correctAnswermessage": "Nos versos citados, a poetisa Kamala Das demonstra\nconsciência de sua identidade linguística. Ela reconhece que o inglês que fala é\numa mistura de inglês e indiano, talvez engraçado para alguns, mas é honesto e\nhumano. Ela afirma que a língua que fala se torna dela, com todas as suas\ndistorções e peculiaridades. Isso mostra uma forte consciência de sua identidade\nlinguística única.",
+"image": ""
+},
+{
+"question": "(Enem 2018) TEXTO I\nA Free World-class Education for Anyone Anywhere\nThe Khan Academy is an organization on a mission. We’re a not-for-profit with the\ngoal of changing education for the better by providing a free world-class education to\nanyone anywhere. All of the site’s resources are available to anyone. The Khan\nAcademy’s materials and resources are available to you completely free of charge.\nDisponível em: www.khanacademy.org. Acesso em: 24 fev. 2012 (adaptado).\nTEXTO II\nI didn’t have a problem with Khan Academy site until very recently. For me, the\nproblem is the way Khan Academy is being promoted. The way the media sees it as\n“revolutionizing education”. The way people with power and money view education\nas simply “sit-and-get”. If your philosophy of education is “sit-and-get”, i.e., teaching\nis telling and learning is listening, then Khan Academy is way more efficient than\nclassroom lecturing. Khan Academy does it better. But TRUE progressive educators,\nTRUE education visionaries and revolutionaries don’t want to do these things better.\nWe want to DO BETTER THINGS.\nDisponível em: http://fnoschese.wordpress.com. Acesso em: 2 mar. 2012.\nCom o impacto das tecnologias e a ampliação das redes sociais, consumidores\nencontram na internet possibilidades de opinar sobre serviços oferecidos. Nesse\nsentido, o segundo texto, que é um comentário sobre o site divulgado no primeiro,\napresenta a intenção do autor de",
+"answerA": "Elogiar o trabalho proposto para a educação nessa era tecnológica.",
+"answerB": "Reforçar como a mídia pode contribuir para revolucionar a\neducação.",
+"answerC": "Chamar a atenção das pessoas influentes para o significado da\neducação.",
+"answerD": "Destacar que o site tem melhores resultados do que a educação\ntradicional.",
+"answerE": "Criticar a concepção de educação em que se baseia a organização.",
+"correctAnswer": "E",
+"correctAnswermessage": "O segundo texto, que é um comentário sobre o site\ndivulgado no primeiro, apresenta a intenção do autor de criticar a concepção de\neducação em que se baseia a organização. O autor expressa preocupação com a\nforma como a Khan Academy está sendo promovida e com a visão de que a\neducação é simplesmente “sentar e receber”. Ele argumenta que os verdadeiros\neducadores progressistas querem fazer coisas melhores, não apenas fazer as\nmesmas coisas de maneira mais eficiente.",
+"image": ""
+},
+{
+"question": "(Enem 2018) ‘Is it your opinion, Winston, that the past has real\nExistence?’ […] O’Brien smiled faintly. ‘I will put it more\nPrecisely. Does the past exist concretely, in space? Is\nThere somewhere or other a place, a world of solid objects,\nWhere the past is still happening?’\n‘No.’\n‘Then where does the past exist, if at all?’\n‘In records. It is written down.’\n‘In records. And — —?’\n‘In the mind. In human memories.’\n‘In memory. Very well, then. We, the Party, control all\nRecords, and we control all memories. Then we control the\nPast, do we not?’\nORWELL, G. Nineteen Eighty-Four. New York: Signet Classics, 1977.\nO romance 1984 descreve os perigos de um Estado totalitário. A ideia evidenciada\nnessa passagem é que o controle do Estado se dá por meio do(a)",
+"answerA": "Boicote a ideais libertários.",
+"answerB": "Veto ao culto das tradições.",
+"answerC": "Poder sobre memórias e registros",
+"answerD": "Censura a produções orais e escritas.",
+"answerE": "Manipulação de pensamentos individuais.",
+"correctAnswer": "C",
+"correctAnswermessage": "A ideia evidenciada nessa passagem do romance\n1984 é que o controle do Estado se dá por meio do poder sobre memórias e\nregistros. A conversa entre Winston e O’Brien revela que o Partido controla todos os\nregistros e todas as memórias, permitindo-lhes controlar o passado. Isso é uma\ncaracterística de um Estado totalitário, onde o controle sobre a informação é usado\npara manipular a percepção da realidade das pessoas.",
+"image": ""
+},
+{
+"question": "(Enem 2017) One of the things that made an incredible impression on\nme in the film was Frida’s comfort in and celebration of her own unique beauty. She\ndidn’t try to fit into conventional ideas or images about womanhood or what makes\nsomeone or something beautiful. Instead, she fully inhabited her own unique gifts,\nnot particularly caring what other people thought. She was magnetic and beautiful in\nher own right. She painted for years, not to be a commercial success or to be\ndiscovered, but to express her own inner pain, joy, family, love and culture. She\nabsolutely and resolutely was who she was. The trueness of her own unique vision\nand her ability to stand firmly in her own truth was what made her successful in the\nend.\nHUTZLER, L. Disponível em: www.etbscreenwriting.com. Acesso em: 6 maio 2013.\nA autora desse comentário sobre o filme Frida mostra-se impressionada com o fato\nde a pintora",
+"answerA": "Ter uma aparência exótica.",
+"answerB": "Vender bem a sua imagem.",
+"answerC": "Ter grande poder de sedução.",
+"answerD": "Assumir sua beleza singular.",
+"answerE": "Recriar-se por meio da pintura.",
+"correctAnswer": "D",
+"correctAnswermessage": "A autora do comentário sobre o filme Frida mostra-se\nimpressionada com o fato de a pintora assumir sua beleza singular. Ela destaca que\nFrida não tentou se encaixar em ideias ou imagens convencionais sobre a\nfeminilidade ou o que torna alguém ou algo bonito. Em vez disso, Frida abraçou\nseus próprios dons únicos e era magnética e bela à sua maneira. Ela pintou por\nanos, não para ser um sucesso comercial ou para ser descoberta, mas para\nexpressar sua própria dor interna, alegria, família, amor e cultura. Ela era\nabsolutamente e resolutamente quem ela era. A verdade de sua própria visão única\ne sua capacidade de se manter firmemente em sua própria verdade foi o que a\ntornou bem-sucedida no final.",
+"image": ""
+},
+{
+"question": " British Government to Recruit Teens as Next Generation of Spies\nIn the 50 years since the first James Bond movie created a lasting impression of a\nBritish secret agent, a completely different character is about to emerge. Britain’s\nintelligence agencies are to recruit their next generation of cyber spies by harnessing\nthe talents of the “Xbox generation”. In an expansion of a pilot program, Foreign\nSecretary William Hague announced Thursday that up to 100 18-year-olds will be\ngiven the chance to train for a career in Britain’s secret services. The move to recruit\nschool-leavers marks a break with the past, when agencies mainly drew their staff\nfrom among university graduates. “Young people are the key to our country’s future\nsuccess, just as they were during the War”, Hague said. “Today we are not at war,\nbut I see evidence every day of deliberate, organized attacks against intellectual\nproperty and government networks in the United Kingdom.”\nThe new recruitment program, called the Single Intelligence Account apprenticeship\nscheme will enable students with suitable qualifications in science, technology or\nengineering, to spend two years learning about communications, security and\nengineering through formal education, technical training and work placements.\nJEARY, P. Disponível em: http://worldnews.nbcnews.com. Acesso em: 19 nov. 2012.\nSegundo informações veiculadas pela NBC News, a geração digital já tem seu\nespaço conquistado nas agências britânicas de inteligência. O governo britânico\ndecidiu que",
+"answerA": "Enfrentará a guerra vigente e deliberada contra a propriedade\nintelectual no Reino Unido.",
+"answerB": "Abandonará a política de contratação de universitários como agentes\nsecretos.",
+"answerC": "Recrutará jovens jogadores de Xbox como ciberespiões das\nagências de inteligência.",
+"answerD": "Implantará um esquema de capacitação de adolescentes para\natuarem como agentes secretos.",
+"answerE": "Anunciará os nomes dos jovens a serem contratados pelas agências\nde inteligência.",
+"correctAnswer": "D",
+"correctAnswermessage": "O governo britânico decidiu que implantará um\nesquema de capacitação de adolescentes para atuarem como agentes secretos. O\nnovo programa de recrutamento, chamado Single Intelligence Account\napprenticeship scheme, permitirá que estudantes com qualificações adequadas em\nciência, tecnologia ou engenharia passem dois anos aprendendo sobre\ncomunicações, segurança e engenharia por meio de educação formal, treinamento\ntécnico e estágios. Isso marca uma ruptura com o passado, quando as agências\nrecrutavam principalmente entre os graduados universitários. Agora, eles estão\nbuscando aproveitar os talentos da “geração Xbox”.",
+"image": ""
+},
+{
+"question": " Letters\nChildren and Guns\nPublished: May 7, 2013\nTo the Editor: Re “Girl’s Death by Gunshot Is Rejected as Symbol” (news article, May\n6): I find it abhorrent that the people of Burkesville, Ky., are not willing to learn a\nlesson from the tragic shooting of a 2-year-old girl by her 5-year-old brother. I am not\njudging their lifestyle of introducing guns to children at a young age, but I do feel that\nit’s irresponsible not to practice basic safety with anything potentially lethal — guns,\nknives, fire and so on. How can anyone justify leaving guns lying around, unlocked\nand possibly loaded, in a home with two young children? I wish the family of the\nvictim comfort during this difficult time, but to dismiss this as a simple accident\nleaves open the potential for many more such “accidents” to occur. I hope this\ndoesn’t have to happen several more times for legislators to realize that something\nneeds to be changed.\nEMILY LOUBATON\nBrooklyn, May 6, 2013\nDisponível em: www.nytimes.com. Acesso em: 10 maio 2013.\nNo que diz respeito à tragédia ocorrida em Burkesville, a autora da carta enviada ao\nThe New York Times busca",
+"answerA": "Reconhecer o acidente noticiado como um fato isolado.",
+"answerB": "Responsabilizar o irmão da vítima pelo incidente ocorrido.",
+"answerC": "Apresentar versão diferente da notícia publicada pelo jornal.",
+"answerD": "Expor sua indignação com a negligência de portadores de armas.",
+"answerE": "Reforçar a necessidade de proibição do uso de armas por crianças.",
+"correctAnswer": "D",
+"correctAnswermessage": "A autora da carta enviada ao The New York Times,\nreferindo-se à tragédia ocorrida em Burkesville, busca expor sua indignação com a\nnegligência de portadores de armas. Ela expressa sua preocupação com a falta de\nsegurança básica no manuseio de objetos potencialmente letais, como armas,\nespecialmente em uma casa com crianças pequenas. Ela espera que não seja\nnecessário que mais “acidentes” como esse ocorram para que os legisladores\npercebam que algo precisa ser mudado.",
+"image": ""
+},
+{
+"question": "A Tall Order\nThe sky isn’t the limit for an architect building the world’s first invisible skyscraper\nCharles Wee, one of the world’s leading high-rise architects, has a confession to\nmake: he’s bored with skyscrapers. After designing more than 30, most of which\npunctuate the skulines od rapidly expanding Asian cities, he has struck upon a novel\nconcept: the firts invisible skyscraper.\nAs the tallest structure in South Korea, his Infinity Tower loom over Seoul until\nsomebody pushes a button and it completely disappears.\nWhen he entered a 2004 competition to design a landmark tower, the\nKorean-American architect rejected the notion of competing with Dubai, Toronto, and\nShanghai to reach the summit of man-made summits. “I thought, let’s not jump into\nthis stupid race to build another ‘tallest’ tower,” he says in a phone conversation.\n“Let’s take an opposite approach — let’s make an anti-tower.”\nThe result will be a 150-story building that fades from view at the flick of a switch.\nThe tower will effectively function as an enormous television screen, being able to\nproject an exact replica of whatever is happening behind it onto its façade. To the\nhuman eye, the building will appear to have melted away.\nIt will be the most extraordinary achievement of Wee’s stellar architectural career.\nAfter graduating from UCLA, he worked under Anthony Lumsdenm, a prolific\nCalifornia architect who helped devise the modern technique of wrapping buildings\ninside smooth glass skins.\nHINES, N. Disponível em: (http://mag.newsweek.com). Acesso em: 13 out. 2013 (adaptado).\nNo título e no subtítulo desse texto, as expressões A Tall Order e The sky isn’t the\nlimit são usadas para apresentar uma matéria cujo tema é",
+"answerA": "Inovações tecnológicas usadas para a construção de um novo\narranha-céu em Seul.",
+"answerB": "Confissões de um arquiteto que busca se destacar na construção de\narranha-céus.",
+"answerC": "Técnicas a serem estabelecidas para a construção de edifícios altos\nna Califórnia.",
+"answerD": "Competição entre arquitetos para a construção do edifício mais alto\ndo mundo.",
+"answerE": "Construção de altas torres de apartamentos nas grandes metrópoles\nda Ásia.",
+"correctAnswer": "A",
+"correctAnswermessage": "As expressões “A Tall Order” e “The sky isn’t the limit”\nno título e subtítulo do texto são usadas para apresentar uma matéria cujo tema é\ninovações tecnológicas usadas para a construção de um novo arranha-céu em Seul.\nO texto descreve o projeto do arquiteto Charles Wee de construir o primeiro\narranha-céu “invisível” do mundo, chamado Infinity Tower. Este edifício poderá\ndesaparecer da vista ao toque de um botão, funcionando efetivamente como uma\nenorme tela de televisão que pode projetar uma réplica exata do que está\nacontecendo atrás dele em sua fachada. É uma abordagem inovadora na\nconstrução de arranha-céus, que desafia as noções convencionais de design de\nedifícios altos.",
+"image": ""
+},
+{
+"question": "The Road Not Taken (by Robert Frost)\nTwo roads diverged in a wood, and I —\nI took the one less traveled by,\nAnd that has made all the difference.\nDisponível em: www.poetryfoundation.org. Acesso em: 29 nov. 2011 (fragmento).\nEstes são os versos finais do famoso poema The Road Not Taken, do poeta\namericano Robert Frost.\nLevando-se em consideração que a vida é comumente metaforizada como uma\nviagem, esses versos indicam que o autor",
+"answerA": "Festeja o fato de ter sido ousado na escolha que fez em sua vida.",
+"answerB": "Lamenta por ter sido um viajante que encontrou muitas bifurcações.",
+"answerC": "Viaja muito pouco e que essa escolha fez toda a diferença em sua\nvida.",
+"answerD": "Reconhece que as dificuldades em sua vida foram todas\nsuperadas.",
+"answerE": "Percorre várias estradas durante as diferentes fases de sua vida.",
+"correctAnswer": "A",
+"correctAnswermessage": "Os versos finais do famoso poema “The Road Not\nTaken”, do poeta americano Robert Frost, indicam que o autor festeja o fato de ter\nsido ousado na escolha que fez em sua vida. Ele escolheu o caminho menos\npercorrido, e isso “fez toda a diferença”. Isso sugere que ele valoriza a\nindividualidade, a coragem e a disposição para se desviar do caminho comum ou\nesperado. A metáfora da viagem é usada para representar a jornada da vida e as\nescolhas que fazemos ao longo do caminho.",
+"image": ""
+},
+{
+"question": " If You Can’t Master English, Try Globish\nPARIS — It happens all the time: during an airport delay the man to the left, a\nKorean perhaps, starts talking to the man opposite, who might be Colombian, and\nsoon they are chatting away in what seems to be English. But the native English\nspeaker sitting between them cannot understand a word.\nThey don’t know it, but the Korean and the Colombian are speaking Globish, the\nlatest addition to the 6,800 languages that are said to be spoken across the world.\nNot that its inventor, Jean-Paul Nerrière, considers it a proper language.\n“It is not a language, it is a tool,” he says. “A language is the vehicle of a culture.\nGlobish doesn’t want to be that at all. It is a means of communication.”\nNerrière doesn’t see Globish in the same light as utopian efforts such as Kosmos,\nVolapuk, Novial or staunch Esperanto. Nor should it be confused with barbaric Algol\n(for Algorithmic language). It is a sort of English lite: a means of simplifying the\nlanguage and giving it rules so it can be understood by all.\nBLUME, M. Disponível em: www.nytimes.com. Acesso em: 28 out. 2013 (fragmento)\nConsiderando as ideias apresentadas no texto, o Globish (Global English) é uma\nvariedade da língua inglesa que",
+"answerA": "Tem status de língua por refletir uma cultura global.",
+"answerB": "Facilita o entendimento entre o falante nativo e o não nativo.",
+"answerC": "Tem as mesmas características de projetos utópicos como o\nesperanto.",
+"answerD": "Altera a estrutura do idioma para possibilitar a comunicação\ninternacional.",
+"answerE": "Apresenta padrões de fala idênticos aos da variedade usada pelos\nfalantes nativos.",
+"correctAnswer": "D",
+"correctAnswermessage": "O Globish (Global English) é uma variedade da língua\ninglesa que altera a estrutura do idioma para possibilitar a comunicação\ninternacional. Segundo o texto, o Globish é uma espécie de “Inglês simplificado”,\ncom regras que permitem que seja compreendido por todos. Seu inventor,\nJean-Paul Nerrière, não o considera uma língua propriamente dita, mas sim uma\nferramenta de comunicação. Ele não vê o Globish como esforços utópicos como o\nEsperanto, mas sim como um meio de simplificar a língua inglesa para facilitar a\ncomunicação global.",
+"image": ""
+},
+{
+"question": "After prison blaze kills hundreds in Honduras, UN warns on\novercrowding\n15 February 2012\nA United Nations human rights official today called on Latin American countries to\ntackle the problem of prison overcrowding in the wake of an overnight fire at a jail in\nHonduras that killed hundreds of inmates. More than 300 prisoners are reported to\nhave died in the blaze at the prison, located north of the capital, Tegucigalpa, with\ndozens of others still missing and presumed dead. Antonio Maldonado, human rights\nadviser for the UN system in Honduras, told UN Radio today that overcrowding may\nhave contributed to the death toll. “But we have to wait until a thorough investigation\nis conducted so we can reach a precise cause,” he said. “But of course there is a\nproblem of overcrowding in the prison system, not only in this country, but also in\nmany other prisons in Latin America.”\nDisponível em: www.un.org. Acesso em: 22 fev. 2012 (adaptado).\nOs noticiários destacam acontecimentos diários, que são veiculados em jornal\nimpresso, rádio, televisão e internet. Nesse texto, o acontecimento reportado é a",
+"answerA": "Ocorrência de um incêndio em um presídio superlotado em\nHonduras.",
+"answerB": "Questão da superlotação nos presídios em Honduras e na América\nLatina.",
+"answerC": "Investigação da morte de um oficial das Nações Unidas em visita a\num presídio.",
+"answerD": "Conclusão do relatório sobre a morte de mais de trezentos detentos\nem Honduras.",
+"answerE": "Causa da morte de doze detentos em um presídio superlotado ao\nnorte de Honduras.",
+"correctAnswer": "A",
+"correctAnswermessage": "O acontecimento reportado no texto é a ocorrência de\num incêndio em um presídio superlotado em Honduras. O texto relata que um\nincêndio ocorreu em uma prisão em Honduras, resultando na morte de centenas de\ndetentos. Além disso, menciona que a superlotação pode ter contribuído para o alto\nnúmero de vítimas e que isso é um problema não apenas em Honduras, mas\ntambém em muitas outras prisões na América Latina. Portanto, o foco principal do\nrelatório é o incêndio devastador e suas consequências trágicas.",
+"image": ""
+},
+{
+"question": "National Geographic News\nChristine Dell’Amore\nPublished April 26, 2010\nOur bodies produce a small steady amount of natural morphine, a new study\nsuggests. Traces of the chemical are often found in mouse and human urine, leading\nscientists to wonder whether the drug is being made naturally or being delivered by\nsomething the subjects consumed. The new research shows that mice produce the\n“incredible painkiller” — and that humans and ther mammals possess the same\nchemical road map for making it, said study co-author Meinhart Zenk, who studies\nplant-based pharmaceuticals at the Donald Danforth Plant Science Center in St.\nLouis, Missouri.\nDisponível em: www.nationalgeographic.com. Acesso em: 27 jul. 2010.\nAo ler a matéria publicada na National Geographic, para a realização de um trabalho\nescolar, um estudante descobriu que",
+"answerA": "Os compostos químicos da morfina, produzidos por humanos, são\nmanipulados no Missouri.",
+"answerB": "Os ratos e os humanos possuem a mesma via metabólica para\nprodução de morfina.",
+"answerC": "A produção de morfina em grande quantidade minimiza a dor em\nratos e humanos.",
+"answerD": "Os seres humanos têm uma predisposição genética para inibir a\ndor.",
+"answerE": "A produção de morfina é um traço incomum entre os animais.",
+"correctAnswer": "B",
+"correctAnswermessage": "Ao ler a matéria publicada na National Geographic, o\nestudante descobriu que os ratos e os humanos possuem a mesma via metabólica\npara produção de morfina. A pesquisa mencionada no artigo mostra que os corpos\nde ratos e humanos produzem uma pequena quantidade constante de morfina\nnatural. Além disso, os humanos e outros mamíferos possuem o mesmo mapa\nquímico para produzir essa substância.",
+"image": ""
+},
+{
+"question": "Steve Jobs: A Life Remembered 1955-2011\nReadersdigest.ca takes a look back at Steve Jobs, and his contribution to our digital\nworld.\nCEO. Tech-Guru. Artist. There are few corporate figures as famous and\nwell-regarded as former-Apple CEO Steve Jobs. His list of achievements is\nstaggering, and his contribution to modern technology, digital media, and indeed the\nworld as a whole, cannot be downplayed.\nWith his passing on October 5, 2011, readersdigest.ca looks back at some of his\ngreatest achievements, and pays our respects to a digital pioneer who helped pave\nthe way for a generation of technology, and possibilities, few could have imagined.\nDisponível em: www.readersdigest.ca. Acesso em: 25 fev. 2012\nInformações sobre pessoas famosas são recorrentes na mídia, divulgadas de forma\nimpressa ou virtualmente. Em relação a Steve Jobs, esse texto propõe",
+"answerA": "Expor as maiores conquistas da sua empresa.",
+"answerB": "Descrever suas criações na área da tecnologia.",
+"answerC": "Enaltecer sua contribuição para o mundo digital.",
+"answerD": "Lamentar sua ausência na criação de novas tecnologias.",
+"answerE": "Discutir o impacto de seu trabalho para a geração digital.",
+"correctAnswer": "C",
+"correctAnswermessage": "Em relação a Steve Jobs, esse texto propõe enaltecer\nsua contribuição para o mundo digital. O texto destaca Steve Jobs como uma figura\ncorporativa famosa e respeitada, e menciona sua lista impressionante de\nrealizações. Ele reconhece a contribuição significativa de Jobs para a tecnologia\nmoderna, a mídia digital e o mundo como um todo. Além disso, o texto presta\nhomenagem a Jobs como um pioneiro digital que ajudou a abrir caminho para uma\ngeração de tecnologia e possibilidades que poucos poderiam ter imaginado.",
+"image": ""
+},
+{
+"question": "Do one thing for diversity and inclusion\nThe United Nations Alliance of Civilizations (UNAOC) is launching a campaign aimed\nat engaging people around the world to Do One Thing to support Cultural Diversity\nand Inclusion. Every one of us can do ONE thing for diversity and inclusion; even\none very little thing can become a global action if we all take part in it.\nSimple things YOU can do to celebrate the World Day for Cultural Diversity for\nDialogue and Development on May 21.\n1. Visit an art exhibit or a museum dedicated to other cultures.\n2. Read about the great thinkers of other cultures.\n3. Visit a place of worship different than yours and participate in the celebration.\n4. Spread your own culture around the world and learn about other cultures.\n5. Explore music of a different culture.\nThere are thousands of things that you can do, are you taking part in it?\nUNITED NATIONS ALLIANCE OF CIVILIZATIONS.\nDisponível em: www.unaoc.org. Acesso em: 16 fev. 2013 (adaptado).\nInternautas costumam manifestar suas opiniões sobre artigos on-line por meio da\npostagem de comentários. O comentário que exemplifica o engajamento proposto\nna quarta dica da campanha apresentada no texto é:",
+"answerA": "“Lá na minha escola, aprendi a jogar capoeira para uma\napresentação no Dia da Consciência Negra.”",
+"answerB": "“Outro dia assisti na TV uma reportagem sobre respeito à\ndiversidade. Gente de todos os tipos, várias tribos. Curti bastante.”",
+"answerC": "“Eu me inscrevi no Programa Jovens Embaixadores para mostrar o\nque tem de bom em meu país e conhecer outras formas de ser.”",
+"answerD": "“Curto muito bater papo na internet. Meus amigos estrangeiros me\najudam a aperfeiçoar minha proficiência em língua estrangeira.”",
+"answerE": "“Pesquisei em sites de culinária e preparei uma festa árabe para uns\namigos da escola. Eles adoraram, principalmente, os doces!”",
+"correctAnswer": "C",
+"correctAnswermessage": "O comentário que exemplifica o engajamento proposto\nna quarta dica da campanha apresentada no texto é: “Eu me inscrevi no Programa\nJovens Embaixadores para mostrar o que tem de bom em meu país e conhecer\noutras formas de ser.” Esta ação reflete a ideia de espalhar a própria cultura pelo\nmundo e aprender sobre outras culturas, conforme sugerido na quarta dica da\ncampanha.",
+"image": ""
+}
+
+  
+]

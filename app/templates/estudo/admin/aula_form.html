@@ -1,0 +1,1207 @@
+<!-- app/templates/estudo/admin/aula_form.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Editar' if aula else 'Nova' }} Aula - Admin{% endblock %}
+
+{% block styles %}
+<!-- Quill.js CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-color: #001233;
+        --secondary-color: #003d82;
+        --accent-blue: #00b4d8;
+        --accent-yellow: #ffc107;
+        --success-color: #28a745;
+        --warning-color: #ff9800;
+        --danger-color: #dc3545;
+        --text-color: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.8);
+        --card-bg: rgba(255, 255, 255, 0.08);
+        --border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+        background: linear-gradient(to bottom, #001233 0%, #000000 25%, #000 40%, #000 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .form-header {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb a {
+        color: var(--accent-blue);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #0084ff;
+        text-decoration: underline;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Form Cards */
+    .form-section {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Form Fields */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+
+    .form-label.required::after {
+        content: " *";
+        color: var(--danger-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-color);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.2);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-secondary);
+    }
+
+    /* Grid Layouts */
+    .form-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-grid-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    /* Type Selector */
+    .type-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .type-option {
+        padding: 1.5rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.03);
+        position: relative;
+    }
+
+    .type-option:hover {
+        border-color: var(--accent-blue);
+        background: rgba(0, 180, 216, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .type-option.selected {
+        border-color: var(--accent-blue);
+        background: rgba(0, 180, 216, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 180, 216, 0.3);
+    }
+
+    .type-option .icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .type-option .label {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    /* Conditional Fields */
+    .conditional-field {
+        display: none;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .conditional-field.active {
+        display: block;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Video Preview */
+    .video-preview {
+        margin-top: 1rem;
+        border-radius: 10px;
+        overflow: hidden;
+        display: none;
+    }
+
+    .video-preview.active {
+        display: block;
+    }
+
+    .video-preview iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+    }
+
+    /* File Upload Areas */
+    .file-upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .file-upload-area:hover,
+    .file-upload-area.dragover {
+        border-color: var(--accent-blue);
+        background: rgba(0, 180, 216, 0.05);
+    }
+
+    .file-upload-area .upload-icon {
+        font-size: 3rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-area .upload-text {
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .file-upload-area .upload-hint {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        opacity: 0.7;
+    }
+
+    .file-info {
+        background: rgba(0, 180, 216, 0.1);
+        border: 1px solid var(--accent-blue);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .file-info.active {
+        display: block;
+    }
+
+    /* Quill Editor Customization */
+    .editor-container {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid var(--border-color);
+        background: white;
+    }
+
+    .ql-toolbar {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff) !important;
+        border: none !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        padding: 1rem !important;
+    }
+
+    .ql-container {
+        border: none !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 16px !important;
+    }
+
+    .ql-editor {
+        color: #37352f !important;
+        padding: 1.5rem !important;
+        min-height: 300px !important;
+        line-height: 1.6 !important;
+    }
+
+    /* Materials Section */
+    .materials-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .material-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .material-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--accent-blue);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .material-info {
+        flex: 1;
+    }
+
+    .material-name {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .material-size {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .remove-material {
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .remove-material:hover {
+        background: #c82333;
+        transform: scale(1.05);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: inherit;
+    }
+
+
+    .btn-primary {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0084ff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+        transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* Loading States */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Validation States */
+    .form-control.error {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+    }
+
+    .form-control.success {
+        border-color: var(--success-color);
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+
+    .field-error {
+        color: var(--danger-color);
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    .field-error.active {
+        display: block;
+    }
+
+    /* Preview Section */
+    .preview-section {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid var(--success-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .preview-title {
+        color: var(--success-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .form-grid-2,
+        .form-grid-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .type-selector {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-title {
+            font-size: 1.6rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .form-header {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Header -->
+    <div class="form-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('estudo.admin') }}">🔧 Admin</a> › 
+            <a href="{{ url_for('estudo.materia', materia_id=modulo.materia.id) }}">{{ modulo.materia.nome }}</a> › 
+            <a href="{{ url_for('estudo.modulo', modulo_id=modulo.id) }}">{{ modulo.titulo }}</a> › 
+            {{ 'Editar Aula' if aula else 'Nova Aula' }}
+        </div>
+        <h1 class="form-title">{{ '✏️ Editar Aula' if aula else '➕ Nova Aula' }}</h1>
+        <p class="form-subtitle">{{ 'Atualize as informações da aula' if aula else 'Crie uma nova aula para' }} <strong>{{ modulo.titulo }}</strong></p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="aulaForm">
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>📋</span>
+                Informações Básicas
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label required" for="titulo">Título da Aula</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="titulo" 
+                       name="titulo" 
+                       value="{{ aula.titulo if aula else '' }}"
+                       placeholder="Ex: Introdução às Funções Quadráticas"
+                       required>
+                <div class="field-error" id="titulo-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="descricao">Descrição</label>
+                <textarea class="form-control" 
+                          id="descricao" 
+                          name="descricao" 
+                          rows="3"
+                          placeholder="Breve descrição do que será abordado na aula...">{{ aula.descricao if aula else '' }}</textarea>
+            </div>
+
+            <div class="form-grid form-grid-3">
+                <div class="form-group">
+                    <label class="form-label" for="ordem">Ordem</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="ordem" 
+                           name="ordem" 
+                           value="{{ aula.ordem if aula else 1 }}"
+                           min="1"
+                           placeholder="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="duracao_estimada">Duração Estimada (min)</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="duracao_estimada" 
+                           name="duracao_estimada" 
+                           value="{{ aula.duracao_estimada if aula else '' }}"
+                           min="1"
+                           placeholder="30">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Tipo de Aula</label>
+                    <input type="hidden" id="tipo" name="tipo" value="{{ aula.tipo if aula else 'texto' }}">
+                    <div class="type-selector">
+                        <div class="type-option {{ 'selected' if not aula or aula.tipo == 'texto' else '' }}" 
+                             onclick="selectType('texto', this)">
+                            <span class="icon">📝</span>
+                            <span class="label">Texto</span>
+                        </div>
+                        <div class="type-option {{ 'selected' if aula and aula.tipo == 'video' else '' }}" 
+                             onclick="selectType('video', this)">
+                            <span class="icon">🎥</span>
+                            <span class="label">Vídeo</span>
+                        </div>
+                        <div class="type-option {{ 'selected' if aula and aula.tipo == 'pdf' else '' }}" 
+                             onclick="selectType('pdf', this)">
+                            <span class="icon">📄</span>
+                            <span class="label">PDF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo de Vídeo -->
+        <div class="form-section conditional-field" id="video-field">
+            <h3 class="section-title">
+                <span>🎥</span>
+                Configurações de Vídeo
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label required" for="url_video">URL do Vídeo</label>
+                <input type="url" 
+                       class="form-control" 
+                       id="url_video" 
+                       name="url_video" 
+                       value="{{ aula.url_video if aula else '' }}"
+                       placeholder="https://www.youtube.com/watch?v=... ou link direto para vídeo">
+                <div class="field-error" id="url-video-error"></div>
+            </div>
+
+            <div class="video-preview" id="video-preview">
+                <iframe id="video-iframe" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- Conteúdo de Texto -->
+        <div class="form-section conditional-field" id="content-field">
+            <h3 class="section-title">
+                <span>📝</span>
+                Conteúdo da Aula
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label" for="conteudo">Conteúdo</label>
+                <div class="editor-container">
+                    <div id="quill-editor"></div>
+                </div>
+                <input type="hidden" id="conteudo" name="conteudo" value="{{ aula.conteudo if aula else '' }}">
+            </div>
+        </div>
+
+        <!-- Upload de PDF -->
+        <div class="form-section conditional-field" id="pdf-field">
+            <h3 class="section-title">
+                <span>📄</span>
+                Upload do PDF
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label required" for="pdf_file">Arquivo PDF da Aula</label>
+                <div class="file-upload-area" onclick="document.getElementById('pdf_file').click()" 
+                     ondrop="handleFileDrop(event, 'pdf')" 
+                     ondragover="handleDragOver(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Clique para selecionar ou arraste o arquivo PDF aqui</div>
+                    <div class="upload-hint">Arquivos aceitos: PDF (máx. 50MB)</div>
+                </div>
+                <input type="file" 
+                       class="form-control" 
+                       id="pdf_file" 
+                       name="pdf_file" 
+                       accept=".pdf"
+                       style="display: none;"
+                       onchange="handleFileSelect(event, 'pdf')">
+                
+                <div class="file-info" id="pdf-info">
+                    <div class="material-item">
+                        <div class="material-icon">📄</div>
+                        <div class="material-info">
+                            <div class="material-name" id="pdf-name"></div>
+                            <div class="material-size" id="pdf-size"></div>
+                        </div>
+                        <button type="button" class="remove-material" onclick="removeFile('pdf')">🗑️</button>
+                    </div>
+                </div>
+
+                {% if aula and aula.tipo == 'pdf' and aula.url_pdf %}
+                <div class="preview-section">
+                    <div class="preview-title">
+                        <span>📄</span>
+                        PDF Atual
+                    </div>
+                    <p>
+                        <a href="{{ url_for('static', filename=aula.url_pdf) }}" 
+                           target="_blank" 
+                           style="color: var(--accent-blue);">
+                            📁 Visualizar PDF atual
+                        </a>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Materiais Complementares -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <span>📎</span>
+                Materiais Complementares
+                <small style="font-weight: 400; font-size: 0.9rem; color: var(--text-secondary);">(Opcional)</small>
+            </h3>
+            
+            <div class="form-group">
+                <label class="form-label" for="materiais">Arquivos Adicionais</label>
+                <div class="file-upload-area" onclick="document.getElementById('materiais').click()" 
+                     ondrop="handleFileDrop(event, 'materiais')" 
+                     ondragover="handleDragOver(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <div class="upload-icon">📎</div>
+                    <div class="upload-text">Clique para adicionar materiais ou arraste arquivos aqui</div>
+                    <div class="upload-hint">Arquivos aceitos: PDF, DOC, DOCX, TXT, JPG, PNG (máx. 10MB cada)</div>
+                </div>
+                <input type="file" 
+                       class="form-control" 
+                       id="materiais" 
+                       name="materiais" 
+                       multiple
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                       style="display: none;"
+                       onchange="handleFileSelect(event, 'materiais')">
+                
+                <div class="materials-list" id="materials-list"></div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span>{{ '💾' if aula else '✅' }}</span>
+                <span>{{ 'Salvar Alterações' if aula else 'Criar Aula' }}</span>
+            </button>
+            <a href="{{ url_for('estudo.modulo', modulo_id=modulo.id) }}" class="btn btn-secondary">
+                <span>❌</span>
+                <span>Cancelar</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+
+<script>
+let quillInstance = null;
+let selectedMaterials = new Set();
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+    initializeQuill();
+    setupValidation();
+});
+
+function initializeForm() {
+    const tipoAtual = document.getElementById('tipo').value;
+    selectType(tipoAtual, document.querySelector('.type-option.selected'));
+    
+    // Setup video URL watcher
+    const urlVideoInput = document.getElementById('url_video');
+    if (urlVideoInput) {
+        urlVideoInput.addEventListener('input', debounce(updateVideoPreview, 500));
+        if (urlVideoInput.value) {
+            updateVideoPreview();
+        }
+    }
+}
+
+function initializeQuill() {
+    if (document.getElementById('quill-editor')) {
+        quillInstance = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'align': [] }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ],
+                history: {
+                    delay: 2000,
+                    maxStack: 500,
+                    userOnly: true
+                }
+            },
+            placeholder: 'Digite o conteúdo da aula aqui...',
+        });
+
+        // Carregar conteúdo existente
+        const conteudoExistente = document.getElementById('conteudo').value;
+        if (conteudoExistente) {
+            quillInstance.root.innerHTML = conteudoExistente;
+        }
+
+        // Configurar upload de imagens
+        quillInstance.getModule('toolbar').addHandler('image', selectLocalImage);
+        
+        // Sincronizar com campo hidden
+        quillInstance.on('text-change', function() {
+            document.getElementById('conteudo').value = quillInstance.root.innerHTML;
+        });
+    }
+}
+
+function selectLocalImage() {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = function() {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const range = quillInstance.getSelection();
+                quillInstance.insertEmbed(range.index, 'image', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+}
+
+function selectType(tipo, element) {
+    document.getElementById('tipo').value = tipo;
+    
+    // Atualizar seleção visual
+    document.querySelectorAll('.type-option').forEach(el => el.classList.remove('selected'));
+    if (element) element.classList.add('selected');
+    
+    // Mostrar/ocultar campos condicionais
+    document.querySelectorAll('.conditional-field').forEach(field => {
+        field.classList.remove('active');
+    });
+
+    const fieldMap = {
+        'video': 'video-field',
+        'texto': 'content-field',
+        'pdf': 'pdf-field'
+    };
+
+    if (fieldMap[tipo]) {
+        document.getElementById(fieldMap[tipo]).classList.add('active');
+    }
+
+    // Limpar validações ao mudar tipo
+    clearValidationErrors();
+}
+
+function updateVideoPreview() {
+    const urlInput = document.getElementById('url_video');
+    const preview = document.getElementById('video-preview');
+    const iframe = document.getElementById('video-iframe');
+    
+    if (!urlInput.value) {
+        preview.classList.remove('active');
+        return;
+    }
+
+    const videoId = extractYouTubeID(urlInput.value);
+    if (videoId) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}`;
+        preview.classList.add('active');
+        clearFieldError('url_video');
+    } else if (isValidVideoURL(urlInput.value)) {
+        iframe.src = urlInput.value;
+        preview.classList.add('active');
+        clearFieldError('url_video');
+    } else if (urlInput.value.trim()) {
+        showFieldError('url_video', 'URL de vídeo inválida');
+        preview.classList.remove('active');
+    }
+}
+
+function extractYouTubeID(url) {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : false;
+}
+
+function isValidVideoURL(url) {
+    return /\.(mp4|webm|ogg)$/i.test(url);
+}
+
+// File handling functions
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('dragover');
+}
+
+function handleFileDrop(e, type) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        if (type === 'pdf' && files.length === 1) {
+            document.getElementById('pdf_file').files = files;
+            handleFileSelect({ target: { files } }, 'pdf');
+        } else if (type === 'materiais') {
+            document.getElementById('materiais').files = files;
+            handleFileSelect({ target: { files } }, 'materiais');
+        }
+    }
+}
+
+function handleFileSelect(e, type) {
+    const files = e.target.files;
+    
+    if (type === 'pdf' && files.length > 0) {
+        const file = files[0];
+        if (file.type === 'application/pdf') {
+            showFileInfo('pdf', file);
+            clearFieldError('pdf_file');
+        } else {
+            showFieldError('pdf_file', 'Por favor, selecione um arquivo PDF válido');
+        }
+    } else if (type === 'materiais' && files.length > 0) {
+        updateMaterialsList(files);
+    }
+}
+
+function showFileInfo(type, file) {
+    const info = document.getElementById(`${type}-info`);
+    const name = document.getElementById(`${type}-name`);
+    const size = document.getElementById(`${type}-size`);
+    
+    name.textContent = file.name;
+    size.textContent = formatFileSize(file.size);
+    info.classList.add('active');
+}
+
+function updateMaterialsList(files) {
+    const listContainer = document.getElementById('materials-list');
+    
+    Array.from(files).forEach(file => {
+        if (selectedMaterials.has(file.name)) return;
+        
+        selectedMaterials.add(file.name);
+        
+        const item = document.createElement('div');
+        item.className = 'material-item';
+        item.innerHTML = `
+            <div class="material-icon">${getFileIcon(file.type)}</div>
+            <div class="material-info">
+                <div class="material-name">${file.name}</div>
+                <div class="material-size">${formatFileSize(file.size)}</div>
+            </div>
+            <button type="button" class="remove-material" onclick="removeMaterial('${file.name}', this)">🗑️</button>
+        `;
+        listContainer.appendChild(item);
+    });
+}
+
+function removeMaterial(fileName, button) {
+    selectedMaterials.delete(fileName);
+    button.closest('.material-item').remove();
+}
+
+function removeFile(type) {
+    document.getElementById(`${type}_file`).value = '';
+    document.getElementById(`${type}-info`).classList.remove('active');
+    
+    if (type === 'pdf') {
+        clearFieldError('pdf_file');
+    }
+}
+
+function getFileIcon(type) {
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('image')) return '🖼️';
+    if (type.includes('word') || type.includes('document')) return '📝';
+    return '📋';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Validation functions
+function setupValidation() {
+    const form = document.getElementById('aulaForm');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', () => validateField(field));
+        field.addEventListener('input', () => clearFieldError(field.id));
+    });
+    
+    form.addEventListener('submit', handleFormSubmit);
+}
+
+function validateField(field) {
+    const value = field.value.trim();
+    const fieldName = field.getAttribute('name');
+    
+    if (field.hasAttribute('required') && !value) {
+        showFieldError(field.id, `${getFieldLabel(fieldName)} é obrigatório`);
+        return false;
+    }
+    
+    if (fieldName === 'url_video' && value && !extractYouTubeID(value) && !isValidVideoURL(value)) {
+        showFieldError(field.id, 'URL de vídeo inválida');
+        return false;
+    }
+    
+    clearFieldError(field.id);
+    return true;
+}
+
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const submitBtn = document.getElementById('submit-btn');
+    const tipo = document.getElementById('tipo').value;
+    
+    let isValid = true;
+    
+    // Validar campos básicos
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        if (!validateField(field)) {
+            isValid = false;
+        }
+    });
+    
+    // Validações específicas por tipo
+    if (tipo === 'video') {
+        const urlVideo = document.getElementById('url_video');
+        if (!urlVideo.value.trim()) {
+            showFieldError('url_video', 'URL do vídeo é obrigatória');
+            isValid = false;
+        }
+    } else if (tipo === 'pdf') {
+        const pdfFile = document.getElementById('pdf_file');
+        {% if not (aula and aula.tipo == 'pdf' and aula.url_pdf) %}
+        if (!pdfFile.files.length) {
+            showFieldError('pdf_file', 'Arquivo PDF é obrigatório');
+            isValid = false;
+        }
+        {% endif %}
+    }
+    
+    if (!isValid) {
+        showNotification('Por favor, corrija os erros antes de continuar', 'error');
+        return;
+    }
+    
+    // Sincronizar editor Quill
+    if (quillInstance && tipo === 'texto') {
+        document.getElementById('conteudo').value = quillInstance.root.innerHTML;
+    }
+    
+    // Mostrar loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> <span>Salvando...</span>';
+    
+    // Submeter form
+    form.submit();
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`) || 
+                        field.parentNode.querySelector('.field-error');
+    
+    if (field) field.classList.add('error');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('active');
+    }
+}
+
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(`${fieldId}-error`) || 
+                        field?.parentNode.querySelector('.field-error');
+    
+    if (field) field.classList.remove('error');
+    if (errorElement) {
+        errorElement.classList.remove('active');
+    }
+}
+
+function clearValidationErrors() {
+    document.querySelectorAll('.form-control').forEach(field => {
+        field.classList.remove('error', 'success');
+    });
+    document.querySelectorAll('.field-error').forEach(error => {
+        error.classList.remove('active');
+    });
+}
+
+function getFieldLabel(fieldName) {
+    const labels = {
+        'titulo': 'Título',
+        'url_video': 'URL do vídeo',
+        'pdf_file': 'Arquivo PDF'
+    };
+    return labels[fieldName] || fieldName;
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+
+<style>
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,239 @@
+<!-- app/templates/components/freemium_modal.html -->
+<!-- Modal Freemium - Estilo Azul Escuro Launcher -->
+
+<style>
+.freemium-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.freemium-modal-content {
+    background: linear-gradient(180deg, #0d1b2a 0%, #000814 100%);
+    margin: 5% auto;
+    width: 90%;
+    max-width: 440px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    animation: slideDown 0.4s ease;
+    color: #fff;
+    overflow: hidden;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-80px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.freemium-header {
+    text-align: center;
+    padding: 40px 25px 20px;
+}
+
+.freemium-lock {
+    font-size: 60px;
+    color: #3b82f6;
+    margin-bottom: 10px;
+    animation: pulseLock 2s infinite;
+}
+@keyframes pulseLock {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.freemium-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.freemium-subtitle {
+    color: #b0b8c5;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.freemium-benefits {
+    list-style: none;
+    padding: 0 25px;
+    margin: 25px 0;
+}
+.freemium-benefits li {
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+.freemium-benefits li::before {
+    content: "✔";
+    color: #10b981;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.freemium-plan {
+    margin: 0 25px 15px;
+    border-radius: 12px;
+    padding: 16px;
+    background: #14213d;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+.freemium-plan.highlight {
+    border-color: #3b82f6;
+    background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+}
+.freemium-plan:hover {
+    transform: translateY(-2px);
+}
+
+.plan-header {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+.plan-price {
+    font-size: 13px;
+    color: #d1d5db;
+    margin-bottom: 10px;
+}
+
+.freemium-btn {
+    width: 100%;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-annual {
+    background: #3b82f6;
+}
+.btn-annual:hover {
+    background: #2563eb;
+}
+.btn-monthly {
+    background: transparent;
+    border: 2px solid #3b82f6;
+}
+.btn-monthly:hover {
+    background: #1e3a8a;
+}
+
+.freemium-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 10px 25px 25px;
+    line-height: 1.4;
+}
+.freemium-footer:before {
+    content: "🔒 ";
+}
+.freemium-funny {
+    font-style: italic;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .freemium-modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+    .freemium-title {
+        font-size: 20px;
+    }
+}
+</style>
+
+<!-- Estrutura do Modal -->
+<div id="freemiumModal" class="freemium-modal">
+  <div class="freemium-modal-content">
+    
+    <div class="freemium-header">
+      <div class="freemium-lock">🔒</div>
+      <h2 class="freemium-title">Você atingiu o limite<br>do plano gratuito</h2>
+      <p class="freemium-subtitle">
+        Para continuar estudando, escolha um plano abaixo e libere acesso ilimitado.
+      </p>
+    </div>
+
+    <ul class="freemium-benefits">
+      <li>Acesso ilimitado às aulas</li>
+      <li>Simulados completos</li>
+      <li>Correção de redação</li>
+      <li>Plano de estudos + PDFs</li>
+      <li>Rankings + XP + Loja de prêmios</li>
+    </ul>
+
+    <div class="freemium-plan highlight">
+      <p class="plan-header">🔥 PLANO ANUAL – R$16,41/mês</p>
+      <p class="plan-price">Pagamento único – R$197,00 à vista</p>
+      <a href="https://pay.kiwify.com.br/SVj90JQ" target="_blank">
+        <button class="freemium-btn btn-annual">QUERO O ANUAL</button>
+      </a>
+    </div>
+
+    <div class="freemium-plan">
+      <p class="plan-header">PLANO MENSAL – R$29,90/mês</p>
+      <p class="plan-price">Sem Fidelidade</p>
+      <a href="https://pay.kiwify.com.br/jCQpKD3" target="_blank">
+        <button class="freemium-btn btn-monthly">ESCOLHER MENSAL</button>
+      </a>
+    </div>
+
+    <div class="freemium-footer">
+      Compra 100% segura – PIX e Cartão
+      <span class="freemium-funny">isso tudo é mais barato que uma pizza 🍕</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Controle do modal
+const freemiumModal = {
+  el: null,
+  init() {
+    this.el = document.getElementById('freemiumModal');
+    this.el.addEventListener('click', (e) => {
+      if (e.target === this.el) this.close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.el.style.display === 'block') this.close();
+    });
+  },
+  show(tipo) {
+    const title = this.el.querySelector('.freemium-title');
+    const map = {
+      aula: 'Você atingiu o limite de<br>aulas gratuitas',
+      redacao: 'Você atingiu o limite de<br>redações gratuitas',
+      simulado: 'Você atingiu o limite de<br>simulados gratuitos',
+    };
+    title.innerHTML = map[tipo] || 'Você atingiu o limite<br>do plano gratuito';
+    this.el.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  },
+  close() {
+    this.el.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => freemiumModal.init());
+window.showFreemiumModal = (tipo) => freemiumModal.show(tipo);
+</script>

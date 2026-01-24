@@ -1,0 +1,362 @@
+<!-- app/templates/helpzone/badges.html -->
+<!-- Autor: Desenvolvimento Plataforma Launcher -->
+
+{% extends "layout.html" %}
+
+{% block title %}Badges - Help Zone - Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #800000;
+        --secondary-color: #500000;
+        --text-color: #ffffff;
+        --card-bg: rgba(30, 30, 30, 0.8);
+        --tag-bg: #800000;
+        --hover-color: #a00000;
+    }
+    
+    body {
+        background: linear-gradient(180deg,
+            #800000 0%,
+            #000000 40%,
+            #000000 75%,
+            #000000 100%);
+        color: var(--text-color);
+        min-height: 100vh;
+        padding: 2rem 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .helpzone-badges {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--hover-color) !important;
+        border-color: var(--hover-color) !important;
+    }
+    
+    .btn-outline-light:hover {
+        background-color: var(--hover-color) !important;
+        border-color: var(--hover-color) !important;
+    }
+    
+    .card {
+        background-color: var(--card-bg) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        margin-bottom: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1, h2, h3 {
+        font-weight: 600;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.7rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.4rem;
+    }
+    
+    .progress {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .progress-bar {
+        border-radius: 5px;
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+    
+    .card-title {
+        font-weight: 600;
+    }
+</style>
+
+<div class="helpzone-badges">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Sistema de Badges</h1>
+        <a href="{{ url_for('helpzone.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Voltar para o Help Zone
+        </a>
+    </div>
+    
+    <div class="card bg-dark mb-5">
+        <div class="card-body py-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-3">Conquiste Badges e mostre sua contribuição!</h3>
+                    <p>Badges são reconhecimentos especiais que você recebe ao ajudar outros estudantes no Help Zone. Quanto mais você contribuir, mais badges vai conquistar!</p>
+                    <p class="mb-0">As badges são exibidas no seu perfil e mostram seu nível de expertise e dedicação à comunidade.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <img src="{{ url_for('static', filename='images/icons/badges-hero.svg') }}" alt="Badges" class="img-fluid" style="max-width: 200px;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas do usuário (se estiver logado) -->
+    {% if current_user.is_authenticated %}
+    <div class="mb-5">
+        <h2 class="mb-4">Suas Estatísticas</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card bg-dark text-center h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-chat-text fs-1 mb-3 text-primary"></i>
+                        <h3 class="display-5 mb-0">
+                            {{ Resposta.query.filter_by(user_id=current_user.id).count() }}
+                        </h3>
+                        <p class="text-muted mb-0">Respostas dadas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card bg-dark text-center h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-check-circle fs-1 mb-3 text-success"></i>
+                        <h3 class="display-5 mb-0">
+                            {{ Resposta.query.filter_by(user_id=current_user.id, solucao=True).count() }}
+                        </h3>
+                        <p class="text-muted mb-0">Soluções aceitas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card bg-dark text-center h-100">
+                    <div class="card-body py-4">
+                        <i class="bi bi-hand-thumbs-up fs-1 mb-3 text-warning"></i>
+                        {% set answer_ids = [r.id for r in Resposta.query.filter_by(user_id=current_user.id).all()] %}
+                        {% set positive_votes = 0 %}
+                        {% if answer_ids %}
+                            {% set votes_sum = namespace(value=0) %}
+                            {% for r_id in answer_ids %}
+                                {% set votes = RespostaVoto.query.filter_by(resposta_id=r_id, valor=1).count() %}
+                                {% set votes_sum.value = votes_sum.value + votes %}
+                            {% endfor %}
+                            {% set positive_votes = votes_sum.value %}
+                        {% endif %}
+                        <h3 class="display-5 mb-0">{{ positive_votes }}</h3>
+                        <p class="text-muted mb-0">Votos positivos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Badges conquistadas -->
+    <div class="mb-5">
+        <h2 class="mb-4">Suas Badges</h2>
+        {% set user_badges = UserBadge.query.filter_by(user_id=current_user.id).all() %}
+        {% if user_badges %}
+            <div class="row">
+                {% for user_badge in user_badges %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card bg-dark h-100">
+                            <div class="card-body text-center py-4">
+                                <i class="{{ user_badge.badge.icon }} fs-1 mb-3 text-{{ user_badge.badge.cor }}"></i>
+                                <h4 class="card-title">{{ user_badge.badge.nome_completo }}</h4>
+                                <p class="text-muted">{{ user_badge.badge.descricao }}</p>
+                                <div class="badge bg-secondary mb-2">
+                                    Conquistada em {{ user_badge.data_conquista.strftime('%d/%m/%Y') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card bg-dark">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-award fs-1 mb-3 text-muted"></i>
+                    <h4 class="mb-3">Você ainda não conquistou nenhuma badge</h4>
+                    <p class="mb-4">Ajude outros estudantes respondendo dúvidas para ganhar badges!</p>
+                    <a href="{{ url_for('helpzone.index') }}" class="btn btn-primary">
+                        Navegar por Dúvidas
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Todas as Badges Disponíveis -->
+    <h2 class="mb-4">Todas as Badges Disponíveis</h2>
+    
+    <!-- Badges de Respostas -->
+    <div class="mb-4">
+        <h3 class="mb-3">Badges de Respostas</h3>
+        <div class="row">
+            {% for badge in Badge.query.filter_by(req_tipo='respostas').order_by(Badge.req_quantidade).all() %}
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-dark h-100">
+                        <div class="card-body text-center py-4">
+                            <i class="{{ badge.icon }} fs-1 mb-3 text-{{ badge.cor }}"></i>
+                            <h4 class="card-title">{{ badge.nome_completo }}</h4>
+                            <p class="text-muted">{{ badge.descricao }}</p>
+                            <div class="progress mb-2" style="height: 10px;">
+                                {% if current_user.is_authenticated %}
+                                    {% set answers_count = Resposta.query.filter_by(user_id=current_user.id).count() %}
+                                    {% set progress = (answers_count / badge.req_quantidade) * 100 if badge.req_quantidade > 0 else 0 %}
+                                    {% set progress = min(progress, 100) %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: {{ progress }}%;" 
+                                        aria-valuenow="{{ progress }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% else %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: 0%;" 
+                                        aria-valuenow="0" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% endif %}
+                            </div>
+                            {% if current_user.is_authenticated %}
+                                <small class="text-muted">
+                                    {% set answers_count = Resposta.query.filter_by(user_id=current_user.id).count() %}
+                                    {{ answers_count }} / {{ badge.req_quantidade }} respostas
+                                </small>
+                            {% else %}
+                                <small class="text-muted">
+                                    Precisa de {{ badge.req_quantidade }} respostas
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Badges de Soluções -->
+    <div class="mb-4">
+        <h3 class="mb-3">Badges de Soluções Aceitas</h3>
+        <div class="row">
+            {% for badge in Badge.query.filter_by(req_tipo='solucoes').order_by(Badge.req_quantidade).all() %}
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-dark h-100">
+                        <div class="card-body text-center py-4">
+                            <i class="{{ badge.icon }} fs-1 mb-3 text-{{ badge.cor }}"></i>
+                            <h4 class="card-title">{{ badge.nome_completo }}</h4>
+                            <p class="text-muted">{{ badge.descricao }}</p>
+                            <div class="progress mb-2" style="height: 10px;">
+                                {% if current_user.is_authenticated %}
+                                    {% set solutions_count = Resposta.query.filter_by(user_id=current_user.id, solucao=True).count() %}
+                                    {% set progress = (solutions_count / badge.req_quantidade) * 100 if badge.req_quantidade > 0 else 0 %}
+                                    {% set progress = min(progress, 100) %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: {{ progress }}%;" 
+                                        aria-valuenow="{{ progress }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% else %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: 0%;" 
+                                        aria-valuenow="0" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% endif %}
+                            </div>
+                            {% if current_user.is_authenticated %}
+                                <small class="text-muted">
+                                    {% set solutions_count = Resposta.query.filter_by(user_id=current_user.id, solucao=True).count() %}
+                                    {{ solutions_count }} / {{ badge.req_quantidade }} soluções
+                                </small>
+                            {% else %}
+                                <small class="text-muted">
+                                    Precisa de {{ badge.req_quantidade }} soluções
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Badges de Votos -->
+    <div class="mb-4">
+        <h3 class="mb-3">Badges de Reconhecimento</h3>
+        <div class="row">
+            {% for badge in Badge.query.filter_by(req_tipo='votos').order_by(Badge.req_quantidade).all() %}
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-dark h-100">
+                        <div class="card-body text-center py-4">
+                            <i class="{{ badge.icon }} fs-1 mb-3 text-{{ badge.cor }}"></i>
+                            <h4 class="card-title">{{ badge.nome_completo }}</h4>
+                            <p class="text-muted">{{ badge.descricao }}</p>
+                            <div class="progress mb-2" style="height: 10px;">
+                                {% if current_user.is_authenticated %}
+                                    {% set answer_ids = [r.id for r in Resposta.query.filter_by(user_id=current_user.id).all()] %}
+                                    {% set positive_votes = 0 %}
+                                    {% if answer_ids %}
+                                        {% set votes_sum = namespace(value=0) %}
+                                        {% for r_id in answer_ids %}
+                                            {% set votes = RespostaVoto.query.filter_by(resposta_id=r_id, valor=1).count() %}
+                                            {% set votes_sum.value = votes_sum.value + votes %}
+                                        {% endfor %}
+                                        {% set positive_votes = votes_sum.value %}
+                                    {% endif %}
+                                    {% set progress = (positive_votes / badge.req_quantidade) * 100 if badge.req_quantidade > 0 else 0 %}
+                                    {% set progress = min(progress, 100) %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: {{ progress }}%;" 
+                                        aria-valuenow="{{ progress }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% else %}
+                                    <div class="progress-bar bg-{{ badge.cor }}" role="progressbar" 
+                                        style="width: 0%;" 
+                                        aria-valuenow="0" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                {% endif %}
+                            </div>
+                            {% if current_user.is_authenticated %}
+                                <small class="text-muted">
+                                    {% set answer_ids = [r.id for r in Resposta.query.filter_by(user_id=current_user.id).all()] %}
+                                    {% set positive_votes = 0 %}
+                                    {% if answer_ids %}
+                                        {% set votes_sum = namespace(value=0) %}
+                                        {% for r_id in answer_ids %}
+                                            {% set votes = RespostaVoto.query.filter_by(resposta_id=r_id, valor=1).count() %}
+                                            {% set votes_sum.value = votes_sum.value + votes %}
+                                        {% endfor %}
+                                        {% set positive_votes = votes_sum.value %}
+                                    {% endif %}
+                                    {{ positive_votes }} / {{ badge.req_quantidade }} votos positivos
+                                </small>
+                            {% else %}
+                                <small class="text-muted">
+                                    Precisa de {{ badge.req_quantidade }} votos positivos
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

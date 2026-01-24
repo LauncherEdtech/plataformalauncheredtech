@@ -1,0 +1,367 @@
+        transition: all 0.3s ease;
+    }
+
+    .ranking-item:hover {
+        background-color: rgba(40, 40, 40, 0.8);
+        transform: translateX(5px);
+    }
+
+    .user-highlight {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.1));
+        border: 2px solid rgba(255, 193, 7, 0.5);
+    }
+
+    .tab-navigation {
+        background-color: rgba(30, 30, 30, 0.8);
+        border-radius: 10px;
+        padding: 0.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .tab-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+    }
+
+    .trophy-icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .crown-icon {
+        color: #FFD700;
+        font-size: 1.5rem;
+        margin-left: 0.5rem;
+    }
+
+    .time-highlight {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(255, 193, 7, 0.1));
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .time-badge {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .study-streak {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(32, 201, 151, 0.1));
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: 8px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+
+    .progress-bar-time {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        border-radius: 10px;
+        height: 8px;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ranking">
+    <h1 class="mb-2">
+        <i class="bi bi-clock trophy-icon"></i>
+        Ranking Tempo de Estudo
+    </h1>
+    <p class="lead mb-4">Os estudantes mais dedicados de {{ mes_atual }}! Tempo registrado automaticamente.</p>
+
+    <!-- Navegação entre Rankings -->
+    <div class="tab-navigation">
+        <a href="{{ url_for('ranking.index') }}" class="tab-btn">
+            <i class="bi bi-trophy me-2"></i>XP Geral
+        </a>
+        <a href="{{ url_for('ranking.mensal') }}" class="tab-btn">
+            <i class="bi bi-calendar-month me-2"></i>Mensal
+        </a>
+        <a href="{{ url_for('ranking.tempo_estudo') }}" class="tab-btn active">
+            <i class="bi bi-clock me-2"></i>Tempo de Estudo
+        </a>
+        <a href="{{ url_for('ranking.simulados') }}" class="tab-btn">
+            <i class="bi bi-journal-check me-2"></i>Simulados
+        </a>
+    </div>
+
+    <!-- Destaque do tempo de estudo -->
+    <div class="time-highlight">
+        <h4><i class="bi bi-stopwatch me-2"></i>Maratona de Estudos de {{ mes_atual.split()[0] }}</h4>
+        <p class="mb-0">Quanto mais você estuda, mais alto você sobe! Tempo registrado automaticamente em simulados, redações e exercícios.</p>
+    </div>
+
+    <!-- Estatísticas do Usuário -->
+    <div class="user-stats">
+        <div class="row">
+            <div class="col-md-4 stat-item">
+                <div class="stat-value">{{ tempo_usuario_formatado }}</div>
+                <div class="stat-label">Seu tempo em {{ mes_atual.split()[0] }}</div>
+            </div>
+            <div class="col-md-4 stat-item">
+                <div class="stat-value">
+                    {% if posicao_usuario %}#{{ posicao_usuario }}{% else %}--{% endif %}
+                </div>
+                <div class="stat-label">Sua Posição</div>
+            </div>
+            <div class="col-md-4 stat-item">
+                <div class="stat-value">{{ ranking_tempo|length }}</div>
+                <div class="stat-label">Estudantes Ativos</div>
+            </div>
+        </div>
+        
+        <!-- Meta de tempo -->
+        {% if tempo_usuario_mes > 0 %}
+        <div class="study-streak">
+            <small class="text-success">
+                <i class="bi bi-check-circle me-1"></i>
+                {% if tempo_usuario_mes >= 600 %}
+                    Parabéns! Você já estudou mais de 10 horas este mês! 🔥
+                {% elif tempo_usuario_mes >= 300 %}
+                    Ótimo progresso! Já são mais de 5 horas de estudo! 📚
+                {% elif tempo_usuario_mes >= 120 %}
+                    Bom começo! Continue assim para subir no ranking! ⭐
+                {% else %}
+                    Cada minuto conta! Continue estudando! 💪
+                {% endif %}
+            </small>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pódio de Tempo (Top 3) -->
+    {% if ranking_tempo|length >= 3 %}
+    <div class="ranking-card mb-4">
+        <h3 class="text-center mb-4">
+            <i class="bi bi-award crown-icon"></i>
+            Maratonistas de {{ mes_atual.split()[0] }}
+        </h3>
+        <div class="row">
+            <!-- 2º Lugar -->
+            <div class="col-md-4 text-center mb-3">
+                <div class="rank-badge rank-2 mx-auto mb-2">2º</div>
+                <h5>{{ ranking_tempo[1].nome_completo or ranking_tempo[1].username }}</h5>
+                <p class="text-warning mb-0">{{ formatar_tempo(ranking_tempo[1].tempo_total) }}</p>
+                <small class="text-muted">de estudo</small>
+            </div>
+            <!-- 1º Lugar -->
+            <div class="col-md-4 text-center mb-3">
+                <div class="rank-badge rank-1 mx-auto mb-2">1º</div>
+                <h5>
+                    {{ ranking_tempo[0].nome_completo or ranking_tempo[0].username }}
+                    <i class="bi bi-crown crown-icon"></i>
+                </h5>
+                <p class="text-warning mb-0">{{ formatar_tempo(ranking_tempo[0].tempo_total) }}</p>
+                <small class="text-muted">de estudo</small>
+                <div class="time-badge mt-2">
+                    <i class="bi bi-fire me-1"></i>Maratonista
+                </div>
+            </div>
+            <!-- 3º Lugar -->
+            <div class="col-md-4 text-center mb-3">
+                <div class="rank-badge rank-3 mx-auto mb-2">3º</div>
+                <h5>{{ ranking_tempo[2].nome_completo or ranking_tempo[2].username }}</h5>
+                <p class="text-warning mb-0">{{ formatar_tempo(ranking_tempo[2].tempo_total) }}</p>
+                <small class="text-muted">de estudo</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ranking Completo de Tempo -->
+    <div class="ranking-card">
+        <h3 class="mb-4">
+            <i class="bi bi-list-ol me-2"></i>
+            Ranking de Dedicação - {{ mes_atual }}
+        </h3>
+        
+        {% if ranking_tempo %}
+            <div class="ranking-list">
+                {% for user in ranking_tempo %}
+                <div class="ranking-item {% if user.id == usuario_atual.id %}user-highlight{% endif %}">
+                    <div class="rank-badge {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+                        {{ loop.index }}
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            {{ user.nome_completo or user.username }}
+                            {% if user.id == usuario_atual.id %}
+                                <span class="badge bg-warning text-dark ms-2">Você</span>
+                            {% endif %}
+                            
+                            <!-- Badges de conquista por tempo -->
+                            {% if user.tempo_total >= 1200 %}
+                                <span class="badge bg-danger ms-1" title="Mais de 20 horas!">
+                                    <i class="bi bi-fire"></i> Maratonista
+                                </span>
+                            {% elif user.tempo_total >= 600 %}
+                                <span class="badge bg-warning text-dark ms-1" title="Mais de 10 horas!">
+                                    <i class="bi bi-lightning"></i> Dedicado
+                                </span>
+                            {% elif user.tempo_total >= 300 %}
+                                <span class="badge bg-success ms-1" title="Mais de 5 horas!">
+                                    <i class="bi bi-star"></i> Consistente
+                                </span>
+                            {% endif %}
+                        </h6>
+                        <small class="text-muted">@{{ user.username }}</small>
+                        
+                        <!-- Barra de progresso visual -->
+                        {% if ranking_tempo[0].tempo_total > 0 %}
+                        <div class="mt-2">
+                            <div class="progress" style="height: 6px; background-color: rgba(255, 255, 255, 0.1);">
+                                <div class="progress-bar-time" style="width: {{ (user.tempo_total / ranking_tempo[0].tempo_total * 100)|round }}%;"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Estimativa de sessões -->
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>
+                            ~{{ (user.tempo_total / 60)|round }} sessões
+                        </small>
+                    </div>
+                    
+                    <div class="text-end">
+                        <div class="text-danger fw-bold">{{ formatar_tempo(user.tempo_total) }}</div>
+                        <small class="text-muted">este mês</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Se o usuário não está no ranking -->
+            {% if posicao_usuario and posicao_usuario > 50 %}
+            <div class="mt-4 pt-3 border-top border-secondary">
+                <div class="ranking-item user-highlight">
+                    <div class="rank-badge rank-other">{{ posicao_usuario }}</div>
+                    
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            {{ usuario_atual.nome_completo or usuario_atual.username }}
+                            <span class="badge bg-warning text-dark ms-2">Você</span>
+                        </h6>
+                        <small class="text-muted">@{{ usuario_atual.username }}</small>
+                    </div>
+                    
+                    <div class="text-end">
+                        <div class="text-danger fw-bold">{{ tempo_usuario_formatado }}</div>
+                        <small class="text-muted">este mês</small>
+                    </div>
+                </div>
+            </div>
+            {% elif tempo_usuario_mes == 0 %}
+            <div class="mt-4 pt-3 border-top border-secondary">
+                <div class="text-center py-3">
+                    <i class="bi bi-clock" style="font-size: 2rem; opacity: 0.5;"></i>
+                    <h5 class="mt-2">Você ainda não tem tempo registrado</h5>
+                    <p class="text-muted">Comece a estudar para aparecer no ranking de tempo!</p>
+                    <a href="{{ url_for('simulados.index') }}" class="btn btn-danger">
+                        <i class="bi bi-play-circle me-2"></i>Começar Cronômetro
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-clock-history" style="font-size: 3rem; opacity: 0.3;"></i>
+                <h4 class="mt-3">Nenhum tempo registrado este mês</h4>
+                <p class="text-muted">Seja o primeiro a começar a maratona de estudos!</p>
+                <a href="{{ url_for('simulados.index') }}" class="btn btn-danger">
+                    <i class="bi bi-stopwatch me-2"></i>Iniciar Agora
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Como funciona o tracking de tempo -->
+    <div class="ranking-card mt-4">
+        <h4 class="mb-3">
+            <i class="bi bi-gear me-2"></i>
+            Como o tempo é registrado?
+        </h4>
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="bi bi-robot me-2 text-success"></i>Automático e preciso</h6>
+                <p class="small text-muted">O sistema detecta automaticamente quando você está estudando e registra o tempo real.</p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="bi bi-shield-check me-2 text-primary"></i>Anti-trapaça</h6>
+                <p class="small text-muted">Apenas atividade real conta: fazer questões, escrever redações, etc.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="bi bi-pause me-2 text-warning"></i>Pausas automáticas</h6>
+                <p class="small text-muted">O cronômetro pausa automaticamente após 3 minutos de inatividade.</p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="bi bi-calendar-month me-2 text-info"></i>Reset mensal</h6>
+                <p class="small text-muted">O ranking de tempo reinicia todo mês para competição justa.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Atualizar tempo em tempo real se o usuário estiver estudando
+    setInterval(function() {
+        fetch('/ranking/api/posicao?tipo=tempo_estudo')
+            .then(response => response.json())
+            .then(data => {
+                // Poderia atualizar a posição em tempo real
+                console.log('Posição de tempo atualizada:', data.posicao);
+            })
+            .catch(error => console.log('Erro ao atualizar tempo:', error));
+    }, 30000);
+
+    // Animação das barras de progresso
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar-time');
+        progressBars.forEach((bar, index) => {
+            setTimeout(() => {
+                bar.style.width = bar.style.width; // Trigger animation
+            }, index * 150);
+        });
+    });
+
+    // Tooltip para badges de conquista
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}

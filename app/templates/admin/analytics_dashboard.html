@@ -1,0 +1,257 @@
+<!-- app/templates/admin/analytics_dashboard.html -->
+{% extends "layout.html" %}
+
+{% block title %}Admin | Central de Analytics{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --bg-dark: #0a0a0a;
+        --card-bg: #141414;
+        --accent: #00b4d8;
+        --text-main: #f0f0f0;
+        --text-dim: #999;
+        --border: #222;
+    }
+
+    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+    .dashboard-container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* Filtros Top Bar */
+    .filter-bar {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-end;
+        border: 1px solid var(--border);
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .filter-group label { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+    .filter-group select, .filter-group input {
+        background: #000;
+        border: 1px solid var(--border);
+        color: white;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        min-width: 180px;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        transition: transform 0.2s;
+    }
+    .kpi-card:hover { border-color: var(--accent); }
+    .kpi-label { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+
+    /* Layout de Gráficos e Tabelas */
+    .main-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+    }
+
+    .data-table-container {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 1rem; border-bottom: 1px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid #1a1a1a; font-size: 0.9rem; }
+
+    .status-badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .status-premium { background: rgba(0, 180, 216, 0.1); color: #00b4d8; }
+    .status-free { background: rgba(153, 153, 153, 0.1); color: #999; }
+
+    .loading-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 style="margin-bottom: 1.5rem;">Dashboard de Tracking & Analytics</h1>
+
+    <!-- Barra de Filtros -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Período</label>
+            <select id="filter-periodo">
+                <option value="7">Últimos 7 dias</option>
+                <option value="30" selected>Últimos 30 dias</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="365">Todo o período</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Status do Usuário</label>
+            <select id="filter-status">
+                <option value="todos">Todos os usuários</option>
+                <option value="premium">Apenas Premium</option>
+                <option value="free">Apenas Freemium</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>ID do Usuário (Opcional)</label>
+            <input type="text" id="filter-user-id" placeholder="Ex: 123">
+        </div>
+        <button onclick="updateDashboard()" style="background: var(--accent); color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+            Aplicar Filtros
+        </button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Redações Realizadas</div>
+            <div class="kpi-value" id="kpi-redacoes">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Simulados Feitos</div>
+            <div class="kpi-value" id="kpi-simulados">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Questões Respondidas</div>
+            <div class="kpi-value" id="kpi-questoes">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tempo Total (Horas)</div>
+            <div class="kpi-value" id="kpi-tempo-total">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Média Sessão (Min)</div>
+            <div class="kpi-value" id="kpi-media-sessao">0</div>
+        </div>
+    </div>
+
+    <div class="main-content-grid">
+        <!-- Tabela de Usuários -->
+        <div class="data-table-container">
+            <h3>Usuários Analisados</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Status</th>
+                        <th>Cadastro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Gerado via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tempo por Funcionalidade -->
+        <div class="data-table-container">
+            <h3>Uso por Funcionalidade</h3>
+            <div id="func-list" style="margin-top: 1rem;">
+                <!-- Gerado via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loader">
+    <div style="text-align: center;">
+        <div class="spinner"></div>
+        <p>Carregando métricas...</p>
+    </div>
+</div>
+
+<script>
+    async function updateDashboard() {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'flex';
+
+        const periodo = document.getElementById('filter-periodo').value;
+        const status = document.getElementById('filter-status').value;
+        const userId = document.getElementById('filter-user-id').value;
+
+        try {
+            const response = await fetch(`/admin/analytics/data?periodo=${periodo}&status=${status}&user_id=${userId}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Atualiza KPIs
+            document.getElementById('kpi-redacoes').innerText = data.summary.total_redacoes;
+            document.getElementById('kpi-simulados').innerText = data.summary.total_simulados;
+            document.getElementById('kpi-questoes').innerText = data.summary.total_questoes;
+            document.getElementById('kpi-tempo-total').innerText = data.summary.tempo_total_horas;
+            document.getElementById('kpi-media-sessao').innerText = data.summary.media_tempo_sessao_minutos;
+
+            // Atualiza Tabela de Usuários
+            const tableBody = document.getElementById('users-table-body');
+            tableBody.innerHTML = data.usuarios.map(u => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${u.nome}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim);">${u.email}</div>
+                    </td>
+                    <td><span class="status-badge ${u.status === 'Premium' ? 'status-premium' : 'status-free'}">${u.status}</span></td>
+                    <td>${u.data_cadastro}</td>
+                    <td><button onclick="setUserIdFilter('${u.id}')" style="background: none; border: 1px solid var(--accent); color: var(--accent); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">Ver Detalhes</button></td>
+                </tr>
+            `).join('');
+
+            // Atualiza Lista de Funcionalidades
+            const funcList = document.getElementById('func-list');
+            funcList.innerHTML = Object.entries(data.detalhes_atividades).map(([name, stats]) => `
+                <div style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #222;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                        <span style="font-weight: 500;">${name}</span>
+                        <span style="color: var(--accent); font-weight: bold;">${stats.total_minutos} min</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim);">
+                        Média de ${stats.media_sessao_minutos} min por acesso
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    function setUserIdFilter(id) {
+        document.getElementById('filter-user-id').value = id;
+        updateDashboard();
+    }
+
+    // Inicialização
+    window.onload = updateDashboard;
+</script>
+{% endblock %}
