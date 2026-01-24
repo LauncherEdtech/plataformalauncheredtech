@@ -33,3 +33,13 @@ htmlcov/
 
 # OS
 .DS_Store
+
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+service_account_credentials.json
+**/*.backup
+test_openai_key.py
