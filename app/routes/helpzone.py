@@ -9,11 +9,13 @@ import time
 import re
 import uuid
 from datetime import datetime, timedelta
+from typing import Optional
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from sqlalchemy import desc, or_, and_, func
 from app import db
+from app.services.s3_service import upload_fileobj, presigned_get_url
 from app.models.helpzone_social import (
     Post, PostMidia, PostLike, PostComentario, 
     Seguidor, NotificacaoSocial, PerfilSocial, Desafio, PostSalvo,
@@ -39,6 +41,39 @@ def generate_unique_filename(filename):
     ext = filename.rsplit('.', 1)[1].lower()
     unique_name = f"{uuid.uuid4().hex}_{int(datetime.now().timestamp())}.{ext}"
     return unique_name
+
+
+def _s3_folder(suffix: str) -> str:
+    prefix = os.getenv("S3_PREFIX", "helpzone").strip("/")
+    if suffix:
+        return f"{prefix}/{suffix}".strip("/")
+    return prefix
+
+
+def resolve_media_url(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    if value.startswith("http://") or value.startswith("https://") or value.startswith("/static/"):
+        return value
+    try:
+        return presigned_get_url(value)
+    except Exception as exc:
+        current_app.logger.error(f"Erro ao gerar URL assinada para {value}: {exc}")
+        return value
+
+
+def apply_profile_media(perfil):
+    if perfil and perfil.foto_perfil:
+        perfil.foto_perfil = resolve_media_url(perfil.foto_perfil)
+
+
+def apply_post_media(post):
+    if post.midia and post.midia.url:
+        post.midia.url = resolve_media_url(post.midia.url)
+        if post.midia.url_thumbnail:
+            post.midia.url_thumbnail = resolve_media_url(post.midia.url_thumbnail)
+    if post.user and post.user.perfil_social:
+        apply_profile_media(post.user.perfil_social)
 
 
 # ==================== PÁGINA PRINCIPAL - FEED ====================
@@ -83,6 +118,11 @@ def feed():
     
     # Paginação
     posts = query.paginate(page=page, per_page=per_page, error_out=False)
+    for post in posts.items:
+        apply_post_media(post)
+    apply_profile_media(perfil)
+    if current_user.perfil_social:
+        apply_profile_media(current_user.perfil_social)
     
     # Estatísticas do usuário
     stats = {
@@ -165,6 +205,9 @@ def criar_post():
         flash('Post criado com sucesso!', 'success')
         return redirect(url_for('helpzone.feed'))
     
+    if current_user.perfil_social:
+        apply_profile_media(current_user.perfil_social)
+
     return render_template('helpzone/criar_post.html')
 
 
@@ -192,20 +235,9 @@ def processar_upload(arquivo, tipo_midia, post_id):
     if file_size > max_size:
         raise ValueError(f'Arquivo muito grande. Máximo: {max_size / (1024*1024)}MB')
     
-    # Gerar nome único
-    filename = generate_unique_filename(arquivo.filename)
-    
-    # Criar diretórios se não existirem
-    upload_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, str(current_user.id))
-    os.makedirs(upload_path, exist_ok=True)
-    
-    # Salvar arquivo
-    filepath = os.path.join(upload_path, filename)
-    arquivo.save(filepath)
-    
-    # Retornar URL relativa
-    relative_url = f"/static/uploads/helpzone/{current_user.id}/{filename}"
-    return relative_url
+    # Upload no S3
+    folder = _s3_folder("posts")
+    return upload_fileobj(arquivo, current_user.id, folder=folder)
 
 
 # ==================== LIKE/DISLIKE ====================
@@ -498,23 +530,13 @@ def editar_perfil():
                 print(f"ERRO: Extensão {ext} não permitida.") # DEBUG
                 return jsonify({'error': 'Formato inválido'}), 400
             
-            # Gera nome e salva
-            novo_nome = f"avatar_{current_user.id}_{int(time.time())}.{ext}"
-            upload_path = os.path.join(current_app.root_path, 'static/uploads/avatars')
-            
-            # Garante que a pasta existe
-            if not os.path.exists(upload_path):
-                print(f"Criando pasta: {upload_path}") # DEBUG
-                os.makedirs(upload_path)
-            
-            caminho_completo = os.path.join(upload_path, novo_nome)
-            arquivo.save(caminho_completo)
-            print(f"Arquivo salvo com sucesso em: {caminho_completo}") # DEBUG
-            
-            # Salva no banco (URL relativa para o HTML usar)
-            url_db = f"/static/uploads/avatars/{novo_nome}"
-            perfil.foto_perfil = url_db
-            print(f"Caminho salvo no banco: {url_db}") # DEBUG
+            try:
+                key = upload_fileobj(arquivo, current_user.id, folder=_s3_folder("avatars"))
+                perfil.foto_perfil = key
+                print(f"Arquivo enviado para S3 com key: {key}") # DEBUG
+            except Exception as exc:
+                current_app.logger.error(f"Erro ao enviar avatar para S3: {exc}")
+                return jsonify({'error': 'Erro ao fazer upload da foto'}), 500
         else:
             print("AVISO: O arquivo chegou vazio ou sem nome.") # DEBUG
 
@@ -569,6 +591,15 @@ def perfil_usuario(user_id):
             seguido_id=user_id
         ).first() is not None
     
+    apply_profile_media(perfil)
+    if usuario.perfil_social:
+        apply_profile_media(usuario.perfil_social)
+    if current_user.perfil_social:
+        apply_profile_media(current_user.perfil_social)
+    if posts:
+        for post in posts.items:
+            apply_post_media(post)
+
     return render_template(
         'helpzone/perfil.html',
         usuario=usuario,
@@ -597,6 +628,15 @@ def notificacoes():
                             .update({'lida': True})
     db.session.commit()
     
+    for notif in notifs.items:
+        if notif.origem_user and notif.origem_user.perfil_social:
+            apply_profile_media(notif.origem_user.perfil_social)
+        if notif.post:
+            apply_post_media(notif.post)
+
+    if current_user.perfil_social:
+        apply_profile_media(current_user.perfil_social)
+
     return render_template('helpzone/notificacoes.html', notificacoes=notifs)
 
 
@@ -624,6 +664,8 @@ def api_feed():
     query = query.order_by(desc(Post.data_criacao))
     posts = query.paginate(page=page, per_page=per_page, error_out=False)
     
+    for post in posts.items:
+        apply_post_media(post)
     return jsonify({
         'posts': [post.to_dict() for post in posts.items],
         'total': posts.total,
@@ -813,6 +855,16 @@ def buscar_usuarios():
     # =====================================================
     # RENDER TEMPLATE (VARIÁVEIS COM NOMES CORRETOS!)
     # =====================================================
+    if usuarios:
+        for usuario in usuarios.items:
+            if usuario.perfil_social:
+                apply_profile_media(usuario.perfil_social)
+    if posts:
+        for post in posts.items:
+            apply_post_media(post)
+    if current_user.perfil_social:
+        apply_profile_media(current_user.perfil_social)
+
     return render_template(
         'helpzone/buscar.html',
         query=query,
@@ -838,6 +890,8 @@ def detalhes_post(post_id):
                                        .order_by(desc(PostComentario.data_criacao))\
                                        .all()
     
+    apply_post_media(post)
+
     return render_template(
         'helpzone/detalhes_post.html',
         post=post,
@@ -919,6 +973,10 @@ def sugestoes_usuarios():
         
         amigos_de_amigos.extend(usuarios_ativos)
     
+    for usuario in amigos_de_amigos:
+        if usuario.perfil_social:
+            apply_profile_media(usuario.perfil_social)
+
     return jsonify({
         'success': True,
         'usuarios': [{
@@ -1041,6 +1099,8 @@ def get_stories():
     stories_por_usuario = {}
     for story in stories:
         if story.user_id not in stories_por_usuario:
+            if story.user.perfil_social:
+                apply_profile_media(story.user.perfil_social)
             stories_por_usuario[story.user_id] = {
                 'user_id': story.user_id,
                 'username': story.user.nome_completo,
@@ -1052,7 +1112,7 @@ def get_stories():
         stories_por_usuario[story.user_id]['stories'].append({
             'id': story.id,
             'tipo': story.tipo,
-            'url': story.url_midia,
+            'url': resolve_media_url(story.url_midia),
             'data_criacao': story.data_criacao.isoformat(),
             'visualizacoes': story.visualizacoes
         })
@@ -1112,14 +1172,7 @@ def criar_story():
     
     # Processar upload
     try:
-        filename = generate_unique_filename(arquivo.filename)
-        upload_path = os.path.join(current_app.root_path, 'static/uploads/stories', str(current_user.id))
-        os.makedirs(upload_path, exist_ok=True)
-        
-        filepath = os.path.join(upload_path, filename)
-        arquivo.save(filepath)
-        
-        midia_url = f"/static/uploads/stories/{current_user.id}/{filename}"
+        midia_url = upload_fileobj(arquivo, current_user.id, folder=_s3_folder("stories"))
         
         # Criar story no banco
         from app.models.helpzone_social import Story
@@ -1139,7 +1192,7 @@ def criar_story():
         return jsonify({
             'success': True,
             'story_id': story.id,
-            'url': midia_url,
+            'url': resolve_media_url(midia_url),
             'expira_em': story.expira_em.isoformat()
         })
         
@@ -1193,6 +1246,9 @@ def reels():
     ).order_by(desc(Post.data_criacao))\
      .paginate(page=page, per_page=10, error_out=False)
     
+    for reel in reels.items:
+        apply_post_media(reel)
+
     return render_template('helpzone/reels.html', reels=reels)
 
 
@@ -1255,14 +1311,14 @@ def api_detalhes_post(post_id):
     if post.midia:
         midia_info = {
             'tipo': post.midia.tipo,
-            'url': post.midia.url
+            'url': resolve_media_url(post.midia.url)
         }
     
     # Informações do usuário
     perfil = PerfilSocial.query.filter_by(user_id=post.user_id).first()
     foto_perfil = None
     if perfil and perfil.foto_perfil:
-        foto_perfil = perfil.foto_perfil
+        foto_perfil = resolve_media_url(perfil.foto_perfil)
     
     return jsonify({
         'success': True,
@@ -1298,7 +1354,7 @@ def api_comentarios_post(post_id):
         perfil = PerfilSocial.query.filter_by(user_id=c.user_id).first()
         foto_perfil = None
         if perfil and perfil.foto_perfil:
-            foto_perfil = perfil.foto_perfil
+            foto_perfil = resolve_media_url(perfil.foto_perfil)
         
         # Calcular tempo relativo
         tempo_delta = datetime.utcnow() - c.data_criacao
@@ -1376,4 +1432,3 @@ def api_comentar_post(post_id):
             'tempo': 'agora'
         }
     })
-
