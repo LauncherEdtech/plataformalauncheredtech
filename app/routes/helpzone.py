@@ -85,39 +85,6 @@ def serialize_post(post):
         'score': post.get_score()
     }
 
-def _s3_folder(suffix: str) -> str:
-    prefix = os.getenv("S3_PREFIX", "helpzone").strip("/")
-    if suffix:
-        return f"{prefix}/{suffix}".strip("/")
-    return prefix
-
-
-def resolve_media_url(value: Optional[str]) -> Optional[str]:
-    if not value:
-        return None
-    if value.startswith("http://") or value.startswith("https://") or value.startswith("/static/"):
-        return value
-    try:
-        return presigned_get_url(value)
-    except Exception as exc:
-        current_app.logger.error(f"Erro ao gerar URL assinada para {value}: {exc}")
-        return value
-
-
-def apply_profile_media(perfil):
-    if perfil and perfil.foto_perfil:
-        perfil.foto_perfil = resolve_media_url(perfil.foto_perfil)
-
-
-def apply_post_media(post):
-    if post.midia and post.midia.url:
-        post.midia.url = resolve_media_url(post.midia.url)
-        if post.midia.url_thumbnail:
-            post.midia.url_thumbnail = resolve_media_url(post.midia.url_thumbnail)
-    if post.user and post.user.perfil_social:
-        apply_profile_media(post.user.perfil_social)
-
-
 
 # ==================== PÁGINA PRINCIPAL - FEED ====================
 @helpzone_bp.route('/')
