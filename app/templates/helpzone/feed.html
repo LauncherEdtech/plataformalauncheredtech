@@ -1926,6 +1926,7 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+
 let storyGroups = [];
 let activeStoryGroupIndex = 0;
 let activeStoryIndex = 0;
@@ -1942,13 +1943,23 @@ async function loadStories() {
             return;
         }
 
+
         storyGroups = data.stories;
         data.stories.forEach((storyGroup, index) => {
+
+        data.stories.forEach((storyGroup) => {
             if (!storyGroup.stories || storyGroup.stories.length === 0) return;
 
             const storyItem = document.createElement('div');
             storyItem.className = 'story-item';
             storyItem.onclick = () => openStoryViewer(index);
+
+            storyItem.onclick = () => {
+                const firstStory = storyGroup.stories[0];
+                if (firstStory && firstStory.url) {
+                    window.open(firstStory.url, '_blank');
+                }
+            };
 
             const ring = document.createElement('div');
             ring.className = 'story-ring';
@@ -2053,6 +2064,7 @@ function prevStory() {
         return;
     }
 }
+
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
