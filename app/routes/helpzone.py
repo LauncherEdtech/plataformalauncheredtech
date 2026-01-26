@@ -6,13 +6,10 @@ Sistema completo de rede social focada em rotina de estudos
 
 import os
 import time
-import re
-import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
 from sqlalchemy import desc, or_, and_, func
 from app import db
 from app.services.s3_service import upload_fileobj, presigned_get_url
@@ -36,11 +33,57 @@ def allowed_file(filename, allowed_extensions):
     """Verifica se a extensão do arquivo é permitida"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
-def generate_unique_filename(filename):
-    """Gera nome único para o arquivo"""
-    ext = filename.rsplit('.', 1)[1].lower()
-    unique_name = f"{uuid.uuid4().hex}_{int(datetime.now().timestamp())}.{ext}"
-    return unique_name
+def _s3_folder(suffix: str) -> str:
+    prefix = os.getenv("S3_PREFIX", "helpzone").strip("/")
+    if suffix:
+        return f"{prefix}/{suffix}".strip("/")
+    return prefix
+
+
+def resolve_media_url(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    if value.startswith("http://") or value.startswith("https://") or value.startswith("/static/"):
+        return value
+    try:
+        return presigned_get_url(value)
+    except Exception as exc:
+        current_app.logger.error(f"Erro ao gerar URL assinada para {value}: {exc}")
+        return value
+
+
+def apply_profile_media(perfil):
+    if perfil:
+        perfil.foto_perfil_url = resolve_media_url(perfil.foto_perfil)
+
+
+def apply_post_media(post):
+    if post.midia:
+        post.midia.url_public = resolve_media_url(post.midia.url)
+        post.midia.url_thumbnail_public = resolve_media_url(post.midia.url_thumbnail)
+    if post.user and post.user.perfil_social:
+        apply_profile_media(post.user.perfil_social)
+
+
+def serialize_post(post):
+    user_avatar = None
+    if post.user and getattr(post.user, "perfil_social", None):
+        user_avatar = resolve_media_url(post.user.perfil_social.foto_perfil)
+    midia_url = resolve_media_url(post.midia.url) if post.midia else None
+    return {
+        'id': post.id,
+        'user_id': post.user_id,
+        'username': post.user.nome if post.user else 'Anônimo',
+        'user_avatar': user_avatar,
+        'texto': post.texto,
+        'tipo_midia': post.tipo_midia,
+        'midia_url': midia_url,
+        'data_criacao': post.data_criacao.isoformat(),
+        'total_likes': post.total_likes,
+        'total_dislikes': post.total_dislikes,
+        'total_comentarios': post.total_comentarios,
+        'score': post.get_score()
+    }
 
 
 def _s3_folder(suffix: str) -> str:
@@ -667,7 +710,7 @@ def api_feed():
     for post in posts.items:
         apply_post_media(post)
     return jsonify({
-        'posts': [post.to_dict() for post in posts.items],
+        'posts': [serialize_post(post) for post in posts.items],
         'total': posts.total,
         'page': posts.page,
         'pages': posts.pages,
@@ -982,7 +1025,7 @@ def sugestoes_usuarios():
         'usuarios': [{
             'id': u.id,
             'nome': u.nome_completo,
-            'foto': u.perfil_social.foto_perfil if u.perfil_social else None,
+            'foto': resolve_media_url(u.perfil_social.foto_perfil) if u.perfil_social else None,
             'ocupacao': u.perfil_social.ocupacao if u.perfil_social else 'Estudante',
             'seguidores': u.perfil_social.total_seguidores if u.perfil_social else 0,
             'bio': u.perfil_social.biografia[:50] + '...' if u.perfil_social and u.perfil_social.biografia else None
@@ -1104,7 +1147,7 @@ def get_stories():
             stories_por_usuario[story.user_id] = {
                 'user_id': story.user_id,
                 'username': story.user.nome_completo,
-                'avatar': story.user.perfil_social.foto_perfil if story.user.perfil_social else None,
+                'avatar': resolve_media_url(story.user.perfil_social.foto_perfil) if story.user.perfil_social else None,
                 'stories': [],
                 'visto': False  # Implementar lógica de visualização
             }
