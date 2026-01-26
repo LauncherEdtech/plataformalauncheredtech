@@ -86,6 +86,39 @@ def serialize_post(post):
     }
 
 
+def _s3_folder(suffix: str) -> str:
+    prefix = os.getenv("S3_PREFIX", "helpzone").strip("/")
+    if suffix:
+        return f"{prefix}/{suffix}".strip("/")
+    return prefix
+
+
+def resolve_media_url(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    if value.startswith("http://") or value.startswith("https://") or value.startswith("/static/"):
+        return value
+    try:
+        return presigned_get_url(value)
+    except Exception as exc:
+        current_app.logger.error(f"Erro ao gerar URL assinada para {value}: {exc}")
+        return value
+
+
+def apply_profile_media(perfil):
+    if perfil and perfil.foto_perfil:
+        perfil.foto_perfil = resolve_media_url(perfil.foto_perfil)
+
+
+def apply_post_media(post):
+    if post.midia and post.midia.url:
+        post.midia.url = resolve_media_url(post.midia.url)
+        if post.midia.url_thumbnail:
+            post.midia.url_thumbnail = resolve_media_url(post.midia.url_thumbnail)
+    if post.user and post.user.perfil_social:
+        apply_profile_media(post.user.perfil_social)
+
+
 # ==================== PÁGINA PRINCIPAL - FEED ====================
 @helpzone_bp.route('/')
 @helpzone_bp.route('/feed')
@@ -674,6 +707,8 @@ def api_feed():
     query = query.order_by(desc(Post.data_criacao))
     posts = query.paginate(page=page, per_page=per_page, error_out=False)
     
+    for post in posts.items:
+        apply_post_media(post)
     return jsonify({
         'posts': [serialize_post(post) for post in posts.items],
         'total': posts.total,
@@ -981,6 +1016,10 @@ def sugestoes_usuarios():
         
         amigos_de_amigos.extend(usuarios_ativos)
     
+    for usuario in amigos_de_amigos:
+        if usuario.perfil_social:
+            apply_profile_media(usuario.perfil_social)
+
     return jsonify({
         'success': True,
         'usuarios': [{
@@ -1103,6 +1142,8 @@ def get_stories():
     stories_por_usuario = {}
     for story in stories:
         if story.user_id not in stories_por_usuario:
+            if story.user.perfil_social:
+                apply_profile_media(story.user.perfil_social)
             stories_por_usuario[story.user_id] = {
                 'user_id': story.user_id,
                 'username': story.user.nome_completo,
