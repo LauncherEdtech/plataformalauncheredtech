@@ -966,8 +966,9 @@ XP e Moedas
 }
 
 .helpzone-feed-container {
-    max-width: 600px;
+    max-width: 680px;
     margin: 0 auto;
+    width: 100%;
 }
 
 /* ================================================
@@ -1069,11 +1070,12 @@ XP e Moedas
    POST CARD
    ================================================ */
 .post-card {
-    background: var(--bg-body);
-    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-medium);
     border-radius: 12px;
     margin-bottom: 20px;
     overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
 }
 
 @media (max-width: 768px) {
@@ -1168,6 +1170,8 @@ XP e Moedas
 .post-media video {
     width: 100%;
     display: block;
+    max-height: 520px;
+    object-fit: cover;
 }
 
 .post-stats {
@@ -1622,7 +1626,7 @@ XP e Moedas
     .hz-story-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
     .hz-story-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
     .hz-story-media { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: contain; }
+    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: cover; }
     .hz-story-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: #fff; font-size: 32px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
     .hz-story-prev { left: 12px; }
     .hz-story-next { right: 12px; }
