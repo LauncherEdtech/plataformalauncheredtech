@@ -1891,9 +1891,64 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+async function loadStories() {
+    const container = document.getElementById('storiesContainer');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/helpzone/api/stories');
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.stories)) {
+            return;
+        }
+
+        data.stories.forEach((storyGroup) => {
+            if (!storyGroup.stories || storyGroup.stories.length === 0) return;
+
+            const storyItem = document.createElement('div');
+            storyItem.className = 'story-item';
+            storyItem.onclick = () => {
+                const firstStory = storyGroup.stories[0];
+                if (firstStory && firstStory.url) {
+                    window.open(firstStory.url, '_blank');
+                }
+            };
+
+            const ring = document.createElement('div');
+            ring.className = 'story-ring';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'story-avatar';
+
+            if (storyGroup.avatar) {
+                const img = document.createElement('img');
+                img.src = storyGroup.avatar;
+                img.alt = storyGroup.username || 'Story';
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = (storyGroup.username || '?')[0].toUpperCase();
+            }
+
+            ring.appendChild(avatar);
+            storyItem.appendChild(ring);
+
+            const username = document.createElement('div');
+            username.className = 'story-username';
+            username.textContent = storyGroup.username || 'Story';
+            storyItem.appendChild(username);
+
+            container.appendChild(storyItem);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar stories:', error);
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadRanking();
+    loadStories();
     console.log('✅ HelpZone Feed com Modal carregado!');
 });
 </script>
