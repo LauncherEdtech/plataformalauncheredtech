@@ -759,8 +759,8 @@
                 <i class="fas fa-graduation-cap"></i>
             </button>
             <div class="nav-profile-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                    <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Perfil">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Perfil">
                 {% else %}
                     <div class="nav-profile-avatar-letter">
                         {{ current_user.nome_completo[0].upper() }}
@@ -776,8 +776,8 @@
     <!-- Quick Profile -->
     <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
         <div class="sidebar-profile-avatar">
-            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-            <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+            {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+            <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
             {% else %}
             {{ current_user.nome_completo[0].upper() }}
             {% endif %}
@@ -884,8 +884,8 @@
                     <div class="avatar-wrapper" {% if is_own_profile %}onclick="openEditModal()"{% endif %}>
                         <div class="avatar-ring">
                             <div class="avatar-image">
-                                {% if perfil.foto_perfil %}
-                                    <img src="{{ perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
+                                {% if perfil.foto_perfil_url or perfil.foto_perfil %}
+                                    <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
                                 {% else %}
                                     <span class="avatar-letter">{{ usuario.nome_completo[0].upper() }}</span>
                                 {% endif %}
@@ -964,8 +964,8 @@
                         <div class="avatar-wrapper" {% if is_own_profile %}onclick="openEditModal()"{% endif %}>
                             <div class="avatar-ring">
                                 <div class="avatar-image">
-                                    {% if perfil.foto_perfil %}
-                                        <img src="{{ perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
+                                    {% if perfil.foto_perfil_url or perfil.foto_perfil %}
+                                        <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
                                     {% else %}
                                         <span class="avatar-letter">{{ usuario.nome_completo[0].upper() }}</span>
                                     {% endif %}
@@ -1057,11 +1057,11 @@
                         {% if posts and posts.items %}
                             {% for post in posts.items %}
                             <div class="post-item" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=post.id) }}'">
-                                {% if post.midia and post.midia.url %}
+                                {% if post.midia and (post.midia.url_public or post.midia.url) %}
                                     {% if post.midia.tipo == 'imagem' %}
-                                        <img src="{{ post.midia.url }}" alt="Post" loading="lazy">
+                                        <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post" loading="lazy">
                                     {% elif post.midia.tipo == 'video' %}
-                                        <video src="{{ post.midia.url }}"></video>
+                                        <video src="{{ post.midia.url_public or post.midia.url }}"></video>
                                     {% endif %}
                                 {% else %}
                                     <div class="post-text-only">
@@ -1123,8 +1123,8 @@
     <div class="mobile-menu-header">
         <div class="mobile-menu-profile">
             <div class="mobile-menu-avatar">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Perfil">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Perfil">
                 {% else %}
                 {{ current_user.nome_completo[0].upper() }}
                 {% endif %}
@@ -1198,8 +1198,8 @@
         <form id="editProfileForm" enctype="multipart/form-data">
             <div class="avatar-upload">
                 <div class="avatar-preview" id="avatarPreview">
-                    {% if perfil.foto_perfil %}
-                        <img src="{{ perfil.foto_perfil }}" alt="Avatar">
+                    {% if perfil.foto_perfil_url or perfil.foto_perfil %}
+                        <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="Avatar">
                     {% else %}
                         {{ usuario.nome_completo[0].upper() }}
                     {% endif %}

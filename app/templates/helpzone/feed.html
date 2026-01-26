@@ -1281,8 +1281,8 @@ XP e Moedas
     <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
         <div class="sidebar-profile-header">
             <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
                 {% else %}
                 {{ current_user.nome_completo[0].upper() }}
                 {% endif %}
@@ -1362,8 +1362,8 @@ XP e Moedas
     <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
         <div class="sidebar-profile-header">
             <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                    <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
                 {% else %}
                     {{ current_user.nome_completo[0].upper() }}
                 {% endif %}
@@ -1422,8 +1422,8 @@ XP e Moedas
                 <div class="story-item" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
                     <div class="story-ring no-story">
                         <div class="story-avatar">
-                            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                            <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Você">
+                            {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                            <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Você">
                             {% else %}
                             {{ current_user.nome_completo[0].upper() }}
                             {% endif %}
@@ -1445,8 +1445,8 @@ XP e Moedas
                     <div class="post-header">
                         <div class="post-user-info">
                             <div class="post-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}'">
-                                {% if post.user.perfil_social and post.user.perfil_social.foto_perfil %}
-                                <img src="{{ post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
+                                {% if post.user.perfil_social and (post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil) %}
+                                <img src="{{ post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
                                 {% else %}
                                 {{ post.user.nome_completo[0].upper() }}
                                 {% endif %}
@@ -1467,12 +1467,12 @@ XP e Moedas
                         <div class="post-text">{{ post.texto }}</div>
                     </div>
                     
-                    {% if post.midia and post.midia.url %}
+                    {% if post.midia and (post.midia.url_public or post.midia.url) %}
                     <div class="post-media">
                         {% if post.midia.tipo == 'imagem' %}
-                        <img src="{{ post.midia.url }}" alt="Post">
+                        <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post">
                         {% elif post.midia.tipo == 'video' %}
-                        <video src="{{ post.midia.url }}" controls></video>
+                        <video src="{{ post.midia.url_public or post.midia.url }}" controls></video>
                         {% endif %}
                     </div>
                     {% endif %}

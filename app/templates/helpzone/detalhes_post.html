@@ -230,11 +230,11 @@ body {
         
         <!-- Mídia -->
         <div class="post-media">
-            {% if post.midia and post.midia.url %}
+            {% if post.midia and (post.midia.url_public or post.midia.url) %}
                 {% if post.midia.tipo == 'imagem' %}
-                    <img src="{{ post.midia.url }}" alt="Post">
+                    <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post">
                 {% else %}
-                    <video src="{{ post.midia.url }}" controls></video>
+                    <video src="{{ post.midia.url_public or post.midia.url }}" controls></video>
                 {% endif %}
             {% else %}
                 <div style="padding: 40px; color: var(--text-muted);">{{ post.texto }}</div>
@@ -245,8 +245,8 @@ body {
         <div class="post-details">
             
             <div class="user-header">
-                {% if post.user.perfil_social.foto_perfil %}
-                    <img src="{{ post.user.perfil_social.foto_perfil }}" class="avatar">
+                {% if post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil %}
+                    <img src="{{ post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil }}" class="avatar">
                 {% else %}
                     <div class="avatar" style="display: flex; align-items: center; justify-content: center; font-size: 12px; background: #262626;">{{ post.user.nome_completo[0] }}</div>
                 {% endif %}
