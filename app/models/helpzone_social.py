@@ -6,7 +6,9 @@ Sistema completo de rede social focada em rotina de estudos
 
 from datetime import datetime
 from app import db
-from sqlalchemy import func, Index
+from sqlalchemy import func, Index, event
+from urllib.parse import urlparse
+from typing import Optional
 import re
 
 
@@ -587,3 +589,43 @@ class StoryVisualizacao(db.Model):
         db.UniqueConstraint('story_id', 'user_id', name='unique_story_view'),
     )
 
+
+def _extract_s3_key(url: str) -> Optional[str]:
+    parsed = urlparse(url)
+    if not parsed.netloc or "amazonaws.com" not in parsed.netloc:
+        return None
+    path = parsed.path.lstrip("/")
+    return path or None
+
+
+@event.listens_for(PostMidia, "before_insert")
+@event.listens_for(PostMidia, "before_update")
+def _normalize_post_midia_url(mapper, connection, target):
+    if not target.url or not isinstance(target.url, str):
+        return
+    if target.url.startswith("http://") or target.url.startswith("https://"):
+        key = _extract_s3_key(target.url)
+        if key:
+            target.url = key
+
+
+@event.listens_for(Story, "before_insert")
+@event.listens_for(Story, "before_update")
+def _normalize_story_url(mapper, connection, target):
+    if not target.url_midia or not isinstance(target.url_midia, str):
+        return
+    if target.url_midia.startswith("http://") or target.url_midia.startswith("https://"):
+        key = _extract_s3_key(target.url_midia)
+        if key:
+            target.url_midia = key
+
+
+@event.listens_for(PerfilSocial, "before_insert")
+@event.listens_for(PerfilSocial, "before_update")
+def _normalize_avatar_url(mapper, connection, target):
+    if not target.foto_perfil or not isinstance(target.foto_perfil, str):
+        return
+    if target.foto_perfil.startswith("http://") or target.foto_perfil.startswith("https://"):
+        key = _extract_s3_key(target.foto_perfil)
+        if key:
+            target.foto_perfil = key

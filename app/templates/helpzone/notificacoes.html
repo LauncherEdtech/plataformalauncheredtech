@@ -432,8 +432,8 @@ main, .content-wrapper, .wrapper {
                 <!-- AVATAR COM ÍCONE DE TIPO -->
                 <div class="notif-avatar-wrapper">
                     <div class="notif-avatar">
-                        {% if notif.origem_user and notif.origem_user.perfil_social and notif.origem_user.perfil_social.foto_perfil %}
-                            <img src="{{ notif.origem_user.perfil_social.foto_perfil }}" alt="{{ notif.origem_user.nome_completo }}">
+                        {% if notif.origem_user and notif.origem_user.perfil_social and (notif.origem_user.perfil_social.foto_perfil_url or notif.origem_user.perfil_social.foto_perfil) %}
+                            <img src="{{ notif.origem_user.perfil_social.foto_perfil_url or notif.origem_user.perfil_social.foto_perfil }}" alt="{{ notif.origem_user.nome_completo }}">
                         {% elif notif.origem_user %}
                             {{ notif.origem_user.nome_completo[0].upper() }}
                         {% else %}
@@ -477,8 +477,8 @@ main, .content-wrapper, .wrapper {
                 </div>
 
                 <!-- THUMBNAIL (se aplicável) -->
-                {% if notif.post and notif.post.midia and notif.post.midia.url %}
-                <img src="{{ notif.post.midia.url }}" class="notif-thumbnail" alt="Post">
+                {% if notif.post and notif.post.midia and (notif.post.midia.url_public or notif.post.midia.url) %}
+                <img src="{{ notif.post.midia.url_public or notif.post.midia.url }}" class="notif-thumbnail" alt="Post">
                 {% endif %}
             </div>
             {% endfor %}
