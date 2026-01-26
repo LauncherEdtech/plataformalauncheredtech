@@ -624,10 +624,15 @@ XP e Moedas
     border-radius: 10px;
     color: var(--text-primary);
     text-decoration: none;
+    background: transparent;
+    border: none;
     font-weight: 500;
     font-size: 0.95rem;
     transition: all 0.2s;
     position: relative;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
 }
 
 .sidebar-nav-link:hover {
@@ -902,8 +907,28 @@ XP e Moedas
     transition: background 0.2s ease;
 }
 
+.mobile-sidebar-nav button {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
 .mobile-sidebar-nav a:hover,
-.mobile-sidebar-nav a.active {
+.mobile-sidebar-nav a.active,
+.mobile-sidebar-nav button:hover,
+.mobile-sidebar-nav button.active {
     background: rgba(255,255,255,0.08);
 }
 
@@ -941,8 +966,9 @@ XP e Moedas
 }
 
 .helpzone-feed-container {
-    max-width: 600px;
+    max-width: 680px;
     margin: 0 auto;
+    width: 100%;
 }
 
 /* ================================================
@@ -1044,11 +1070,12 @@ XP e Moedas
    POST CARD
    ================================================ */
 .post-card {
-    background: var(--bg-body);
-    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-medium);
     border-radius: 12px;
     margin-bottom: 20px;
     overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
 }
 
 @media (max-width: 768px) {
@@ -1143,6 +1170,8 @@ XP e Moedas
 .post-media video {
     width: 100%;
     display: block;
+    max-height: 520px;
+    object-fit: cover;
 }
 
 .post-stats {
@@ -1246,6 +1275,7 @@ XP e Moedas
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/helpzone-overlays.css') }}">
 
 {% endblock %}
 
@@ -1281,8 +1311,8 @@ XP e Moedas
     <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
         <div class="sidebar-profile-header">
             <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
                 {% else %}
                 {{ current_user.nome_completo[0].upper() }}
                 {% endif %}
@@ -1313,10 +1343,10 @@ XP e Moedas
             <i class="fas fa-home"></i>
             <span>Feed</span>
         </a>
-        <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="sidebar-nav-link">
+        <button type="button" class="sidebar-nav-link" onclick="openSearchModal()">
             <i class="fas fa-search"></i>
             <span>Explorar</span>
-        </a>
+        </button>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link">
             <i class="fas fa-user"></i>
             <span>Perfil</span>
@@ -1325,13 +1355,13 @@ XP e Moedas
             <i class="fas fa-bookmark"></i>
             <span>Salvos</span>
         </a>
-        <a href="{{ url_for('helpzone.notificacoes') }}" class="sidebar-nav-link">
+        <button type="button" class="sidebar-nav-link" onclick="openNotificationsPanel()">
             <i class="far fa-bell"></i>
             <span>Notificações</span>
-        </a>
+        </button>
     </nav>
     
-    <button class="sidebar-create-btn" onclick="location.href='{{ url_for('helpzone.criar_post') }}'">
+    <button class="sidebar-create-btn" onclick="openCreatePostModal()">
         <i class="fas fa-plus"></i>
         <span>Criar Post</span>
     </button>
@@ -1362,8 +1392,8 @@ XP e Moedas
     <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
         <div class="sidebar-profile-header">
             <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                    <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
                 {% else %}
                     {{ current_user.nome_completo[0].upper() }}
                 {% endif %}
@@ -1389,10 +1419,10 @@ XP e Moedas
             <i class="fas fa-home"></i>
             <span>Feed</span>
         </a>
-        <a href="{{ url_for('helpzone.buscar_usuarios') }}">
+        <button type="button" onclick="openSearchModal(); toggleMobileSidebar();">
             <i class="fas fa-search"></i>
             <span>Explorar</span>
-        </a>
+        </button>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">
             <i class="fas fa-user"></i>
             <span>Perfil</span>
@@ -1401,14 +1431,14 @@ XP e Moedas
             <i class="fas fa-bookmark"></i>
             <span>Salvos</span>
         </a>
-        <a href="{{ url_for('helpzone.notificacoes') }}">
+        <button type="button" onclick="openNotificationsPanel(); toggleMobileSidebar();">
             <i class="far fa-bell"></i>
             <span>Notificações</span>
-        </a>
-        <a href="{{ url_for('helpzone.criar_post') }}">
+        </button>
+        <button type="button" onclick="openCreatePostModal(); toggleMobileSidebar();">
             <i class="fas fa-plus-circle"></i>
             <span>Criar Post</span>
-        </a>
+        </button>
     </nav>
 </div>
 
@@ -1422,8 +1452,8 @@ XP e Moedas
                 <div class="story-item" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
                     <div class="story-ring no-story">
                         <div class="story-avatar">
-                            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                            <img src="{{ current_user.perfil_social.foto_perfil }}" alt="Você">
+                            {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                            <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Você">
                             {% else %}
                             {{ current_user.nome_completo[0].upper() }}
                             {% endif %}
@@ -1445,8 +1475,8 @@ XP e Moedas
                     <div class="post-header">
                         <div class="post-user-info">
                             <div class="post-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}'">
-                                {% if post.user.perfil_social and post.user.perfil_social.foto_perfil %}
-                                <img src="{{ post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
+                                {% if post.user.perfil_social and (post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil) %}
+                                <img src="{{ post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
                                 {% else %}
                                 {{ post.user.nome_completo[0].upper() }}
                                 {% endif %}
@@ -1467,12 +1497,12 @@ XP e Moedas
                         <div class="post-text">{{ post.texto }}</div>
                     </div>
                     
-                    {% if post.midia and post.midia.url %}
+                    {% if post.midia and (post.midia.url_public or post.midia.url) %}
                     <div class="post-media">
                         {% if post.midia.tipo == 'imagem' %}
-                        <img src="{{ post.midia.url }}" alt="Post">
+                        <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post">
                         {% elif post.midia.tipo == 'video' %}
-                        <video src="{{ post.midia.url }}" controls></video>
+                        <video src="{{ post.midia.url_public or post.midia.url }}" controls></video>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -1513,7 +1543,7 @@ XP e Moedas
                     <p style="color: var(--text-secondary); margin: 10px 0 20px;">
                         Comece seguindo outros estudantes!
                     </p>
-                    <button onclick="location.href='{{ url_for('helpzone.buscar_usuarios') }}'" 
+                    <button onclick="openSearchModal()" 
                             style="padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
                         Explorar Pessoas
                     </button>
@@ -1567,8 +1597,43 @@ XP e Moedas
     </div>
 </div>
 
+<div class="hz-story-viewer" id="storyViewer">
+    <div class="hz-story-backdrop" onclick="closeStoryViewer()"></div>
+    <div class="hz-story-panel">
+        <div class="hz-story-header">
+            <div class="hz-story-user">
+                <img id="storyViewerAvatar" alt="Story">
+                <span id="storyViewerUsername"></span>
+            </div>
+            <button class="hz-story-close" onclick="closeStoryViewer()" aria-label="Fechar">×</button>
+        </div>
+        <div class="hz-story-body">
+            <button class="hz-story-nav hz-story-prev" onclick="prevStory()" aria-label="Anterior">‹</button>
+            <div class="hz-story-media" id="storyViewerMedia"></div>
+            <button class="hz-story-nav hz-story-next" onclick="nextStory()" aria-label="Próximo">›</button>
+        </div>
+    </div>
+</div>
 
+<style>
+    .hz-story-viewer { position: fixed; inset: 0; display: none; z-index: 2000; }
+    .hz-story-viewer.active { display: block; }
+    .hz-story-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
+    .hz-story-panel { position: relative; width: min(420px, 92vw); height: min(740px, 90vh); margin: 5vh auto 0; background: #000; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+    .hz-story-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; color: #fff; }
+    .hz-story-user { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .hz-story-user img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .hz-story-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+    .hz-story-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    .hz-story-media { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: cover; }
+    .hz-story-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: #fff; font-size: 32px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    .hz-story-prev { left: 12px; }
+    .hz-story-next { right: 12px; }
+</style>
 
+<!-- INCLUIR OS OVERLAYS (criar post, notificações, busca) -->
+{% include 'helpzone/overlays.html' %}
 
 </div>
 
@@ -1576,6 +1641,7 @@ XP e Moedas
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/helpzone-overlays.js') }}"></script>
 <script>
 let currentPostId = null;
 
@@ -1891,9 +1957,138 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+let storyGroups = [];
+let activeStoryGroupIndex = 0;
+let activeStoryIndex = 0;
+
+async function loadStories() {
+    const container = document.getElementById('storiesContainer');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/helpzone/api/stories');
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.stories)) {
+            return;
+        }
+
+        storyGroups = data.stories;
+        data.stories.forEach((storyGroup, index) => {
+            if (!storyGroup.stories || storyGroup.stories.length === 0) return;
+
+            const storyItem = document.createElement('div');
+            storyItem.className = 'story-item';
+            storyItem.onclick = () => openStoryViewer(index);
+
+            const ring = document.createElement('div');
+            ring.className = 'story-ring';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'story-avatar';
+
+            if (storyGroup.avatar) {
+                const img = document.createElement('img');
+                img.src = storyGroup.avatar;
+                img.alt = storyGroup.username || 'Story';
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = (storyGroup.username || '?')[0].toUpperCase();
+            }
+
+            ring.appendChild(avatar);
+            storyItem.appendChild(ring);
+
+            const username = document.createElement('div');
+            username.className = 'story-username';
+            username.textContent = storyGroup.username || 'Story';
+            storyItem.appendChild(username);
+
+            container.appendChild(storyItem);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar stories:', error);
+    }
+}
+
+function openStoryViewer(groupIndex) {
+    if (!storyGroups[groupIndex]) return;
+    activeStoryGroupIndex = groupIndex;
+    activeStoryIndex = 0;
+    renderStory();
+    document.getElementById('storyViewer').classList.add('active');
+}
+
+function closeStoryViewer() {
+    const viewer = document.getElementById('storyViewer');
+    viewer.classList.remove('active');
+    document.getElementById('storyViewerMedia').innerHTML = '';
+}
+
+function renderStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    const story = group.stories[activeStoryIndex];
+    if (!story) return;
+
+    const avatar = document.getElementById('storyViewerAvatar');
+    const username = document.getElementById('storyViewerUsername');
+    avatar.style.display = group.avatar ? 'block' : 'none';
+    avatar.src = group.avatar || '';
+    username.textContent = group.username || 'Story';
+
+    const media = document.getElementById('storyViewerMedia');
+    media.innerHTML = '';
+
+    if (story.tipo === 'video') {
+        const video = document.createElement('video');
+        video.src = story.url;
+        video.controls = true;
+        video.autoplay = true;
+        media.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = story.url;
+        img.alt = group.username || 'Story';
+        media.appendChild(img);
+    }
+}
+
+function nextStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    if (activeStoryIndex < group.stories.length - 1) {
+        activeStoryIndex += 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex < storyGroups.length - 1) {
+        activeStoryGroupIndex += 1;
+        activeStoryIndex = 0;
+        renderStory();
+        return;
+    }
+    closeStoryViewer();
+}
+
+function prevStory() {
+    if (activeStoryIndex > 0) {
+        activeStoryIndex -= 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex > 0) {
+        activeStoryGroupIndex -= 1;
+        activeStoryIndex = storyGroups[activeStoryGroupIndex].stories.length - 1;
+        renderStory();
+        return;
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadRanking();
+    loadStories();
     console.log('✅ HelpZone Feed com Modal carregado!');
 });
 </script>
