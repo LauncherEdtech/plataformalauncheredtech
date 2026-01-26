@@ -674,6 +674,8 @@ def api_feed():
     query = query.order_by(desc(Post.data_criacao))
     posts = query.paginate(page=page, per_page=per_page, error_out=False)
     
+    for post in posts.items:
+        apply_post_media(post)
     return jsonify({
         'posts': [serialize_post(post) for post in posts.items],
         'total': posts.total,
@@ -981,6 +983,10 @@ def sugestoes_usuarios():
         
         amigos_de_amigos.extend(usuarios_ativos)
     
+    for usuario in amigos_de_amigos:
+        if usuario.perfil_social:
+            apply_profile_media(usuario.perfil_social)
+
     return jsonify({
         'success': True,
         'usuarios': [{
@@ -1103,6 +1109,8 @@ def get_stories():
     stories_por_usuario = {}
     for story in stories:
         if story.user_id not in stories_por_usuario:
+            if story.user.perfil_social:
+                apply_profile_media(story.user.perfil_social)
             stories_por_usuario[story.user_id] = {
                 'user_id': story.user_id,
                 'username': story.user.nome_completo,
