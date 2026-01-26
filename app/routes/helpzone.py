@@ -85,7 +85,6 @@ def serialize_post(post):
         'score': post.get_score()
     }
 
-
 def _s3_folder(suffix: str) -> str:
     prefix = os.getenv("S3_PREFIX", "helpzone").strip("/")
     if suffix:
@@ -117,6 +116,7 @@ def apply_post_media(post):
             post.midia.url_thumbnail = resolve_media_url(post.midia.url_thumbnail)
     if post.user and post.user.perfil_social:
         apply_profile_media(post.user.perfil_social)
+
 
 
 # ==================== PÁGINA PRINCIPAL - FEED ====================

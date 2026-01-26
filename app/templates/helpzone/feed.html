@@ -1567,6 +1567,41 @@ XP e Moedas
     </div>
 </div>
 
+<div class="hz-story-viewer" id="storyViewer">
+    <div class="hz-story-backdrop" onclick="closeStoryViewer()"></div>
+    <div class="hz-story-panel">
+        <div class="hz-story-header">
+            <div class="hz-story-user">
+                <img id="storyViewerAvatar" alt="Story">
+                <span id="storyViewerUsername"></span>
+            </div>
+            <button class="hz-story-close" onclick="closeStoryViewer()" aria-label="Fechar">×</button>
+        </div>
+        <div class="hz-story-body">
+            <button class="hz-story-nav hz-story-prev" onclick="prevStory()" aria-label="Anterior">‹</button>
+            <div class="hz-story-media" id="storyViewerMedia"></div>
+            <button class="hz-story-nav hz-story-next" onclick="nextStory()" aria-label="Próximo">›</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hz-story-viewer { position: fixed; inset: 0; display: none; z-index: 2000; }
+    .hz-story-viewer.active { display: block; }
+    .hz-story-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
+    .hz-story-panel { position: relative; width: min(420px, 92vw); height: min(740px, 90vh); margin: 5vh auto 0; background: #000; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+    .hz-story-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; color: #fff; }
+    .hz-story-user { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .hz-story-user img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .hz-story-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+    .hz-story-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    .hz-story-media { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: contain; }
+    .hz-story-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: #fff; font-size: 32px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    .hz-story-prev { left: 12px; }
+    .hz-story-next { right: 12px; }
+</style>
+
 
 
 
@@ -1891,6 +1926,11 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+
+let storyGroups = [];
+let activeStoryGroupIndex = 0;
+let activeStoryIndex = 0;
+
 async function loadStories() {
     const container = document.getElementById('storiesContainer');
     if (!container) return;
@@ -1903,11 +1943,17 @@ async function loadStories() {
             return;
         }
 
+
+        storyGroups = data.stories;
+        data.stories.forEach((storyGroup, index) => {
+
         data.stories.forEach((storyGroup) => {
             if (!storyGroup.stories || storyGroup.stories.length === 0) return;
 
             const storyItem = document.createElement('div');
             storyItem.className = 'story-item';
+            storyItem.onclick = () => openStoryViewer(index);
+
             storyItem.onclick = () => {
                 const firstStory = storyGroup.stories[0];
                 if (firstStory && firstStory.url) {
@@ -1944,6 +1990,81 @@ async function loadStories() {
         console.error('Erro ao carregar stories:', error);
     }
 }
+
+function openStoryViewer(groupIndex) {
+    if (!storyGroups[groupIndex]) return;
+    activeStoryGroupIndex = groupIndex;
+    activeStoryIndex = 0;
+    renderStory();
+    document.getElementById('storyViewer').classList.add('active');
+}
+
+function closeStoryViewer() {
+    const viewer = document.getElementById('storyViewer');
+    viewer.classList.remove('active');
+    document.getElementById('storyViewerMedia').innerHTML = '';
+}
+
+function renderStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    const story = group.stories[activeStoryIndex];
+    if (!story) return;
+
+    const avatar = document.getElementById('storyViewerAvatar');
+    const username = document.getElementById('storyViewerUsername');
+    avatar.style.display = group.avatar ? 'block' : 'none';
+    avatar.src = group.avatar || '';
+    username.textContent = group.username || 'Story';
+
+    const media = document.getElementById('storyViewerMedia');
+    media.innerHTML = '';
+
+    if (story.tipo === 'video') {
+        const video = document.createElement('video');
+        video.src = story.url;
+        video.controls = true;
+        video.autoplay = true;
+        media.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = story.url;
+        img.alt = group.username || 'Story';
+        media.appendChild(img);
+    }
+}
+
+function nextStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    if (activeStoryIndex < group.stories.length - 1) {
+        activeStoryIndex += 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex < storyGroups.length - 1) {
+        activeStoryGroupIndex += 1;
+        activeStoryIndex = 0;
+        renderStory();
+        return;
+    }
+    closeStoryViewer();
+}
+
+function prevStory() {
+    if (activeStoryIndex > 0) {
+        activeStoryIndex -= 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex > 0) {
+        activeStoryGroupIndex -= 1;
+        activeStoryIndex = storyGroups[activeStoryGroupIndex].stories.length - 1;
+        renderStory();
+        return;
+    }
+}
+
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
