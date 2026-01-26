@@ -24,8 +24,8 @@
             <div class="hz-compose-area">
                 <!-- Avatar -->
                 <div class="hz-compose-avatar">
-                    {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}
-                        <img src="{{ current_user.perfil_social.foto_perfil }}" alt="{{ current_user.nome_completo }}">
+                    {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                        <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="{{ current_user.nome_completo }}">
                     {% else %}
                         {{ current_user.nome_completo[0].upper() }}
                     {% endif %}
