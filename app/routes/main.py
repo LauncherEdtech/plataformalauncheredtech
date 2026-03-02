@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import current_user
+from flask import jsonify
+from app.services.s3_service import presigned_get_url
+
+
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,3 +21,10 @@ def index():
 def home():
     """Página inicial pública"""
     return render_template('index.html')
+
+
+
+@main_bp.route("/test-s3")
+def test_s3():
+    url = presigned_get_url("test.txt", expires=300)
+    return jsonify({"ok": True, "url": url})

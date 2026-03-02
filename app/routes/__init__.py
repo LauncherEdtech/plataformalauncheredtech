@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from app.routes.cronograma import cronograma_bp
-
+import os
 
 
 db = SQLAlchemy()
@@ -16,8 +16,13 @@ def create_app():
     app = Flask(__name__)
     
     # Configurações do app
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL não definido. Configure em /etc/launcher.env")
+    
     app.config['SECRET_KEY'] = 'sua-chave-secreta'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:22092021Dd$@34.63.141.69:5432/plataforma'
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Inicialização de extensões

@@ -36,26 +36,33 @@
     --mobile-nav-height: 56px;
 }
 
+
+
+
 /* ================================================
    ESCONDER NAVBAR DO LAYOUT.HTML APENAS NO MOBILE
    ================================================ */
 @media (max-width: 768px) {
+    /* Esconder apenas a navbar PRINCIPAL do layout.html no mobile */
     body > nav.navbar,
     header > nav.navbar,
     .navbar.navbar-expand-lg.bg-black {
         display: none !important;
     }
     
+    /* Remover padding-top do body no mobile */
     body {
         padding-top: 0 !important;
         margin-top: 0 !important;
     }
     
+    /* Remover padding do main no mobile */
     main {
         padding-top: 0 !important;
         margin-top: 0 !important;
     }
 }
+
 
 /* ================================================
    MODAL DE COMENTÁRIOS (ESTILO INSTAGRAM/TIKTOK)
@@ -98,6 +105,7 @@
     transform: scale(1);
 }
 
+/* Desktop Layout */
 @media (min-width: 769px) {
     .comments-modal-container {
         border-radius: 12px;
@@ -121,6 +129,7 @@
     }
 }
 
+/* Mobile Layout */
 @media (max-width: 768px) {
     .comments-modal-container {
         flex-direction: column;
@@ -135,7 +144,7 @@
     }
     
     .modal-media-section {
-        display: none;
+        display: none; /* Esconde mídia no mobile */
     }
     
     .modal-comments-section {
@@ -145,6 +154,7 @@
     }
 }
 
+/* Botão Fechar */
 .modal-close-btn {
     position: absolute;
     top: 12px;
@@ -175,6 +185,7 @@
     }
 }
 
+/* Mídia */
 .modal-media-section img,
 .modal-media-section video {
     max-width: 100%;
@@ -182,6 +193,7 @@
     object-fit: contain;
 }
 
+/* Cabeçalho do Post */
 .modal-post-header {
     padding: 14px 16px;
     border-bottom: 1px solid var(--border-subtle);
@@ -216,6 +228,7 @@
     color: var(--text-primary);
 }
 
+/* Mobile: Handle de arrasto */
 .modal-drag-handle {
     width: 40px;
     height: 4px;
@@ -231,6 +244,7 @@
     }
 }
 
+/* Área de Comentários */
 .modal-comments-list {
     flex: 1;
     overflow-y: auto;
@@ -298,6 +312,7 @@
     color: var(--text-secondary);
 }
 
+/* Input de Comentário */
 .modal-comment-input-section {
     padding: 14px 16px;
     border-top: 1px solid var(--border-subtle);
@@ -345,10 +360,17 @@
     cursor: not-allowed;
 }
 
-.modal-comments-loading,
-.modal-comments-empty {
+/* Loading */
+.modal-comments-loading {
     text-align: center;
     padding: 40px 20px;
+    color: var(--text-tertiary);
+}
+
+/* Empty State */
+.modal-comments-empty {
+    text-align: center;
+    padding: 60px 20px;
     color: var(--text-tertiary);
 }
 
@@ -358,6 +380,9 @@
     display: block;
     opacity: 0.5;
 }
+
+
+
 
 /* ================================================
    NAVBAR MOBILE
@@ -416,7 +441,11 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* XP e Moedas */
+
+/*============================== 
+XP e Moedas
+================================*/
+/* Badges XP e Launcher Coins - Padrão Layout */
 .currency-badges {
     display: flex !important;
     gap: 0.5rem !important;
@@ -473,7 +502,6 @@
         font-size: 1rem !important;
     }
 }
-
 /* ================================================
    SIDEBAR DESKTOP
    ================================================ */
@@ -498,6 +526,7 @@
     }
 }
 
+/* Perfil compacto */
 .sidebar-profile {
     padding: 16px 12px;
     margin-bottom: 8px;
@@ -579,6 +608,7 @@
     color: var(--streak-orange);
 }
 
+/* Links de navegação */
 .sidebar-nav-links {
     display: flex;
     flex-direction: column;
@@ -594,15 +624,10 @@
     border-radius: 10px;
     color: var(--text-primary);
     text-decoration: none;
-    background: transparent;
-    border: none;
     font-weight: 500;
     font-size: 0.95rem;
     transition: all 0.2s;
     position: relative;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
 }
 
 .sidebar-nav-link:hover {
@@ -631,6 +656,7 @@
     text-align: center;
 }
 
+/* Botão Criar Post */
 .sidebar-create-btn {
     width: 100%;
     padding: 14px;
@@ -655,6 +681,7 @@
     transform: translateY(-2px);
 }
 
+/* Ranking */
 .sidebar-ranking {
     margin-top: auto;
     padding-top: 20px;
@@ -742,7 +769,7 @@
 }
 
 /* ================================================
-   SIDEBAR MOBILE (OVERLAY)
+   SIDEBAR MOBILE (OVERLAY) - IGUAL AO PRINT
    ================================================ */
 .mobile-sidebar-overlay {
     position: fixed;
@@ -766,14 +793,21 @@
     right: 0;
     width: min(320px, 86vw);
     height: 100vh;
+
+    /* efeito "vidro" */
     background: rgba(0,0,0,0.78);
     backdrop-filter: blur(18px);
+
     border-left: 1px solid rgba(255,255,255,0.08);
     z-index: 200;
+
     transform: translateX(110%);
     transition: transform 0.28s ease;
+
     overflow-y: auto;
     padding: 18px 16px 24px;
+
+    /* deixa a borda mais premium */
     box-shadow: -16px 0 40px rgba(0,0,0,0.55);
 }
 
@@ -781,6 +815,7 @@
     transform: translateX(0);
 }
 
+/* header minimalista: só X no canto (igual foto) */
 .mobile-sidebar-header {
     display: flex;
     align-items: center;
@@ -808,6 +843,7 @@
     background: rgba(255,255,255,0.16);
 }
 
+/* card do perfil no topo */
 .mobile-sidebar-profile {
     margin: 10px 0 14px;
 }
@@ -819,11 +855,13 @@
     border: 1px solid rgba(255,255,255,0.08);
 }
 
+/* avatar menor, estilo foto */
 .mobile-sidebar-profile .sidebar-profile-avatar {
     width: 44px;
     height: 44px;
 }
 
+/* título "FOGUINHO" mais evidente */
 .mobile-sidebar-profile .sidebar-profile-title {
     font-size: 0.65rem;
     font-weight: 900;
@@ -832,6 +870,7 @@
     margin-bottom: 6px;
 }
 
+/* streak (🔥 4 dias) no estilo da foto */
 .mobile-sidebar-profile .sidebar-profile-streak {
     font-size: 0.95rem;
     font-weight: 800;
@@ -842,6 +881,7 @@
     color: var(--streak-orange);
 }
 
+/* itens do menu */
 .mobile-sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -849,8 +889,7 @@
     margin-top: 10px;
 }
 
-.mobile-sidebar-nav a,
-.mobile-sidebar-nav button {
+.mobile-sidebar-nav a {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -861,28 +900,21 @@
     font-weight: 650;
     font-size: 1rem;
     transition: background 0.2s ease;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
 }
 
 .mobile-sidebar-nav a:hover,
-.mobile-sidebar-nav a.active,
-.mobile-sidebar-nav button:hover,
-.mobile-sidebar-nav button.active {
+.mobile-sidebar-nav a.active {
     background: rgba(255,255,255,0.08);
 }
 
-.mobile-sidebar-nav a i,
-.mobile-sidebar-nav button i {
+.mobile-sidebar-nav a i {
     font-size: 1.25rem;
     width: 22px;
     text-align: center;
     opacity: 0.95;
 }
 
+/* ranking no fundo (opcional) */
 .mobile-sidebar .sidebar-ranking {
     margin-top: 18px;
     padding-top: 14px;
@@ -1193,10 +1225,6 @@
     color: white;
 }
 
-.toast.error {
-    background: var(--error);
-    color: white;
-}
 
 @media (max-width: 768px) {
   .mobile-sidebar-profile {
@@ -1210,14 +1238,21 @@
     display: block !important;
   }
 }
+
+
+
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 {% endblock %}
 
 {% block content %}
+
+<!-- Navbar Desktop (substitui a padrão) -->
+    
 
 <!-- Navbar Mobile -->
 <nav class="helpzone-navbar-mobile">
@@ -1255,16 +1290,20 @@
             </div>
             <div class="sidebar-profile-info">
                 <div class="sidebar-profile-title">FOGUINHO</div>
-                <div class="sidebar-profile-streak">
-                    <i class="fas fa-fire" style="color: {{ 'var(--streak-orange)' if current_user.sequencia_dias > 0 else 'var(--text-tertiary)' }}"></i>
-                    <span>
-                        {% if current_user.sequencia_dias > 0 %}
-                            {{ current_user.sequencia_dias }} dia{{ 's' if current_user.sequencia_dias != 1 else '' }} 
-                        {% else %}
-                            Comece sua sequência!
-                        {% endif %}
-                    </span>
-                </div>
+
+
+<div class="sidebar-profile-streak">
+    <i class="fas fa-fire" style="color: {{ 'var(--streak-orange)' if current_user.sequencia_dias > 0 else 'var(--text-tertiary)' }}"></i>
+    <span>
+        {% if current_user.sequencia_dias > 0 %}
+            {{ current_user.sequencia_dias }} dia{{ 's' if current_user.sequencia_dias != 1 else '' }} 
+        {% else %}
+            Comece sua sequência!
+        {% endif %}
+    </span>
+</div>
+
+
             </div>
         </div>
     </div>
@@ -1274,10 +1313,10 @@
             <i class="fas fa-home"></i>
             <span>Feed</span>
         </a>
-        <button type="button" class="sidebar-nav-link" onclick="openSearchModal()">
+        <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="sidebar-nav-link">
             <i class="fas fa-search"></i>
             <span>Explorar</span>
-        </button>
+        </a>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link">
             <i class="fas fa-user"></i>
             <span>Perfil</span>
@@ -1286,13 +1325,13 @@
             <i class="fas fa-bookmark"></i>
             <span>Salvos</span>
         </a>
-        <button type="button" class="sidebar-nav-link" onclick="openNotificationsPanel()">
+        <a href="{{ url_for('helpzone.notificacoes') }}" class="sidebar-nav-link">
             <i class="far fa-bell"></i>
             <span>Notificações</span>
-        </button>
+        </a>
     </nav>
     
-    <button class="sidebar-create-btn" onclick="openCreatePostModal()">
+    <button class="sidebar-create-btn" onclick="location.href='{{ url_for('helpzone.criar_post') }}'">
         <i class="fas fa-plus"></i>
         <span>Criar Post</span>
     </button>
@@ -1313,43 +1352,47 @@
 
 <!-- Mobile Sidebar -->
 <div class="mobile-sidebar" id="mobileSidebar">
-    <div class="mobile-sidebar-header">
-        <button class="mobile-sidebar-close" onclick="toggleMobileSidebar()">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
+<div class="mobile-sidebar-header">
+    <button class="mobile-sidebar-close" onclick="toggleMobileSidebar()">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
     
-    <div class="mobile-sidebar-profile">
-        <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-            <div class="sidebar-profile-header">
-                <div class="sidebar-profile-avatar">
-                    {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                        <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
-                    {% else %}
-                        {{ current_user.nome_completo[0].upper() }}
-                    {% endif %}
-                    <div class="level-badge">{{ current_user.nivel or 1 }}</div>
-                </div>
-                <div class="sidebar-profile-info">
-                    <div class="sidebar-profile-title">FOGUINHO</div>
-                    <div class="sidebar-profile-streak">
-                        <i class="fas fa-fire"></i>
-                        <span>{{ current_user.sequencia_dias or 0 }} dia{{ 's' if (current_user.sequencia_dias or 0) != 1 else '' }}</span>
-                    </div>
+<div class="mobile-sidebar-profile">
+    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
+        <div class="sidebar-profile-header">
+            <div class="sidebar-profile-avatar">
+                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
+                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
+                {% else %}
+                    {{ current_user.nome_completo[0].upper() }}
+                {% endif %}
+                <div class="level-badge">{{ current_user.nivel or 1 }}</div>
+            </div>
+
+            <div class="sidebar-profile-info">
+                <div class="sidebar-profile-title">FOGUINHO</div>
+
+                <div class="sidebar-profile-streak">
+                    <i class="fas fa-fire"></i>
+                    <span>
+                        {{ current_user.sequencia_dias or 0 }} dia{{ 's' if (current_user.sequencia_dias or 0) != 1 else '' }}
+                    </span>
                 </div>
             </div>
         </div>
     </div>
+</div>
     
     <nav class="mobile-sidebar-nav">
         <a href="{{ url_for('helpzone.feed') }}" class="active">
             <i class="fas fa-home"></i>
             <span>Feed</span>
         </a>
-        <button type="button" onclick="openSearchModal(); toggleMobileSidebar();">
+        <a href="{{ url_for('helpzone.buscar_usuarios') }}">
             <i class="fas fa-search"></i>
             <span>Explorar</span>
-        </button>
+        </a>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">
             <i class="fas fa-user"></i>
             <span>Perfil</span>
@@ -1358,14 +1401,14 @@
             <i class="fas fa-bookmark"></i>
             <span>Salvos</span>
         </a>
-        <button type="button" onclick="openNotificationsPanel(); toggleMobileSidebar();">
+        <a href="{{ url_for('helpzone.notificacoes') }}">
             <i class="far fa-bell"></i>
             <span>Notificações</span>
-        </button>
-        <button type="button" onclick="openCreatePostModal(); toggleMobileSidebar();">
+        </a>
+        <a href="{{ url_for('helpzone.criar_post') }}">
             <i class="fas fa-plus-circle"></i>
             <span>Criar Post</span>
-        </button>
+        </a>
     </nav>
 </div>
 
@@ -1440,7 +1483,8 @@
                             <span>{{ post.total_likes or 0 }} curtidas</span>
                         </div>
                     </div>
-                    
+
+
                     <div class="post-actions">
                         <button class="post-action-btn {% if post.user_liked(current_user.id) %}liked{% endif %}" 
                                 onclick="toggleLike({{ post.id }})">
@@ -1469,15 +1513,16 @@
                     <p style="color: var(--text-secondary); margin: 10px 0 20px;">
                         Comece seguindo outros estudantes!
                     </p>
-                    <button onclick="openSearchModal()" 
+                    <button onclick="location.href='{{ url_for('helpzone.buscar_usuarios') }}'" 
                             style="padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
                         Explorar Pessoas
                     </button>
                 </div>
             {% endif %}
         </div>
+        
     </div>
-</div>
+
 
 <!-- Modal de Comentários -->
 <div class="comments-modal-overlay" id="commentsModal" onclick="closeCommentsModal(event)">
@@ -1486,13 +1531,17 @@
             <i class="fas fa-times"></i>
         </button>
         
+        <!-- Seção de Mídia (Desktop) -->
         <div class="modal-media-section" id="modalMediaSection">
+            <!-- Mídia será carregada aqui -->
         </div>
         
+        <!-- Seção de Comentários -->
         <div class="modal-comments-section">
             <div class="modal-drag-handle"></div>
             
             <div class="modal-post-header" id="modalPostHeader">
+                <!-- Header será carregado aqui -->
             </div>
             
             <div class="modal-comments-list" id="modalCommentsList">
@@ -1518,13 +1567,50 @@
     </div>
 </div>
 
-<!-- INCLUIR OS OVERLAYS (CRIAR POST, EXPLORAR, NOTIFICAÇÕES) -->
-{% include 'helpzone/overlays.html' %}
+<div class="hz-story-viewer" id="storyViewer">
+    <div class="hz-story-backdrop" onclick="closeStoryViewer()"></div>
+    <div class="hz-story-panel">
+        <div class="hz-story-header">
+            <div class="hz-story-user">
+                <img id="storyViewerAvatar" alt="Story">
+                <span id="storyViewerUsername"></span>
+            </div>
+            <button class="hz-story-close" onclick="closeStoryViewer()" aria-label="Fechar">×</button>
+        </div>
+        <div class="hz-story-body">
+            <button class="hz-story-nav hz-story-prev" onclick="prevStory()" aria-label="Anterior">‹</button>
+            <div class="hz-story-media" id="storyViewerMedia"></div>
+            <button class="hz-story-nav hz-story-next" onclick="nextStory()" aria-label="Próximo">›</button>
+        </div>
+    </div>
+</div>
 
+<style>
+    .hz-story-viewer { position: fixed; inset: 0; display: none; z-index: 2000; }
+    .hz-story-viewer.active { display: block; }
+    .hz-story-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
+    .hz-story-panel { position: relative; width: min(420px, 92vw); height: min(740px, 90vh); margin: 5vh auto 0; background: #000; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+    .hz-story-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; color: #fff; }
+    .hz-story-user { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .hz-story-user img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .hz-story-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+    .hz-story-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    .hz-story-media { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: contain; }
+    .hz-story-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: #fff; font-size: 32px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    .hz-story-prev { left: 12px; }
+    .hz-story-next { right: 12px; }
+</style>
+
+
+
+
+</div>
+
+</body>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/helpzone-overlays.js') }}"></script>
 <script>
 let currentPostId = null;
 
@@ -1551,6 +1637,7 @@ async function openCommentsModal(postId) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
+    // Carregar dados do post
     await loadPostDetails(postId);
 }
 
@@ -1564,15 +1651,25 @@ function closeCommentsModal(event) {
     currentPostId = null;
 }
 
+
+
 async function loadPostDetails(postId) {
+    console.log('🔍 Carregando post ID:', postId);
+    
     try {
         const url = `/helpzone/api/post/${postId}/detalhes`;
+        console.log('📡 Fazendo requisição para:', url);
+        
         const response = await fetch(url);
+        console.log('📥 Response status:', response.status);
+        
         const data = await response.json();
+        console.log('📦 Dados recebidos:', data);
         
         if (data.success) {
             const post = data.post;
             
+            // Renderizar Header
             const header = document.getElementById('modalPostHeader');
             header.innerHTML = `
                 <div class="modal-user-avatar">
@@ -1584,6 +1681,7 @@ async function loadPostDetails(postId) {
                 <span class="modal-username">${post.user.nome}</span>
             `;
             
+            // Renderizar Mídia (Desktop)
             const mediaSection = document.getElementById('modalMediaSection');
             if (post.midia) {
                 if (post.midia.tipo === 'imagem') {
@@ -1595,13 +1693,36 @@ async function loadPostDetails(postId) {
                 mediaSection.innerHTML = `<div style="padding: 40px; color: var(--text-secondary); text-align: center;">${post.texto}</div>`;
             }
             
+            // Carregar Comentários
             await loadComments(postId);
+        } else {
+            console.error('❌ API retornou success: false');
+            const commentsList = document.getElementById('modalCommentsList');
+            commentsList.innerHTML = `
+                <div class="modal-comments-empty">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar post</p>
+                    <p style="font-size: 0.85rem;">Tente novamente mais tarde</p>
+                </div>
+            `;
         }
     } catch (error) {
-        console.error('Erro ao carregar post:', error);
+        console.error('💥 ERRO CAPTURADO:', error);
+        console.error('Stack trace:', error.stack);
+        
+        const commentsList = document.getElementById('modalCommentsList');
+        commentsList.innerHTML = `
+            <div class="modal-comments-empty" style="color: var(--error);">
+                <i class="fas fa-exclamation-circle"></i>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar</p>
+                <p style="font-size: 0.85rem;">${error.message}</p>
+            </div>
+        `;
     }
 }
 
+
+// Carregar Comentários
 async function loadComments(postId) {
     try {
         const response = await fetch(`/helpzone/api/post/${postId}/comentarios`);
@@ -1625,7 +1746,7 @@ async function loadComments(postId) {
                         </div>
                         <div class="modal-comment-meta">
                             <span>${c.tempo}</span>
-                            <span>Curtir</span>
+                            <span onclick="likeComment(${c.id})">Curtir</span>
                             ${c.is_owner ? `<span onclick="deleteComment(${c.id})" style="color: var(--error)">Excluir</span>` : ''}
                         </div>
                     </div>
@@ -1645,6 +1766,7 @@ async function loadComments(postId) {
     }
 }
 
+// Enviar Comentário
 async function submitComment() {
     const input = document.getElementById('modalCommentInput');
     const texto = input.value.trim();
@@ -1671,6 +1793,7 @@ async function submitComment() {
     }
 }
 
+// Enter para enviar
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('modalCommentInput');
     if (input) {
@@ -1682,6 +1805,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Load Ranking
 async function loadRanking() {
     try {
         const response = await fetch('/helpzone/api/ranking-seguidores');
@@ -1699,7 +1823,7 @@ async function loadRanking() {
                 item.innerHTML = `
                     <div class="sidebar-ranking-position ${index < 3 ? 'top' : ''}">${index + 1}</div>
                     <div class="sidebar-ranking-avatar">
-                        ${user.foto ? `<img src="${user.foto}" alt="${user.nome}">` : user.nome[0].toUpperCase()}
+                        ${user.foto_perfil ? `<img src="${user.foto_perfil}" alt="${user.nome}">` : user.nome[0].toUpperCase()}
                     </div>
                     <div class="sidebar-ranking-info">
                         <div class="sidebar-ranking-name">${user.nome}</div>
@@ -1715,6 +1839,7 @@ async function loadRanking() {
     }
 }
 
+// Toggle Like
 async function toggleLike(postId) {
     try {
         const response = await fetch(`/helpzone/api/post/${postId}/like`, {
@@ -1748,6 +1873,7 @@ async function toggleLike(postId) {
     }
 }
 
+// Toggle Save
 async function toggleSave(postId, button) {
     try {
         const response = await fetch(`/helpzone/api/post/${postId}/save`, {
@@ -1777,6 +1903,7 @@ async function toggleSave(postId, button) {
     }
 }
 
+// Share Post
 function sharePost(postId) {
     const url = window.location.origin + '/helpzone/post/' + postId;
     navigator.clipboard.writeText(url).then(() => {
@@ -1784,6 +1911,7 @@ function sharePost(postId) {
     });
 }
 
+// Toast
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -1798,10 +1926,139 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+let storyGroups = [];
+let activeStoryGroupIndex = 0;
+let activeStoryIndex = 0;
+
+async function loadStories() {
+    const container = document.getElementById('storiesContainer');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/helpzone/api/stories');
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.stories)) {
+            return;
+        }
+
+        storyGroups = data.stories;
+        data.stories.forEach((storyGroup, index) => {
+            if (!storyGroup.stories || storyGroup.stories.length === 0) return;
+
+            const storyItem = document.createElement('div');
+            storyItem.className = 'story-item';
+            storyItem.onclick = () => openStoryViewer(index);
+
+            const ring = document.createElement('div');
+            ring.className = 'story-ring';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'story-avatar';
+
+            if (storyGroup.avatar) {
+                const img = document.createElement('img');
+                img.src = storyGroup.avatar;
+                img.alt = storyGroup.username || 'Story';
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = (storyGroup.username || '?')[0].toUpperCase();
+            }
+
+            ring.appendChild(avatar);
+            storyItem.appendChild(ring);
+
+            const username = document.createElement('div');
+            username.className = 'story-username';
+            username.textContent = storyGroup.username || 'Story';
+            storyItem.appendChild(username);
+
+            container.appendChild(storyItem);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar stories:', error);
+    }
+}
+
+function openStoryViewer(groupIndex) {
+    if (!storyGroups[groupIndex]) return;
+    activeStoryGroupIndex = groupIndex;
+    activeStoryIndex = 0;
+    renderStory();
+    document.getElementById('storyViewer').classList.add('active');
+}
+
+function closeStoryViewer() {
+    const viewer = document.getElementById('storyViewer');
+    viewer.classList.remove('active');
+    document.getElementById('storyViewerMedia').innerHTML = '';
+}
+
+function renderStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    const story = group.stories[activeStoryIndex];
+    if (!story) return;
+
+    const avatar = document.getElementById('storyViewerAvatar');
+    const username = document.getElementById('storyViewerUsername');
+    avatar.style.display = group.avatar ? 'block' : 'none';
+    avatar.src = group.avatar || '';
+    username.textContent = group.username || 'Story';
+
+    const media = document.getElementById('storyViewerMedia');
+    media.innerHTML = '';
+
+    if (story.tipo === 'video') {
+        const video = document.createElement('video');
+        video.src = story.url;
+        video.controls = true;
+        video.autoplay = true;
+        media.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = story.url;
+        img.alt = group.username || 'Story';
+        media.appendChild(img);
+    }
+}
+
+function nextStory() {
+    const group = storyGroups[activeStoryGroupIndex];
+    if (!group) return;
+    if (activeStoryIndex < group.stories.length - 1) {
+        activeStoryIndex += 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex < storyGroups.length - 1) {
+        activeStoryGroupIndex += 1;
+        activeStoryIndex = 0;
+        renderStory();
+        return;
+    }
+    closeStoryViewer();
+}
+
+function prevStory() {
+    if (activeStoryIndex > 0) {
+        activeStoryIndex -= 1;
+        renderStory();
+        return;
+    }
+    if (activeStoryGroupIndex > 0) {
+        activeStoryGroupIndex -= 1;
+        activeStoryIndex = storyGroups[activeStoryGroupIndex].stories.length - 1;
+        renderStory();
+        return;
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadRanking();
-    console.log('✅ HelpZone Feed carregado!');
+    loadStories();
+    console.log('✅ HelpZone Feed com Modal carregado!');
 });
 </script>
 {% endblock %}

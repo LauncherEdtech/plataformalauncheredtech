@@ -1,0 +1,189 @@
+<!-- app/templates/helpzone_social/criar_post.html -->
+{% extends "layout.html" %}
+
+{% block title %}Criar Post - HelpZone{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-pen"></i> Criar Novo Post
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="formCriarPost" enctype="multipart/form-data">
+                        <!-- Texto do Post -->
+                        <div class="mb-3">
+                            <label for="texto" class="form-label">O que você está estudando hoje?</label>
+                            <textarea 
+                                class="form-control" 
+                                id="texto" 
+                                name="texto" 
+                                rows="4" 
+                                placeholder="Compartilhe sua rotina de estudos, dicas ou conquistas..."
+                            ></textarea>
+                            <small class="text-muted">
+                                Use hashtags como #matematica #redacao para organizar seu post
+                            </small>
+                        </div>
+
+                        <!-- Upload de Mídia -->
+                        <div class="mb-3">
+                            <label for="midia" class="form-label">Adicionar Foto ou Vídeo (Opcional)</label>
+                            <input 
+                                type="file" 
+                                class="form-control" 
+                                id="midia" 
+                                name="midia"
+                                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/webm,video/mov"
+                            >
+                            <small class="text-muted">
+                                Imagens: JPG, PNG, GIF, WebP (máx 5MB) | Vídeos: MP4, WebM, MOV (máx 20MB)
+                            </small>
+                        </div>
+
+                        <!-- Preview da Mídia -->
+                        <div id="previewContainer" class="mb-3 d-none">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <img id="previewImagem" class="img-fluid" style="max-height: 300px; display: none;">
+                                    <video id="previewVideo" class="img-fluid" style="max-height: 300px; display: none;" controls></video>
+                                    <button type="button" class="btn btn-sm btn-danger mt-2" id="btnRemoverMidia">
+                                        <i class="fas fa-times"></i> Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('helpzone_social.feed') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="btnPublicar">
+                                <i class="fas fa-paper-plane"></i> Publicar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Área de Mensagens -->
+            <div id="mensagemArea" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #previewImagem, #previewVideo {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formCriarPost');
+    const inputMidia = document.getElementById('midia');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImagem = document.getElementById('previewImagem');
+    const previewVideo = document.getElementById('previewVideo');
+    const btnRemoverMidia = document.getElementById('btnRemoverMidia');
+    const btnPublicar = document.getElementById('btnPublicar');
+    const mensagemArea = document.getElementById('mensagemArea');
+
+    // Preview da mídia
+    inputMidia.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewContainer.classList.remove('d-none');
+            
+            if (file.type.startsWith('image/')) {
+                previewImagem.src = e.target.result;
+                previewImagem.style.display = 'block';
+                previewVideo.style.display = 'none';
+            } else if (file.type.startsWith('video/')) {
+                previewVideo.src = e.target.result;
+                previewVideo.style.display = 'block';
+                previewImagem.style.display = 'none';
+            }
+        };
+        
+        reader.readAsDataURL(file);
+    });
+
+    // Remover mídia
+    btnRemoverMidia.addEventListener('click', function() {
+        inputMidia.value = '';
+        previewContainer.classList.add('d-none');
+        previewImagem.src = '';
+        previewVideo.src = '';
+    });
+
+    // Enviar formulário
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const texto = document.getElementById('texto').value.trim();
+        const temMidia = inputMidia.files.length > 0;
+        
+        // Validar
+        if (!texto && !temMidia) {
+            mostrarMensagem('Por favor, adicione texto ou mídia ao seu post.', 'warning');
+            return;
+        }
+
+        // Desabilitar botão
+        btnPublicar.disabled = true;
+        btnPublicar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+
+        // Criar FormData
+        const formData = new FormData(form);
+
+        // Enviar
+        fetch('{{ url_for("helpzone_social.criar_post") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarMensagem('Post criado com sucesso!', 'success');
+                setTimeout(() => {
+                    window.location.href = '{{ url_for("helpzone_social.feed") }}';
+                }, 1500);
+            } else {
+                mostrarMensagem(data.message || 'Erro ao criar post', 'danger');
+                btnPublicar.disabled = false;
+                btnPublicar.innerHTML = '<i class="fas fa-paper-plane"></i> Publicar';
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro ao criar post. Tente novamente.', 'danger');
+            btnPublicar.disabled = false;
+            btnPublicar.innerHTML = '<i class="fas fa-paper-plane"></i> Publicar';
+        });
+    });
+
+    function mostrarMensagem(texto, tipo) {
+        mensagemArea.innerHTML = `
+            <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                ${texto}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+});
+</script>
+{% endblock %}

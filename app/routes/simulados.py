@@ -353,46 +353,47 @@ def resultado(simulado_id):
     # ✅ BUSCAR EXPLICAÇÕES DIRETAMENTE DO BANCO questoes_base
     explicacoes = {}
     
+
     try:
+        import os
         import psycopg2
-        conn = psycopg2.connect(
-            host='34.63.141.69',
-            user='postgres',
-            password='22092021Dd$',
-            database='plataforma'
-        )
-        
+
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError("DATABASE_URL não definido")
+
+        # Conexão usando URL (RDS/AWS) + SSL
+        conn = psycopg2.connect(database_url, sslmode="require", connect_timeout=10)
         cursor = conn.cursor()
-        
+
         # Para cada questão do simulado, buscar explicação pelo texto
         for questao in questoes:
-            # Buscar explicação usando o texto da questão
             cursor.execute("""
                 SELECT explicacao, materia, topico
-                FROM questoes_base 
-                WHERE ativa = true 
-                AND texto = %s
+                FROM questoes_base
+                WHERE ativa = true
+                  AND texto = %s
                 LIMIT 1
             """, (questao.texto,))
-            
+
             resultado_busca = cursor.fetchone()
-            
             if resultado_busca and resultado_busca[0]:
                 explicacoes[questao.id] = {
-                    'explicacao': resultado_busca[0],
-                    'materia': resultado_busca[1], 
-                    'topico': resultado_busca[2]
+                    "explicacao": resultado_busca[0],
+                    "materia": resultado_busca[1],
+                    "topico": resultado_busca[2]
                 }
-        
+
         cursor.close()
         conn.close()
-        
-        print(f"✅ {len(explicacoes)} explicações carregadas do banco")
-        
+
+        current_app.logger.info(f"✅ {len(explicacoes)} explicações carregadas do banco")
+
     except Exception as e:
-        print(f"⚠️ Erro ao buscar explicações: {e}")
-        # Continuar sem explicações se houver erro
+        current_app.logger.warning(f"⚠️ Erro ao buscar explicações: {e}")
         pass
+
+    
     
     # Renderizar template com todas as variáveis necessárias
     return render_template('simulados/resultado.html',

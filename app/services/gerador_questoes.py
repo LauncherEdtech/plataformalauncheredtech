@@ -9,6 +9,10 @@ import psycopg2
 import random
 from typing import List, Dict, Tuple
 from collections import defaultdict
+import os
+
+
+
 
 class GeradorQuestoes:
     """Gerador inteligente de questões do banco PostgreSQL - V2"""
@@ -29,18 +33,21 @@ class GeradorQuestoes:
         'Física', 'Química', 'Biologia'
     ]
     
+
     def __init__(self):
-        self.conn_params = {
-            'host': '34.63.141.69',
-            'port': '5432',
-            'database': 'plataforma',
-            'user': 'postgres',
-            'password': '22092021Dd$'
-        }
-    
+        # ✅ Única fonte de verdade do banco
+        self.database_url = os.environ.get("DATABASE_URL")
+        if not self.database_url:
+            raise RuntimeError(
+                "DATABASE_URL não definido. Configure em /etc/launcher.env (produção) ou .env (dev)."
+            )
+
     def _get_connection(self):
-        """Cria conexão direta com PostgreSQL"""
-        return psycopg2.connect(**self.conn_params)
+        """Cria conexão direta com PostgreSQL usando DATABASE_URL"""
+        # sslmode=require é o padrão recomendado no RDS
+        return psycopg2.connect(self.database_url, sslmode="require", connect_timeout=10)
+            
+    
     
     # ==================== MÉTODOS EXISTENTES (mantidos) ====================
     

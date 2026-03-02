@@ -10,6 +10,14 @@ from flask_login import LoginManager
 from sqlalchemy.exc import OperationalError, DatabaseError
 from sqlalchemy import inspect, text
 
+
+
+
+
+
+
+
+
 # NOVO: Carregar variáveis de ambiente do .env
 try:
    # from dotenv import load_dotenv
@@ -90,7 +98,7 @@ def create_app(config_name=None):
     
     # Debug para verificar se a chave foi carregada
     if openai_key:
-        print(f"✅ OPENAI_API_KEY carregada: {openai_key[:10]}...")
+        app.logger.info("✅ OPENAI_API_KEY carregada" if openai_key else "❌ OPENAI_API_KEY não encontrada")
         app.logger.info(f"OPENAI_API_KEY configurada: {openai_key[:10]}...")
     else:
         print("❌ OPENAI_API_KEY não encontrada no .env")
@@ -106,18 +114,20 @@ def create_app(config_name=None):
     app.config['SMTP_PASSWORD'] = os.environ.get('SMTP_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
-    # Banco: prioriza DATABASE_URL; senão, compõe com ENV (mantém fallback compatível)
+
+    # Banco (produção): DATABASE_URL é obrigatório
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        db_host = os.environ.get("DB_HOST", "34.63.141.69")
-        db_port = os.environ.get("DB_PORT", "5432")
-        db_name = os.environ.get("DB_NAME", "plataforma")
-        db_user = os.environ.get("DB_USER", "postgres")
-        db_password = os.environ.get("DB_PASSWORD", "22092021Dd$")
-        database_url = (
-            f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-            f"?sslmode=prefer&connect_timeout=10&application_name=launcher_app"
+        raise RuntimeError(
+            "DATABASE_URL não definido. Configure em /etc/launcher.env (produção) ou .env (dev)."
         )
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+
+
+
+
 
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -128,7 +138,7 @@ def create_app(config_name=None):
         "pool_pre_ping": True,
         "max_overflow": 10,
         "connect_args": {
-            "sslmode": "prefer",
+            "sslmode": "require",
             "connect_timeout": 10,
             "options": "-c statement_timeout=30000",
         },
@@ -235,6 +245,7 @@ def create_app(config_name=None):
     # Opcionais (não derrubam o boot se ausentes)
     _register_bp("app.routes.analise", "analise_bp", "analise", required=False)
     _register_bp("app.routes.helpzone", "helpzone_bp", "helpzone", required=False)
+    _register_bp("app.routes.helpzone_social", "helpzone_social_bp", "helpzone_social", required=False)
     _register_bp("app.routes.shop", "shop_bp", "shop", required=False)
     _register_bp("app.routes.yampi_shop", "yampi_bp", "yampi_shop", required=False)
     _register_bp("app.routes.mapeamento", "mapeamento_bp", "mapeamento", required=False)
