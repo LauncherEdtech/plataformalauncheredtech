@@ -43,3 +43,4 @@ htmlcov/
 service_account_credentials.json
 **/*.backup
 test_openai_key.py
+app/firebase-credentials.json
