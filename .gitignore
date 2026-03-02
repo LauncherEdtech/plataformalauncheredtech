@@ -16,9 +16,6 @@ logs/
 *.log
 
 # Uploads / mídia (não versionar - vai pro S3)
-static/uploads/
-media/
-uploads/
 
 # Node
 node_modules/
