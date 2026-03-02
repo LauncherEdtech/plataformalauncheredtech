@@ -1,0 +1,328 @@
+{% extends "layout.html" %}
+
+{% block title %}Descubra Mais{% endblock %}
+
+{% block content %}
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    }
+
+    .onboarding-card {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 900px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .onboarding-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .onboarding-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .onboarding-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+    }
+
+    .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 6px;
+        margin-bottom: 2.5rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .feature-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(16, 185, 129, 0.5);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        filter: grayscale(0.3);
+        transition: filter 0.3s;
+    }
+
+    .feature-card:hover .feature-icon {
+        filter: grayscale(0);
+    }
+
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.75rem;
+    }
+
+    .feature-description {
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-badge {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .completion-box {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .completion-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: bounce 1s ease-in-out;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .completion-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .completion-text {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+    }
+
+    .step-indicator {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+    }
+
+    .nav-hint {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(16, 185, 129, 0.05);
+        border-radius: 8px;
+    }
+</style>
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-header">
+            <h1 class="onboarding-title">🚀 Explore Mais Recursos</h1>
+            <p class="onboarding-subtitle">Descubra tudo que a plataforma oferece</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%"></div>
+        </div>
+
+        <div class="completion-box">
+            <div class="completion-icon">🎉</div>
+            <h2 class="completion-title">Configuração Completa!</h2>
+            <p class="completion-text">
+                Você está pronto para começar sua jornada. Abaixo estão mais recursos que podem te ajudar a alcançar seus objetivos.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            {% for feature in funcionalidades %}
+            <a href="{{ feature.url }}" class="feature-card" style="text-decoration: none;">
+                <div class="feature-icon">{{ feature.icone }}</div>
+                <h3 class="feature-title">{{ feature.titulo }}</h3>
+                <p class="feature-description">{{ feature.descricao }}</p>
+                <div class="feature-badge">{{ feature.destaque }}</div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <button class="btn-primary" onclick="concluirOnboarding()">
+            🎯 Ir para o Dashboard
+        </button>
+
+        <div class="nav-hint">
+            💡 Você pode acessar todas essas funcionalidades pelo menu a qualquer momento
+        </div>
+
+        <div class="step-indicator">
+            Etapa 5 de 5 - Onboarding Completo!
+        </div>
+    </div>
+</div>
+
+<script>
+async function concluirOnboarding() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Finalizando...';
+    
+    try {
+        const response = await fetch('{{ url_for("onboarding.descoberta_concluir") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            btn.textContent = '✅ Pronto!';
+            
+            // Mostrar celebração
+            mostrarCelebracao();
+            
+            setTimeout(() => {
+                window.location.href = result.next_step;
+            }, 1500);
+        } else {
+            alert('Erro ao finalizar onboarding');
+            btn.disabled = false;
+            btn.textContent = '🎯 Ir para o Dashboard';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao finalizar onboarding');
+        btn.disabled = false;
+        btn.textContent = '🎯 Ir para o Dashboard';
+    }
+}
+
+function mostrarCelebracao() {
+    // Criar confetti simples
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            criarConfetti();
+        }, i * 30);
+    }
+}
+
+function criarConfetti() {
+    const confetti = document.createElement('div');
+    confetti.style.cssText = `
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: ${['#10b981', '#3b82f6', '#fbbf24', '#ef4444'][Math.floor(Math.random() * 4)]};
+        top: -10px;
+        left: ${Math.random() * 100}%;
+        border-radius: 50%;
+        animation: fall ${2 + Math.random() * 2}s linear;
+        pointer-events: none;
+        z-index: 10000;
+    `;
+    
+    document.body.appendChild(confetti);
+    
+    setTimeout(() => {
+        confetti.remove();
+    }, 4000);
+}
+
+// Adicionar keyframes para a animação
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+{% endblock %}

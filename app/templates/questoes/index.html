@@ -1,0 +1,743 @@
+{% extends "layout.html" %}
+{% block title %}Questões — Plataforma Launcher{% endblock %}
+
+{% block content %}
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --q-bg:      #000000;
+  --q-surface: #0a0a0a;
+  --q-card:    #111111;
+  --q-border:  #262626;
+  --q-text:    #ffffff;
+  --q-muted:   #a3a3a3;
+  --q-accent:  #8b5cf6;
+  --q-accent2: #a78bfa;
+  --q-success: #22c55e;
+  --q-danger:  #ef4444;
+  --q-warn:    #f59e0b;
+}
+html, body { background: var(--q-bg) !important; }
+
+/* ─── HERO ──────────────────────────────────────────── */
+.q-hero {
+  padding: 2.5rem 1.5rem 1.5rem;
+  background: radial-gradient(ellipse 70% 50% at 50% -5%, rgba(139,92,246,.15) 0%, transparent 70%);
+  border-bottom: 1px solid var(--q-border);
+}
+.q-hero-inner { max-width: 1300px; margin: 0 auto; }
+.q-eyebrow {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-size: .68rem; font-weight: 700; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--q-accent2);
+  border: 1px solid rgba(139,92,246,.3); border-radius: 2rem;
+  padding: .3rem .85rem; margin-bottom: 1rem; background: rgba(139,92,246,.08);
+}
+.q-hero h1 {
+  font-size: clamp(1.6rem,4vw,2.8rem); font-weight: 800;
+  line-height: 1.1; color: var(--q-text); margin-bottom: .6rem;
+}
+.q-hero h1 span {
+  background: linear-gradient(135deg,#8b5cf6,#a78bfa,#c4b5fd);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.q-hero-sub { color: var(--q-muted); font-size: .95rem; max-width: 480px; line-height: 1.6; }
+
+/* ─── STATS ──────────────────────────────────────────── */
+.q-stats {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  max-width: 1300px; margin: 0 auto; padding: 1.25rem 1.5rem 0;
+}
+.q-stat { display: flex; align-items: center; gap: .55rem; font-size: .83rem; color: var(--q-muted); }
+.q-stat strong { color: var(--q-text); font-size: 1rem; font-weight: 700; }
+.q-stat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--q-accent); flex-shrink: 0; }
+
+/* ─── FILTER BAR ─────────────────────────────────────── */
+.q-filter-bar { max-width: 1300px; margin: 1.75rem auto 0; padding: 0 1.5rem; }
+.q-filter-label {
+  font-size: .7rem; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--q-muted); margin-bottom: .65rem;
+}
+.q-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.q-chip {
+  cursor: pointer; font-size: .8rem; font-weight: 500;
+  padding: .4rem .9rem; border-radius: 2rem;
+  border: 1px solid var(--q-border); background: var(--q-card);
+  color: var(--q-muted); transition: all .18s; user-select: none; white-space: nowrap;
+}
+.q-chip:hover { border-color: var(--q-accent); color: var(--q-text); }
+.q-chip.active {
+  background: rgba(139,92,246,.15); border-color: var(--q-accent);
+  color: var(--q-text); box-shadow: 0 0 12px rgba(139,92,246,.2);
+}
+.q-chip-all { color: var(--q-text); border-color: rgba(139,92,246,.3); }
+.q-chip-all.active { background: linear-gradient(135deg,rgba(139,92,246,.25),rgba(167,139,250,.15)); }
+
+/* ─── DIVIDER ────────────────────────────────────────── */
+.q-divider { max-width: 1300px; margin: 1.5rem auto; padding: 0 1.5rem; border: none; border-top: 1px solid var(--q-border); }
+
+/* ─── DESEMPENHO ─────────────────────────────────────── */
+.q-perf-strip { max-width: 1300px; margin: 0 auto 1.75rem; padding: 0 1.5rem; }
+.q-perf-card {
+  background: rgba(139,92,246,.05); border: 1px solid rgba(139,92,246,.2);
+  border-radius: 14px; padding: 1.1rem 1.4rem;
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+}
+.q-perf-label { font-size: .72rem; color: var(--q-muted); margin-bottom: .2rem; }
+.q-perf-val { font-size: .95rem; font-weight: 700; color: var(--q-warn); }
+.q-perf-divider { width: 1px; height: 36px; background: var(--q-border); flex-shrink: 0; }
+.q-perf-weak { flex: 1; min-width: 200px; }
+.q-perf-weak-label { font-size: .72rem; color: var(--q-muted); margin-bottom: .4rem; }
+.q-perf-weak-items { display: flex; flex-wrap: wrap; gap: .35rem; }
+.q-perf-badge {
+  font-size: .7rem; padding: .18rem .6rem; border-radius: 1rem; cursor: pointer;
+  border: 1px solid rgba(239,68,68,.3); background: rgba(239,68,68,.08); color: #fca5a5;
+  transition: all .2s;
+}
+.q-perf-badge:hover { background: rgba(239,68,68,.15); }
+
+/* ─── CATÁLOGO ───────────────────────────────────────── */
+.q-catalog { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+.q-row { margin-bottom: 2.5rem; animation: q-fadeIn .45s ease both; }
+.q-row:nth-child(1){animation-delay:.04s} .q-row:nth-child(2){animation-delay:.08s}
+.q-row:nth-child(3){animation-delay:.12s} .q-row:nth-child(4){animation-delay:.16s}
+.q-row:nth-child(5){animation-delay:.20s}
+.q-row-header { display: flex; align-items: center; gap: .85rem; margin-bottom: 1rem; }
+.q-row-title { font-size: 1.05rem; font-weight: 700; color: var(--q-text); }
+.q-row-count {
+  font-size: .72rem; color: var(--q-muted); padding: .18rem .6rem;
+  background: var(--q-card); border-radius: 1rem; border: 1px solid var(--q-border);
+}
+.q-row-arrow {
+  margin-left: auto; color: var(--q-accent2); font-size: .8rem;
+  cursor: pointer; white-space: nowrap; font-weight: 600;
+  padding: .3rem .75rem; border: 1px solid rgba(139,92,246,.3);
+  border-radius: 2rem; transition: all .2s; background: rgba(139,92,246,.06);
+  -webkit-tap-highlight-color: transparent;
+}
+.q-row-arrow:hover { background: rgba(139,92,246,.15); border-color: var(--q-accent); }
+
+/* ─── FIX 1: SCROLL SEM CONFLITO VERTICAL ───────────── */
+.q-scroll-row {
+  display: flex; gap: .85rem;
+  overflow-x: auto; overflow-y: visible;
+  padding: .5rem 0 1rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  /* KEY FIX: contém o overscroll horizontal → não roubo o scroll vertical */
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  cursor: grab;
+  scrollbar-width: thin;
+  scrollbar-color: var(--q-border) transparent;
+}
+.q-scroll-row::-webkit-scrollbar { height: 4px; }
+.q-scroll-row::-webkit-scrollbar-track { background: transparent; }
+.q-scroll-row::-webkit-scrollbar-thumb { background: var(--q-border); border-radius: 4px; }
+.q-scroll-row.is-dragging { cursor: grabbing; }
+
+/* ─── TOPIC CARD ─────────────────────────────────────── */
+.q-topic-card {
+  flex: 0 0 200px; background: var(--q-card); border: 1px solid var(--q-border);
+  border-radius: 14px; padding: 1.1rem; cursor: pointer; scroll-snap-align: start;
+  transition: border-color .25s, transform .25s, box-shadow .25s;
+  position: relative; overflow: hidden; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-topic-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg,rgba(139,92,246,.1),transparent);
+  opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.q-topic-card:hover { border-color: rgba(139,92,246,.5); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.5); }
+.q-topic-card:hover::after { opacity: 1; }
+.q-tc-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.2);
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: .8rem;
+}
+.q-tc-name {
+  font-size: .88rem; font-weight: 700; color: var(--q-text); margin-bottom: .45rem; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.q-tc-meta { font-size: .73rem; color: var(--q-muted); display: flex; flex-direction: column; gap: .2rem; }
+.q-tc-meta-item { display: flex; align-items: center; gap: .4rem; }
+.q-tc-meta-item::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--q-accent); flex-shrink:0; }
+.q-tc-action { margin-top: .85rem; display: flex; align-items: center; justify-content: space-between; font-size: .72rem; color: var(--q-accent2); font-weight: 600; }
+
+/* ─── MODAL SUBTÓPICOS ───────────────────────────────── */
+.q-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8); backdrop-filter: blur(8px);
+  z-index: 1050;   /* FIX 2: acima da bottom-nav */
+  display: none; align-items: flex-end; justify-content: center;
+}
+.q-modal-overlay.open { display: flex; animation: q-fadeIn .2s ease; }
+@media (min-width: 600px) {
+  .q-modal-overlay { align-items: center; padding: 1rem; }
+  .q-modal { border-radius: 18px !important; max-height: 80vh; }
+}
+.q-modal {
+  background: var(--q-surface); border: 1px solid var(--q-border);
+  border-radius: 20px 20px 0 0; width: 100%; max-width: 540px;
+  padding: 1.5rem 1.25rem 2rem;
+  animation: q-slideUp .3s cubic-bezier(.4,0,.2,1);
+  max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
+}
+.q-modal-handle { width: 36px; height: 3px; background: var(--q-border); border-radius: 2px; margin: 0 auto 1.4rem; }
+.q-modal-materia { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--q-accent2); margin-bottom: .2rem; }
+.q-modal-topico { font-size: 1.2rem; font-weight: 800; color: var(--q-text); margin-bottom: .25rem; }
+.q-modal-desc { font-size: .83rem; color: var(--q-muted); margin-bottom: 1.1rem; }
+
+/* ─── FIX 4: FILTRO DE TIPO (substitui qty) ─────────── */
+.q-filter-tipo { margin-bottom: 1.1rem; }
+.q-filter-tipo-label {
+  font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--q-muted); margin-bottom: .55rem;
+}
+.q-filter-tipo-opts { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.q-tipo-opt {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .65rem .85rem; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--q-border); background: var(--q-card);
+  transition: all .18s; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.q-tipo-opt:hover { border-color: rgba(139,92,246,.4); }
+.q-tipo-opt.selected { border-color: var(--q-accent); background: rgba(139,92,246,.12); }
+.q-tipo-opt-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: .95rem; flex-shrink: 0;
+}
+.q-tipo-opt[data-tipo="todas"]    .q-tipo-opt-icon { background: rgba(139,92,246,.15); }
+.q-tipo-opt[data-tipo="ineditas"] .q-tipo-opt-icon { background: rgba(34,197,94,.12); }
+.q-tipo-opt[data-tipo="erradas"]  .q-tipo-opt-icon { background: rgba(239,68,68,.12); }
+.q-tipo-opt[data-tipo="acertadas"].q-tipo-opt-icon { background: rgba(59,130,246,.12); }
+.q-tipo-opt-text { display: flex; flex-direction: column; }
+.q-tipo-opt-name { font-size: .82rem; font-weight: 600; color: var(--q-text); line-height: 1.2; }
+.q-tipo-opt-desc { font-size: .67rem; color: var(--q-muted); line-height: 1.3; }
+
+/* ─── SUBTÓPICOS ─────────────────────────────────────── */
+.q-sub-label { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--q-muted); margin-bottom: .55rem; }
+.q-sub-list { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.1rem; }
+.q-sub-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .75rem 1rem; border: 1px solid var(--q-border); border-radius: 10px;
+  cursor: pointer; background: var(--q-card); transition: all .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-sub-item:hover { border-color: rgba(139,92,246,.4); background: rgba(139,92,246,.06); transform: translateX(3px); }
+.q-sub-item.selected { border-color: var(--q-accent); background: rgba(139,92,246,.1); }
+.q-sub-name { font-size: .85rem; font-weight: 500; color: var(--q-text); }
+.q-sub-qty { font-size: .73rem; color: var(--q-muted); white-space: nowrap; margin-left: .5rem; }
+.q-sub-all { border-style: dashed; border-color: rgba(139,92,246,.3); }
+
+/* ─── BOTÕES ─────────────────────────────────────────── */
+.q-cta-row { display: flex; gap: .65rem; margin-top: .25rem; }
+.q-btn-primary {
+  flex: 1; padding: .9rem 1.25rem; min-height: 52px;
+  background: linear-gradient(135deg,#7c3aed,#8b5cf6);
+  border: none; border-radius: 12px; color: #fff;
+  font-size: .92rem; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: .45rem;
+  transition: all .2s; -webkit-tap-highlight-color: transparent;
+}
+.q-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(139,92,246,.4); }
+.q-btn-primary:active { transform: scale(.97); }
+.q-btn-ghost {
+  padding: .9rem 1.1rem; min-height: 52px; border: 1px solid var(--q-border);
+  border-radius: 12px; background: transparent; color: var(--q-muted);
+  cursor: pointer; font-size: .83rem; transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-btn-ghost:hover { color: var(--q-text); border-color: #444; }
+
+/* ─── MODAL VER TODOS ────────────────────────────────── */
+.q-verall-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
+  z-index: 1060; display: none; align-items: flex-end; justify-content: center;
+}
+.q-verall-overlay.open { display: flex; animation: q-fadeIn .2s ease; }
+@media (min-width: 700px) {
+  .q-verall-overlay { align-items: center; padding: 1rem; }
+  .q-verall-modal { border-radius: 18px !important; }
+}
+.q-verall-modal {
+  background: var(--q-surface); border: 1px solid var(--q-border);
+  border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
+  max-height: 85vh; display: flex; flex-direction: column;
+  animation: q-slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+.q-verall-header {
+  padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--q-border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.q-verall-title { font-size: 1.05rem; font-weight: 800; color: var(--q-text); }
+.q-verall-close {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--q-border);
+  background: var(--q-card); color: var(--q-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.q-verall-close:hover { border-color: var(--q-danger); color: var(--q-danger); }
+.q-verall-body {
+  overflow-y: auto; padding: 1rem 1.25rem 1.5rem;
+  display: flex; flex-direction: column; gap: .45rem;
+  overscroll-behavior: contain;
+}
+.q-verall-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .85rem 1.1rem; border: 1px solid var(--q-border); border-radius: 12px;
+  background: var(--q-card); cursor: pointer; transition: all .18s;
+  -webkit-tap-highlight-color: transparent;
+
+
+}
+.q-verall-item:hover { border-color: rgba(139,92,246,.5); background: rgba(139,92,246,.07); transform: translateX(3px); }
+.q-verall-item-name { font-size: .9rem; font-weight: 600; color: var(--q-text); margin-bottom: .15rem; }
+.q-verall-item-meta { font-size: .73rem; color: var(--q-muted); display: flex; gap: .75rem; }
+
+/* ─── EMPTY ──────────────────────────────────────────── */
+.q-empty { text-align: center; padding: 4rem 2rem; color: var(--q-muted); font-size: .95rem; }
+.q-empty i { font-size: 2.5rem; display: block; margin-bottom: .85rem; opacity: .25; }
+
+/* ─── ANIMATIONS ─────────────────────────────────────── */
+@keyframes q-fadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes q-slideUp { from{transform:translateY(32px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 600px) {
+  .q-hero { padding: 1.75rem 1rem 1.25rem; }
+  .q-filter-bar,.q-catalog,.q-perf-strip,.q-stats { padding-left: 1rem; padding-right: 1rem; }
+  .q-topic-card { flex: 0 0 172px; }
+  .q-perf-divider { display: none; }
+}
+</style>
+
+<div id="q-app">
+
+<!-- ── HERO ── -->
+<section class="q-hero">
+  <div class="q-hero-inner">
+    <div class="q-eyebrow"><i class="bi bi-lightning-charge-fill"></i> Modo Questões</div>
+    <h1>Pratique do seu jeito,<br><span>no seu ritmo</span></h1>
+    <p class="q-hero-sub">Filtre por vestibular, escolha a matéria e mergulhe nos tópicos que mais importam.</p>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+{% if desempenho and desempenho.totais and desempenho.totais.total %}
+<div class="q-stats">
+  {% set t = desempenho.totais %}
+  <div class="q-stat"><span class="q-stat-dot"></span><span><strong>{{ t.total }}</strong> questões respondidas</span></div>
+  {% if t.total > 0 %}
+  <div class="q-stat"><span class="q-stat-dot" style="background:var(--q-success)"></span><span><strong>{{ ((t.acertos / t.total)*100)|round|int }}%</strong> de acerto</span></div>
+  {% endif %}
+  <div class="q-stat"><span class="q-stat-dot" style="background:var(--q-accent2)"></span><span><strong>{{ desempenho.dias_ativos }}</strong> dias ativos (30d)</span></div>
+</div>
+{% endif %}
+
+<!-- ── FILTER BAR ── -->
+<div class="q-filter-bar">
+  <div class="q-filter-label">Filtrar por vestibular</div>
+  <div class="q-chips" id="chipContainer">
+    <div class="q-chip q-chip-all {% if not provas_selecionadas %}active{% endif %}" data-prova="__all__">Todos</div>
+    {% for prova in todas_provas %}
+    <div class="q-chip {% if prova in provas_selecionadas %}active{% endif %}" data-prova="{{ prova }}">{{ prova }}</div>
+    {% endfor %}
+  </div>
+</div>
+<hr class="q-divider">
+
+<!-- ── DESEMPENHO ── -->
+{% if desempenho and desempenho.topicos_fracos %}
+<div class="q-perf-strip">
+  <div class="q-perf-card">
+    <div><div class="q-perf-label">Seu foco agora</div><div class="q-perf-val">⚡ Tópicos para melhorar</div></div>
+    <div class="q-perf-divider"></div>
+    <div class="q-perf-weak">
+      <div class="q-perf-weak-label">Baseado no seu desempenho recente:</div>
+      <div class="q-perf-weak-items">
+        {% for tf in desempenho.topicos_fracos %}
+        <span class="q-perf-badge" data-perf-materia="{{ tf.materia }}" data-perf-topico="{{ tf.topico }}">
+          {{ tf.topico }} ({{ tf.percentual|round|int }}%)
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── CATÁLOGO ── -->
+<div class="q-catalog" id="catalog">
+  {% if catalogo %}
+    {% for materia, topicos in catalogo.items() %}
+    <div class="q-row" data-materia="{{ materia }}">
+      <div class="q-row-header">
+        <span class="q-row-title">{{ materia }}</span>
+        <span class="q-row-count">{{ topicos|length }} tópicos</span>
+        <span class="q-row-arrow" data-verall="{{ materia }}">Ver todos →</span>
+      </div>
+      <div class="q-scroll-row">
+        {% for t in topicos %}
+        <div class="q-topic-card" data-materia="{{ materia }}" data-topico-idx="{{ loop.index0 }}">
+          <div class="q-tc-icon">{{ loop.cycle('📘','🔬','📐','🌍','💬','⚗️','🧬','📊','🏛️','✏️') }}</div>
+          <div class="q-tc-name">{{ t.topico }}</div>
+          <div class="q-tc-meta">
+            <div class="q-tc-meta-item">{{ t.total_questoes }} questões</div>
+            {% if t.subtopicos %}<div class="q-tc-meta-item">{{ t.subtopicos|length }} subtópicos</div>{% endif %}
+          </div>
+          <div class="q-tc-action"><span>Estudar agora</span><span>→</span></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="q-empty"><i class="bi bi-inbox"></i>Nenhuma questão encontrada.</div>
+  {% endif %}
+</div>
+
+</div><!-- #q-app -->
+
+<!-- ── MODAL SUBTÓPICOS ── -->
+<div class="q-modal-overlay" id="modalOverlay">
+  <div class="q-modal" id="modal">
+    <div class="q-modal-handle"></div>
+    <div class="q-modal-materia" id="modal-materia"></div>
+    <div class="q-modal-topico"  id="modal-topico"></div>
+    <div class="q-modal-desc"    id="modal-desc"></div>
+
+    <!-- FIX 4: Filtro de tipo em vez de seletor de quantidade -->
+    <div class="q-filter-tipo">
+      <div class="q-filter-tipo-label">Tipo de questões</div>
+      <div class="q-filter-tipo-opts">
+        <div class="q-tipo-opt selected" data-tipo="todas">
+          <div class="q-tipo-opt-icon">🎯</div>
+          <div class="q-tipo-opt-text">
+            <span class="q-tipo-opt-name">Todas</span>
+            <span class="q-tipo-opt-desc">Sem filtro</span>
+          </div>
+        </div>
+        <div class="q-tipo-opt" data-tipo="ineditas">
+          <div class="q-tipo-opt-icon">✨</div>
+          <div class="q-tipo-opt-text">
+            <span class="q-tipo-opt-name">Inéditas</span>
+            <span class="q-tipo-opt-desc">Nunca respondidas</span>
+          </div>
+        </div>
+        <div class="q-tipo-opt" data-tipo="erradas">
+          <div class="q-tipo-opt-icon">❌</div>
+          <div class="q-tipo-opt-text">
+            <span class="q-tipo-opt-name">Erradas</span>
+            <span class="q-tipo-opt-desc">Precisa revisar</span>
+          </div>
+        </div>
+        <div class="q-tipo-opt" data-tipo="acertadas">
+          <div class="q-tipo-opt-icon">✅</div>
+          <div class="q-tipo-opt-text">
+            <span class="q-tipo-opt-name">Acertadas</span>
+            <span class="q-tipo-opt-desc">Para consolidar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-sub-label">Subtópico</div>
+    <div id="modal-subtopicos" class="q-sub-list"></div>
+
+    <div class="q-cta-row">
+      <!-- FIX 2: button + window.location.href → funciona em qualquer mobile -->
+      <button class="q-btn-primary" id="btn-iniciar" onclick="iniciarPratica()">
+        <i class="bi bi-lightning-charge-fill"></i> Iniciar Prática
+      </button>
+      <button class="q-btn-ghost" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL VER TODOS ── -->
+<div class="q-verall-overlay" id="verallOverlay">
+  <div class="q-verall-modal">
+    <div class="q-verall-header">
+      <span class="q-verall-title" id="verall-title"></span>
+      <button class="q-verall-close" onclick="fecharVerAll()">✕</button>
+    </div>
+    <div class="q-verall-body" id="verall-body"></div>
+  </div>
+</div>
+
+<script>
+// ── DADOS DO CATÁLOGO (injetado pelo Jinja, sem inline onclick) ──
+const CATALOGO = {{ catalogo|tojson }};
+const EMOJIS   = ['📘','🔬','📐','🌍','💬','⚗️','🧬','📊','🏛️','✏️'];
+
+// ── ESTADO ────────────────────────────────────────────────────
+let _provas     = {{ provas_selecionadas|tojson }};
+let _modalData  = null;
+let _subtopico  = '';
+let _tipoFiltro = 'todas';
+
+// ─────────────────────────────────────────────────────────────
+// FIX 1: SCROLL – overscroll-behavior-x: contain no CSS +
+//         drag-to-scroll sem impedir scroll vertical da página
+// ─────────────────────────────────────────────────────────────
+function attachDrag(el) {
+  let isDown = false, startX = 0, scroll0 = 0, didDrag = false;
+
+  // Mouse drag
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    isDown = true; didDrag = false;
+    el.classList.add('is-dragging');
+    startX = e.clientX; scroll0 = el.scrollLeft;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 5) didDrag = true;
+    if (didDrag) el.scrollLeft = scroll0 - dx;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!isDown) return;
+    isDown = false; el.classList.remove('is-dragging');
+  });
+  // Cancela click se houve drag
+  el.addEventListener('click', e => {
+    if (didDrag) { e.stopPropagation(); didDrag = false; }
+  }, true);
+
+  // Scroll de mouse/trackpad: redireciona delta-Y → scroll-X
+  // sem preventDefault → scroll vertical da página NÃO é bloqueado
+  el.addEventListener('wheel', e => {
+    if (el.scrollWidth <= el.clientWidth) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      el.scrollLeft += e.deltaY * 0.7;
+      // NÃO chamamos e.preventDefault() → página continua rolando normalmente
+    }
+  }, { passive: true });
+}
+
+document.querySelectorAll('.q-scroll-row').forEach(attachDrag);
+
+// ── CHIPS ─────────────────────────────────────────────────────
+document.getElementById('chipContainer').addEventListener('click', e => {
+  const chip = e.target.closest('.q-chip');
+  if (!chip) return;
+  const prova   = chip.dataset.prova;
+  const allChip = document.querySelector('[data-prova="__all__"]');
+  if (prova === '__all__') {
+    _provas = [];
+    document.querySelectorAll('.q-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  } else {
+    allChip.classList.remove('active');
+    chip.classList.toggle('active');
+    _provas = chip.classList.contains('active') ? [..._provas, prova] : _provas.filter(p => p !== prova);
+    if (!_provas.length) allChip.classList.add('active');
+  }
+  atualizarCatalogo();
+});
+
+async function atualizarCatalogo() {
+  const catalog = document.getElementById('catalog');
+  catalog.style.opacity = '.35'; catalog.style.pointerEvents = 'none';
+  try {
+    const params = _provas.map(p => `provas=${encodeURIComponent(p)}`).join('&');
+    const res    = await fetch(`/questoes/explorar?${params}`);
+    const data   = await res.json();
+    if (data.success) {
+      // Atualiza CATALOGO local
+      const novas = data.catalogo;
+      Object.keys(CATALOGO).forEach(k => { if (!novas[k]) delete CATALOGO[k]; });
+      Object.assign(CATALOGO, novas);
+      renderCatalogo(novas);
+    }
+  } catch(err) { console.error(err); }
+  catalog.style.opacity = '1'; catalog.style.pointerEvents = '';
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderCatalogo(catalogo) {
+  const catalog = document.getElementById('catalog');
+  const materias = Object.keys(catalogo);
+  if (!materias.length) {
+    catalog.innerHTML = '<div class="q-empty"><i class="bi bi-inbox"></i>Nenhuma questão encontrada.</div>';
+    return;
+  }
+  catalog.innerHTML = materias.map(materia => {
+    const topicos = catalogo[materia];
+    const cards = topicos.map((t, i) => `
+      <div class="q-topic-card" data-materia="${escAttr(materia)}" data-topico-idx="${i}">
+        <div class="q-tc-icon">${EMOJIS[i % EMOJIS.length]}</div>
+        <div class="q-tc-name">${esc(t.topico)}</div>
+        <div class="q-tc-meta">
+          <div class="q-tc-meta-item">${t.total_questoes} questões</div>
+          ${t.subtopicos.length ? `<div class="q-tc-meta-item">${t.subtopicos.length} subtópicos</div>` : ''}
+        </div>
+        <div class="q-tc-action"><span>Estudar agora</span><span>→</span></div>
+      </div>`).join('');
+
+    return `<div class="q-row" data-materia="${escAttr(materia)}">
+      <div class="q-row-header">
+        <span class="q-row-title">${esc(materia)}</span>
+        <span class="q-row-count">${topicos.length} tópicos</span>
+        <span class="q-row-arrow" data-verall="${escAttr(materia)}">Ver todos →</span>
+      </div>
+      <div class="q-scroll-row">${cards}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.q-scroll-row').forEach(attachDrag);
+}
+
+// ── FIX 3: EVENT DELEGATION – sem inline onclick com strings ──
+document.getElementById('catalog').addEventListener('click', e => {
+  // "Ver todos"
+  const verallBtn = e.target.closest('[data-verall]');
+  if (verallBtn) { abrirVerAll(verallBtn.dataset.verall); return; }
+
+  // Card de tópico
+  const card = e.target.closest('.q-topic-card');
+  if (!card) return;
+  const materia = card.dataset.materia;
+  const idx     = parseInt(card.dataset.topicoIdx, 10);
+  const cat     = CATALOGO[materia];
+  if (!cat || !cat[idx]) return;
+  const t = cat[idx];
+  abrirModal(materia, t.topico, t.subtopicos, t.total_questoes);
+});
+
+// Badge de desempenho
+document.addEventListener('click', e => {
+  const badge = e.target.closest('[data-perf-materia]');
+  if (!badge) return;
+  abrirModalPorTopico(badge.dataset.perfMateria, badge.dataset.perfTopico);
+});
+
+// ── MODAL ─────────────────────────────────────────────────────
+function abrirModal(materia, topico, subtopicos, total) {
+  _modalData  = { materia, topico, subtopicos, total };
+  _subtopico  = '';
+  _tipoFiltro = 'todas';
+
+  document.getElementById('modal-materia').textContent = materia;
+  document.getElementById('modal-topico').textContent  = topico;
+  document.getElementById('modal-desc').textContent    = `${total} questões disponíveis`;
+
+  // Reset filtro tipo
+  document.querySelectorAll('.q-tipo-opt').forEach(el =>
+    el.classList.toggle('selected', el.dataset.tipo === 'todas'));
+
+  // Subtópicos
+  const list = document.getElementById('modal-subtopicos');
+  let html = `<div class="q-sub-item q-sub-all selected" data-sub="">
+    <span class="q-sub-name">🎯 Todos os subtópicos</span>
+    <span class="q-sub-qty">${total} questões</span>
+  </div>`;
+  (subtopicos || []).forEach(s => {
+    html += `<div class="q-sub-item" data-sub="${escAttr(s.nome)}">
+      <span class="q-sub-name">${esc(s.nome)}</span>
+      <span class="q-sub-qty">${s.total_questoes} questões</span>
+    </div>`;
+  });
+  list.innerHTML = html;
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+
+// Clique nos subtópicos (delegation)
+document.getElementById('modal-subtopicos').addEventListener('click', e => {
+  const item = e.target.closest('.q-sub-item');
+  if (!item) return;
+  document.querySelectorAll('.q-sub-item').forEach(el => el.classList.remove('selected'));
+  item.classList.add('selected');
+  _subtopico = item.dataset.sub;
+});
+
+// Filtros de tipo
+document.querySelectorAll('.q-tipo-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.q-tipo-opt').forEach(el => el.classList.remove('selected'));
+    opt.classList.add('selected');
+    _tipoFiltro = opt.dataset.tipo;
+  });
+});
+
+function abrirModalPorTopico(materia, topico) {
+  const cat = CATALOGO[materia];
+  if (!cat) return;
+  const t = cat.find(item => item.topico === topico);
+  if (t) abrirModal(materia, t.topico, t.subtopicos, t.total_questoes);
+}
+
+// FIX 2: window.location.href em vez de <a href> → funciona em todo mobile
+function iniciarPratica() {
+  if (!_modalData) return;
+  const { materia, topico } = _modalData;
+  let url = `/questoes/praticar?materia=${encodeURIComponent(materia)}&topico=${encodeURIComponent(topico)}&filtro=${_tipoFiltro}`;
+  if (_subtopico)     url += `&subtopico=${encodeURIComponent(_subtopico)}`;
+  _provas.forEach(p => { url += `&provas=${encodeURIComponent(p)}`; });
+  window.location.href = url;
+}
+
+function fecharModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) fecharModal();
+});
+
+// ── VER TODOS ─────────────────────────────────────────────────
+function abrirVerAll(materia) {
+  const topicos = CATALOGO[materia];
+  if (!topicos) return;
+  document.getElementById('verall-title').textContent = materia;
+  document.getElementById('verall-body').innerHTML = topicos.map((t, i) => `
+    <div class="q-verall-item" data-materia="${escAttr(materia)}" data-idx="${i}">
+      <div>
+        <div class="q-verall-item-name">${esc(t.topico)}</div>
+        <div class="q-verall-item-meta">
+          <span>${t.total_questoes} questões</span>
+          ${t.subtopicos.length ? `<span>${t.subtopicos.length} subtópicos</span>` : ''}
+        </div>
+      </div>
+      <span style="color:var(--q-accent2);font-size:.85rem">→</span>
+    </div>`).join('');
+  document.getElementById('verallOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('verall-body').addEventListener('click', e => {
+  const item = e.target.closest('[data-idx]');
+  if (!item) return;
+  const materia = item.dataset.materia;
+  const t       = CATALOGO[materia][parseInt(item.dataset.idx, 10)];
+  fecharVerAll();
+  setTimeout(() => abrirModal(materia, t.topico, t.subtopicos, t.total_questoes), 80);
+});
+document.getElementById('verallOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('verallOverlay')) fecharVerAll();
+});
+
+function fecharVerAll() {
+  document.getElementById('verallOverlay').classList.remove('open');
+  if (!document.getElementById('modalOverlay').classList.contains('open'))
+    document.body.style.overflow = '';
+}
+
+// ESC
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('verallOverlay').classList.contains('open')) { fecharVerAll(); return; }
+  if (document.getElementById('modalOverlay').classList.contains('open'))  { fecharModal();  return; }
+});
+
+// ── UTILS ─────────────────────────────────────────────────────
+function esc(s)     { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+</script>
+{% endblock %}

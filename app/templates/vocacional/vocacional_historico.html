@@ -1,0 +1,360 @@
+{% extends "layout.html" %}
+{% block title %}Histórico Vocacional{% endblock %}
+
+{% block content %}
+<style>
+:root {
+  --voc-purple: #8b5cf6;
+  --voc-purple-light: rgba(139,92,246,0.12);
+  --voc-border: #1a1a1a;
+  --voc-card: #0d0d0d;
+  --voc-muted: #6b7280;
+}
+body { background: #000 !important; }
+
+.hist-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+/* ── HEADER ── */
+.hist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.hist-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+.hist-title span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--voc-muted);
+  margin-left: 0.5rem;
+}
+.btn-novo-teste {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border: none; border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem; font-weight: 700; color: white;
+  text-decoration: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-novo-teste:hover { transform: translateY(-2px); color: white;
+  box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+
+/* ── ESTADO VAZIO ── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 20px;
+}
+.empty-state .emoji { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+.empty-state h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.empty-state p { font-size: 0.88rem; color: var(--voc-muted); margin-bottom: 1.5rem; }
+
+/* ── CARD DE RESULTADO ── */
+.resultado-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 18px;
+  padding: 1.4rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.resultado-card:hover {
+  border-color: rgba(139,92,246,0.35);
+  transform: translateY(-2px);
+}
+.resultado-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--voc-purple), transparent);
+}
+
+/* Badge "mais recente" */
+.badge-recente {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.68rem; font-weight: 700; color: #a78bfa;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.perfil-emoji-hist {
+  font-size: 2.2rem;
+  background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 12px;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-info { flex: 1; min-width: 0; }
+.perfil-nome-hist {
+  font-size: 1rem; font-weight: 700; color: #fff;
+  margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.perfil-combo-hist { font-size: 0.78rem; color: var(--voc-muted); }
+.perfil-combo-hist strong { color: #a78bfa; }
+
+.data-hist {
+  font-size: 0.72rem; color: #374151;
+  margin-top: 3px;
+}
+
+/* ── MINI BARRA RIASEC ── */
+.mini-riasec {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  align-items: flex-end;
+  height: 32px;
+}
+.mini-bar-wrap {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+.mini-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 1s ease;
+}
+.mini-bar-label {
+  font-size: 0.6rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* ── FAVORITAS SALVAS ── */
+.favoritas-hist {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.fav-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: #0a0a0a; border: 1px solid #1f1f1f;
+  border-radius: 999px; padding: 3px 10px;
+  font-size: 0.72rem; color: #6b7280;
+}
+.fav-chip .pos {
+  font-size: 0.65rem; font-weight: 700;
+}
+.fav-chip.pos-1 { border-color: rgba(245,158,11,0.3); color: #d97706; }
+.fav-chip.pos-2 { border-color: rgba(156,163,175,0.3); color: #9ca3af; }
+.fav-chip.pos-3 { border-color: rgba(217,119,6,0.3); color: #b45309; }
+
+/* Aviso "favoritas não escolhidas" */
+.fav-pendente {
+  font-size: 0.72rem; color: #4b5563;
+  font-style: italic;
+  margin-bottom: 0.9rem;
+}
+
+/* ── AÇÕES ── */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.btn-ver-resultado {
+  background: rgba(139,92,246,0.12);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 10px; padding: 6px 14px;
+  font-size: 0.8rem; font-weight: 600; color: #a78bfa;
+  text-decoration: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.btn-ver-resultado:hover {
+  background: rgba(139,92,246,0.22); color: #a78bfa;
+  border-color: rgba(139,92,246,0.4);
+}
+.btn-refazer {
+  background: #0d0d0d; border: 1px solid #1f1f1f;
+  border-radius: 10px; padding: 6px 14px;
+  font-size: 0.8rem; color: #4b5563;
+  text-decoration: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.btn-refazer:hover { border-color: #374151; color: #6b7280; }
+
+/* ── VERSÃO BADGE ── */
+.versao-badge {
+  font-size: 0.62rem;
+  background: #0a0a0a; border: 1px solid #1a1a1a;
+  border-radius: 6px; padding: 1px 6px;
+  color: #374151; margin-left: 0.4rem;
+}
+
+/* ── SUMMARY TOP ── */
+.hist-summary {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 14px; padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.summary-item { text-align: center; flex: 1; min-width: 80px; }
+.summary-item .num {
+  font-size: 1.4rem; font-weight: 800; color: #a78bfa; display: block;
+}
+.summary-item .lbl { font-size: 0.7rem; color: var(--voc-muted); }
+</style>
+
+<div class="hist-container">
+
+  <!-- ─── HEADER ─── -->
+  <div class="hist-header">
+    <div>
+      <h1 class="hist-title">
+        🧭 Histórico Vocacional
+        <span>{{ resultados|length }} teste{{ 's' if resultados|length != 1 else '' }}</span>
+      </h1>
+    </div>
+    <a href="{{ url_for('vocacional.index') }}" class="btn-novo-teste">
+      ＋ Novo Teste
+    </a>
+  </div>
+
+  {% if not resultados %}
+  <!-- ─── VAZIO ─── -->
+  <div class="empty-state">
+    <span class="emoji">🧭</span>
+    <h3>Nenhum teste realizado ainda</h3>
+    <p>Descubra seu perfil vocacional e as carreiras mais compatíveis com você.</p>
+    <a href="{{ url_for('vocacional.index') }}" class="btn-novo-teste">
+      Fazer o Teste Agora →
+    </a>
+  </div>
+
+  {% else %}
+
+  <!-- ─── RESUMO GERAL ─── -->
+  {% set ultimo = resultados[0] %}
+  {% set total_com_fav = resultados | selectattr('carreiras_favoritas') | list | length %}
+  <div class="hist-summary">
+    <div class="summary-item">
+      <span class="num">{{ resultados|length }}</span>
+      <div class="lbl">Testes feitos</div>
+    </div>
+    <div class="summary-item">
+      <span class="num">{{ perfis_riasec[ultimo.perfil_primario].emoji if ultimo.perfil_primario in perfis_riasec else '?' }}</span>
+      <div class="lbl">Perfil atual</div>
+    </div>
+    <div class="summary-item">
+      <span class="num">{{ total_com_fav }}</span>
+      <div class="lbl">Com favoritas</div>
+    </div>
+    <div class="summary-item">
+      <span class="num">{{ ultimo.data_realizado.strftime('%d/%m/%y') }}</span>
+      <div class="lbl">Último teste</div>
+    </div>
+  </div>
+
+  <!-- ─── LISTA DE RESULTADOS ─── -->
+  {% for r in resultados %}
+  {% set p1 = perfis_riasec.get(r.perfil_primario, {}) %}
+  {% set p2 = perfis_riasec.get(r.perfil_secundario, {}) %}
+  {% set eh_recente = loop.first %}
+
+  <div class="resultado-card">
+    {% if eh_recente %}
+    <div class="badge-recente">✦ Mais recente</div>
+    {% endif %}
+
+    <!-- TOP: emoji + nome + data -->
+    <div class="card-top">
+      <div class="perfil-emoji-hist">{{ p1.emoji or '🧭' }}</div>
+      <div class="card-info">
+        <div class="perfil-nome-hist">
+          {{ p1.nome or r.perfil_primario }} + {{ p2.nome or r.perfil_secundario }}
+          {% if r.versao_teste %}<span class="versao-badge">v{{ r.versao_teste }}</span>{% endif %}
+        </div>
+        {% if r.combo_label %}
+        <div class="perfil-combo-hist"><strong>{{ r.combo_label }}</strong></div>
+        {% endif %}
+        <div class="data-hist">
+          {{ r.data_realizado.strftime('%d/%m/%Y às %H:%M') }}
+          {% if r.tempo_segundos %}
+          · {{ (r.tempo_segundos // 60) }}min
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- MINI GRÁFICO RIASEC -->
+    {% if r.scores_riasec %}
+    {% set cores = {'R': '#f97316', 'I': '#3b82f6', 'A': '#ec4899', 'S': '#22c55e', 'E': '#f59e0b', 'C': '#6366f1'} %}
+    <div class="mini-riasec">
+      {% for dim in ['R','I','A','S','E','C'] %}
+      {% set score = r.scores_riasec.get(dim, 0) %}
+      <div class="mini-bar-wrap">
+        <div class="mini-bar"
+             style="height: {{ (score * 100)|int }}%;
+                    background: {{ cores[dim] }};
+                    opacity: {% if dim == r.perfil_primario or dim == r.perfil_secundario %}1{% else %}0.35{% endif %};"></div>
+        <div class="mini-bar-label">{{ dim }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- CARREIRAS FAVORITAS (se existirem) -->
+    {% if r.carreiras_favoritas %}
+    <div class="favoritas-hist">
+      {% for fav in r.carreiras_favoritas %}
+      <span class="fav-chip pos-{{ fav.posicao }}">
+        <span class="pos">{% if fav.posicao == 1 %}🥇{% elif fav.posicao == 2 %}🥈{% else %}🥉{% endif %}</span>
+        {{ fav.emoji }} {{ fav.nome }}
+      </span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="fav-pendente">⚠ Você ainda não escolheu suas 3 carreiras favoritas neste teste.</p>
+    {% endif %}
+
+    <!-- AÇÕES -->
+    <div class="card-actions">
+      <a href="{{ url_for('vocacional.resultado', resultado_id=r.id) }}" class="btn-ver-resultado">
+        📊 Ver resultado completo
+      </a>
+      <a href="{{ url_for('vocacional.index') }}" class="btn-refazer">
+        🔄 Refazer teste
+      </a>
+    </div>
+
+  </div>
+  {% endfor %}
+
+  {% endif %}
+
+</div>
+{% endblock %}
