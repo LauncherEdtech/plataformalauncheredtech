@@ -295,6 +295,31 @@ def finalizar(simulado_id):
  
     db.session.commit()
     
+   # ==================== HOOK ONBOARDING ====================
+    # ✅ DETECTAR SE É O SIMULADO DIAGNÓSTICO DO ONBOARDING
+    if simulado.tipo == 'diagnostico_onboarding':
+        try:
+            from app.services.onboarding_service import verificar_onboarding_ativo, avancar_etapa
+            
+            if verificar_onboarding_ativo(current_user.id):
+                current_app.logger.info(
+                    f"🎓 Onboarding: usuário {current_user.id} finalizou diagnóstico"
+                )
+                
+                resultado = avancar_etapa(current_user.id, 'concluir_diagnostico')
+                
+                if resultado.get('status') == 'basico_finalizado':
+                    current_app.logger.info(f"🎉 Onboarding básico finalizado!")
+                    flash('🎉 Parabéns! Você completou o tour básico da plataforma!', 'success')
+                elif resultado.get('status') == 'ativo':
+                    current_app.logger.info(f"✅ Onboarding avançado para etapa {resultado.get('etapa')}")
+                    
+        except Exception as e:
+            current_app.logger.error(f"❌ Erro no hook de onboarding: {e}")
+    # =========================================================
+    
+    db.session.commit()
+    
     flash('Simulado finalizado com sucesso!', 'success')
     return redirect(url_for('simulados.resultado', simulado_id=simulado_id))
 
@@ -352,7 +377,8 @@ def resultado(simulado_id):
     
     # ✅ BUSCAR EXPLICAÇÕES DIRETAMENTE DO BANCO questoes_base
     explicacoes = {}
-    
+
+
     try:
         import psycopg2
         conn = psycopg2.connect(
@@ -586,3 +612,171 @@ def gerar_individual():
         current_app.logger.error(f'Erro ao criar simulado individual: {e}')
         flash('Erro ao criar simulado. Tente novamente.', 'danger')
         return redirect(url_for('simulados.selecionar_topico', materia=materia))
+
+
+
+# ==================== ADICIONAR ESTA ROTA AO ARQUIVO simulados.py ====================
+# Cole este código NO FINAL do arquivo app/routes/simulados.py
+
+@simulados_bp.route('/diagnostico-onboarding')
+@login_required
+def diagnostico_onboarding():
+    """
+    Gera mini-simulado diagnóstico de 5 QUESTÕES ALEATÓRIAS para onboarding
+    SUPER SIMPLIFICADO - sem especificar matérias ou tópicos
+    """
+    try:
+        current_app.logger.info(f"📊 Iniciando diagnóstico para user {current_user.id}")
+        
+        # ✅ VERIFICAR SE JÁ EXISTE UM DIAGNÓSTICO PENDENTE
+        simulado_existente = Simulado.query.filter_by(
+            user_id=current_user.id,
+            tipo='diagnostico_onboarding',
+            status='Pendente'
+        ).first()
+        
+        if simulado_existente:
+            current_app.logger.info(f"✅ Redirecionando para diagnóstico existente ID {simulado_existente.id}")
+            return redirect(url_for('simulados.iniciar_simulado', simulado_id=simulado_existente.id))
+        
+        # ✅ BUSCAR 5 QUESTÕES ALEATÓRIAS DO BANCO
+        import psycopg2
+        
+        try:
+            conn = psycopg2.connect(
+                host='34.63.141.69',
+                user='postgres',
+                password='22092021Dd$',
+                database='plataforma'
+            )
+            
+            cursor = conn.cursor()
+            
+            # Buscar 5 questões aleatórias ATIVAS
+            cursor.execute("""
+                SELECT 
+                    texto, materia, topico, dificuldade, resposta_correta,
+                    opcao_a, opcao_b, opcao_c, opcao_d, opcao_e
+                FROM questoes_base 
+                WHERE ativa = true
+                AND texto IS NOT NULL
+                AND resposta_correta IS NOT NULL
+                AND opcao_a IS NOT NULL
+                AND opcao_b IS NOT NULL
+                AND opcao_c IS NOT NULL
+                AND opcao_d IS NOT NULL
+                AND opcao_e IS NOT NULL
+                ORDER BY RANDOM()
+                LIMIT 5
+            """)
+            
+            resultados = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            
+            questoes_geradas = []
+            for row in resultados:
+                questoes_geradas.append({
+                    'texto': row[0],
+                    'materia': row[1] or 'Geral',
+                    'topico': row[2] or 'Diversos',
+                    'dificuldade': row[3] or 'medio',
+                    'resposta_correta': row[4],
+                    'opcao_a': row[5],
+                    'opcao_b': row[6],
+                    'opcao_c': row[7],
+                    'opcao_d': row[8],
+                    'opcao_e': row[9]
+                })
+            
+            current_app.logger.info(f"✅ {len(questoes_geradas)} questões aleatórias obtidas")
+            
+        except Exception as e:
+            current_app.logger.error(f"❌ Erro ao buscar questões: {e}")
+            questoes_geradas = []
+        
+        # ✅ SE NÃO CONSEGUIU PELO MENOS 3 QUESTÕES, AVANÇAR ONBOARDING E SAIR
+        if len(questoes_geradas) < 3:
+            current_app.logger.warning(f"⚠️ Apenas {len(questoes_geradas)} questões disponíveis")
+            
+            try:
+                from app.services.onboarding_service import avancar_etapa
+                avancar_etapa(current_user.id, 'concluir_diagnostico')
+                current_app.logger.info("✅ Onboarding avançado automaticamente")
+            except:
+                pass
+            
+            flash('Sistema de diagnóstico temporariamente indisponível. Continuando...', 'info')
+            return redirect(url_for('dashboard.index'))
+        
+        # ✅ BUSCAR PRÓXIMO NÚMERO DE SIMULADO
+        ultimo_simulado = Simulado.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Simulado.id.desc()).first()
+        
+        if ultimo_simulado and ultimo_simulado.numero is not None:
+            proximo_numero = ultimo_simulado.numero + 1
+        else:
+            total_simulados = Simulado.query.filter_by(user_id=current_user.id).count()
+            proximo_numero = total_simulados + 1
+        
+        # ✅ CRIAR SIMULADO DIAGNÓSTICO
+        simulado = Simulado(
+            user_id=current_user.id,
+            numero=proximo_numero,
+            titulo=f'📊 Diagnóstico Inicial ({len(questoes_geradas)} questões)',
+            tipo='diagnostico_onboarding',  # TIPO ESPECIAL
+            areas='Misto',
+            duracao_minutos=len(questoes_geradas) * 3,  # 3 min por questão
+            status='Pendente',
+            data_criacao=datetime.utcnow()
+        )
+        
+        db.session.add(simulado)
+        db.session.flush()
+        
+        # ✅ ADICIONAR QUESTÕES AO SIMULADO
+        for i, questao_data in enumerate(questoes_geradas, start=1):
+            questao = Questao(
+                simulado_id=simulado.id,
+                numero=i,
+                texto=questao_data['texto'],
+                area=questao_data['materia'],
+                dificuldade=questao_data['dificuldade'],
+                resposta_correta=questao_data['resposta_correta']
+            )
+            
+            db.session.add(questao)
+            db.session.flush()
+            
+            # Adicionar alternativas
+            alternativas_letras = ['A', 'B', 'C', 'D', 'E']
+            for letra in alternativas_letras:
+                alternativa = Alternativa(
+                    questao_id=questao.id,
+                    letra=letra,
+                    texto=questao_data[f'opcao_{letra.lower()}']
+                )
+                db.session.add(alternativa)
+        
+        db.session.commit()
+
+
+        current_app.logger.info(f"✅ Diagnóstico criado: ID {simulado.id} com {len(questoes_geradas)} questões")
+        
+        # ✅ REDIRECIONAR PARA INICIAR O SIMULADO
+        return redirect(url_for('simulados.iniciar_simulado', simulado_id=simulado.id))
+    
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'❌ Erro fatal ao criar diagnóstico: {e}', exc_info=True)
+        
+        # Avançar onboarding mesmo com erro
+        try:
+            from app.services.onboarding_service import avancar_etapa
+            avancar_etapa(current_user.id, 'concluir_diagnostico')
+        except:
+            pass
+        
+        flash('Erro ao criar diagnóstico. Redirecionando...', 'warning')
+        return redirect(url_for('dashboard.index'))

@@ -1,0 +1,610 @@
+{% extends "layout.html" %}
+{% block title %}Questões — Plataforma Launcher{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* ─── RESET & BASE ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #050508;
+  --surface: #0d0d14;
+  --surface2: #13131e;
+  --border: rgba(255,255,255,.07);
+  --text: #f0f0f8;
+  --muted: #6b6b85;
+  --glow: #4f6ef7;
+  --glow2: #00d4ff;
+  --success: #00e5a0;
+  --danger: #ff4f6e;
+  --warn: #ffb547;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); }
+
+/* ─── HERO ─────────────────────────────────────────── */
+.q-hero {
+  position: relative;
+  padding: 4rem 2rem 2rem;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,110,247,.18) 0%, transparent 70%);
+}
+.q-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='.8' fill='rgba(255,255,255,.12)'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: .5;
+}
+.q-hero-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+.q-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--font-head); font-size: .7rem; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--glow2);
+  border: 1px solid rgba(0,212,255,.25); border-radius: 2rem;
+  padding: .35rem .9rem; margin-bottom: 1.2rem;
+}
+.q-hero h1 {
+  font-family: var(--font-head); font-size: clamp(2rem,5vw,3.6rem);
+  font-weight: 800; line-height: 1.05; letter-spacing: -.02em;
+  background: linear-gradient(135deg, #fff 30%, var(--glow2) 80%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: .75rem;
+}
+.q-hero-sub { color: var(--muted); font-size: 1rem; max-width: 520px; line-height: 1.6; }
+
+/* ─── STATS STRIP ───────────────────────────────────── */
+.q-stats {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem 0;
+}
+.q-stat {
+  display: flex; align-items: center; gap: .6rem;
+  font-size: .85rem; color: var(--muted);
+}
+.q-stat strong { color: var(--text); font-size: 1.1rem; font-weight: 700; }
+.q-stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--glow); flex-shrink: 0; }
+
+/* ─── FILTER BAR ────────────────────────────────────── */
+.q-filter-bar {
+  max-width: 1400px; margin: 2rem auto 0; padding: 0 2rem;
+}
+.q-filter-label {
+  font-size: .72rem; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .75rem;
+}
+.q-chips {
+  display: flex; flex-wrap: wrap; gap: .5rem;
+  padding-bottom: .5rem;
+}
+.q-chip {
+  cursor: pointer; font-family: var(--font-body); font-size: .82rem;
+  font-weight: 500; padding: .45rem 1rem; border-radius: 2rem;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--muted); transition: all .2s ease; user-select: none;
+  white-space: nowrap;
+}
+.q-chip:hover { border-color: var(--glow); color: var(--text); }
+.q-chip.active {
+  background: rgba(79,110,247,.18); border-color: var(--glow);
+  color: #fff; box-shadow: 0 0 16px rgba(79,110,247,.25);
+}
+.q-chip-all {
+  background: linear-gradient(135deg, rgba(79,110,247,.2), rgba(0,212,255,.15));
+  border-color: rgba(79,110,247,.4); color: var(--text);
+}
+.q-chip-all.active { background: linear-gradient(135deg, var(--glow), var(--glow2)); color: #fff; }
+
+/* ─── DIVIDER ───────────────────────────────────────── */
+.q-divider {
+  max-width: 1400px; margin: 1.5rem auto; padding: 0 2rem;
+  border: none; border-top: 1px solid var(--border);
+}
+
+/* ─── MATÉRIA ROWS (Netflix) ────────────────────────── */
+.q-catalog { max-width: 1400px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+.q-row { margin-bottom: 3rem; }
+.q-row-header {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;
+}
+.q-row-title {
+  font-family: var(--font-head); font-size: 1.15rem; font-weight: 700;
+  color: var(--text); cursor: pointer; transition: color .2s;
+}
+.q-row-title:hover { color: var(--glow2); }
+.q-row-count {
+  font-size: .75rem; color: var(--muted); padding: .2rem .65rem;
+  background: var(--surface2); border-radius: 1rem; border: 1px solid var(--border);
+}
+.q-row-arrow { margin-left: auto; color: var(--muted); font-size: .85rem; cursor: pointer; transition: color .2s; }
+.q-row-arrow:hover { color: var(--glow2); }
+
+/* Scroll row */
+.q-scroll-row {
+  display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.q-scroll-row::-webkit-scrollbar { height: 4px; }
+.q-scroll-row::-webkit-scrollbar-track { background: transparent; }
+.q-scroll-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Tópico card */
+.q-topic-card {
+  flex-shrink: 0; width: 220px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.25rem; cursor: pointer; scroll-snap-align: start;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  position: relative; overflow: hidden;
+}
+.q-topic-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--glow), var(--glow2));
+  opacity: 0; transition: opacity .3s;
+}
+.q-topic-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(79,110,247,.5);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(79,110,247,.2);
+}
+.q-topic-card:hover::before { opacity: .07; }
+.q-topic-card * { position: relative; z-index: 1; }
+
+.q-tc-emoji { font-size: 1.5rem; margin-bottom: .75rem; display: block; }
+.q-tc-name {
+  font-family: var(--font-head); font-size: .95rem; font-weight: 700;
+  color: var(--text); margin-bottom: .5rem; line-height: 1.3;
+}
+.q-tc-meta {
+  font-size: .75rem; color: var(--muted); display: flex; flex-direction: column; gap: .25rem;
+}
+.q-tc-meta span { display: flex; align-items: center; gap: .4rem; }
+.q-tc-meta span::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--glow); flex-shrink: 0;
+}
+.q-tc-action {
+  margin-top: 1rem; display: flex; align-items: center; justify-content: space-between;
+  font-size: .75rem; color: var(--glow2); font-weight: 600;
+}
+.q-tc-badge {
+  display: inline-block; padding: .2rem .5rem;
+  background: rgba(79,110,247,.2); border: 1px solid rgba(79,110,247,.3);
+  border-radius: .5rem; font-size: .65rem; color: var(--glow); font-weight: 700;
+}
+
+/* ─── MODAL SUBTÓPICOS ──────────────────────────────── */
+.q-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+  padding: 1rem;
+}
+.q-modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+.q-modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 24px 24px 16px 16px;
+  width: 100%; max-width: 560px; padding: 2rem;
+  animation: slideUp .3s cubic-bezier(.4,0,.2,1);
+  max-height: 85vh; overflow-y: auto;
+}
+.q-modal-handle {
+  width: 40px; height: 4px; background: var(--border); border-radius: 2px;
+  margin: 0 auto 1.5rem;
+}
+.q-modal-materia {
+  font-size: .7rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--glow2); margin-bottom: .25rem;
+}
+.q-modal-topico {
+  font-family: var(--font-head); font-size: 1.4rem; font-weight: 800;
+  color: var(--text); margin-bottom: .5rem;
+}
+.q-modal-desc { font-size: .88rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+/* Config row */
+.q-config-row {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1rem; margin-bottom: 1.5rem;
+}
+.q-config-label { font-size: .8rem; color: var(--muted); flex: 1; white-space: nowrap; }
+.q-qty-control { display: flex; align-items: center; gap: .5rem; }
+.q-qty-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.q-qty-btn:hover { border-color: var(--glow); color: var(--glow); }
+.q-qty-val { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; min-width: 32px; text-align: center; }
+
+/* Subtópicos */
+.q-sub-list { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.5rem; }
+.q-sub-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 1.2rem; border: 1px solid var(--border); border-radius: 12px;
+  cursor: pointer; background: var(--surface2); transition: all .2s;
+  text-decoration: none;
+}
+.q-sub-item:hover {
+  border-color: rgba(79,110,247,.5); background: rgba(79,110,247,.07);
+  transform: translateX(4px);
+}
+.q-sub-item.selected { border-color: var(--glow); background: rgba(79,110,247,.12); }
+.q-sub-name { font-size: .9rem; font-weight: 500; color: var(--text); }
+.q-sub-qty { font-size: .78rem; color: var(--muted); }
+.q-sub-all {
+  border-style: dashed; color: var(--glow2); border-color: rgba(0,212,255,.3);
+}
+.q-sub-all:hover { background: rgba(0,212,255,.07); border-color: var(--glow2); }
+
+/* CTA buttons */
+.q-cta-row { display: flex; gap: .75rem; }
+.q-btn-primary {
+  flex: 1; padding: .9rem 1.5rem; background: linear-gradient(135deg, var(--glow), var(--glow2));
+  border: none; border-radius: 12px; color: #fff; font-family: var(--font-head);
+  font-size: .95rem; font-weight: 700; cursor: pointer; transition: all .2s;
+  text-decoration: none; display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.q-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,110,247,.4); color: #fff; }
+.q-btn-ghost {
+  padding: .9rem 1.25rem; border: 1px solid var(--border); border-radius: 12px;
+  background: transparent; color: var(--muted); cursor: pointer; font-size: .85rem; transition: all .2s;
+}
+.q-btn-ghost:hover { border-color: var(--border); color: var(--text); }
+
+/* ─── DESEMPENHO CARD ───────────────────────────────── */
+.q-perf-strip {
+  max-width: 1400px; margin: 0 auto 2rem; padding: 0 2rem;
+}
+.q-perf-card {
+  background: linear-gradient(135deg, rgba(79,110,247,.08), rgba(0,212,255,.05));
+  border: 1px solid rgba(79,110,247,.2); border-radius: 16px;
+  padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.q-perf-label { font-size: .75rem; color: var(--muted); margin-bottom: .25rem; }
+.q-perf-val { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; color: var(--text); }
+.q-perf-divider { width: 1px; height: 40px; background: var(--border); }
+.q-perf-weak {
+  flex: 1; min-width: 200px;
+}
+.q-perf-weak-label { font-size: .75rem; color: var(--muted); margin-bottom: .5rem; }
+.q-perf-weak-items { display: flex; flex-wrap: wrap; gap: .4rem; }
+.q-perf-badge {
+  font-size: .72rem; padding: .2rem .65rem; border-radius: 1rem;
+  border: 1px solid rgba(255,79,110,.3); background: rgba(255,79,110,.1); color: #ff8fa3;
+}
+
+/* ─── EMPTY STATE ───────────────────────────────────── */
+.q-empty {
+  text-align: center; padding: 5rem 2rem;
+  color: var(--muted); font-size: 1rem;
+}
+.q-empty i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: .3; }
+
+/* ─── ANIMATIONS ────────────────────────────────────── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.q-row { animation: fadeIn .5s ease both; }
+.q-row:nth-child(1) { animation-delay: .05s; }
+.q-row:nth-child(2) { animation-delay: .1s; }
+.q-row:nth-child(3) { animation-delay: .15s; }
+.q-row:nth-child(4) { animation-delay: .2s; }
+.q-row:nth-child(5) { animation-delay: .25s; }
+
+/* ─── RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .q-hero { padding: 2rem 1rem 1rem; }
+  .q-filter-bar, .q-catalog, .q-perf-strip, .q-stats { padding-left: 1rem; padding-right: 1rem; }
+  .q-topic-card { width: 180px; }
+  .q-modal { border-radius: 20px 20px 0 0; }
+  .q-perf-divider { display: none; }
+}
+</style>
+
+<div id="app">
+
+<!-- ── HERO ── -->
+<section class="q-hero">
+  <div class="q-hero-inner">
+    <div class="q-eyebrow">
+      <i class="bi bi-stars"></i>
+      Modo Questões
+    </div>
+    <h1>Pratique do seu<br>jeito, no seu ritmo</h1>
+    <p class="q-hero-sub">
+      Filtre por vestibular, escolha a matéria e mergulhe nos tópicos que mais importam para você.
+    </p>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+{% if desempenho and desempenho.totais and desempenho.totais.total %}
+<div class="q-stats">
+  {% set t = desempenho.totais %}
+  <div class="q-stat">
+    <span class="q-stat-dot"></span>
+    <span><strong>{{ t.total }}</strong> questões respondidas</span>
+  </div>
+  {% if t.total > 0 %}
+  <div class="q-stat">
+    <span class="q-stat-dot" style="background:var(--success)"></span>
+    <span><strong>{{ ((t.acertos / t.total) * 100)|round|int }}%</strong> de acerto</span>
+  </div>
+  {% endif %}
+  <div class="q-stat">
+    <span class="q-stat-dot" style="background:var(--glow2)"></span>
+    <span><strong>{{ desempenho.dias_ativos }}</strong> dias ativos (30d)</span>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── FILTER BAR ── -->
+<div class="q-filter-bar">
+  <div class="q-filter-label">Filtrar por vestibular</div>
+  <div class="q-chips" id="chipContainer">
+    <div class="q-chip q-chip-all {% if not provas_selecionadas %}active{% endif %}"
+         data-prova="__all__" onclick="toggleProva('__all__', this)">
+      Todos
+    </div>
+    {% for prova in todas_provas %}
+    <div class="q-chip {% if prova in provas_selecionadas %}active{% endif %}"
+         data-prova="{{ prova }}" onclick="toggleProva('{{ prova }}', this)">
+      {{ prova }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<hr class="q-divider">
+
+<!-- ── DESEMPENHO (tópicos fracos) ── -->
+{% if desempenho and desempenho.topicos_fracos %}
+<div class="q-perf-strip">
+  <div class="q-perf-card">
+    <div>
+      <div class="q-perf-label">Seu foco agora</div>
+      <div class="q-perf-val" style="font-size:1rem;color:var(--warn);">⚡ Tópicos para melhorar</div>
+    </div>
+    <div class="q-perf-divider"></div>
+    <div class="q-perf-weak">
+      <div class="q-perf-weak-label">Baseado no seu desempenho recente:</div>
+      <div class="q-perf-weak-items">
+        {% for tf in desempenho.topicos_fracos %}
+        <span class="q-perf-badge"
+              onclick="abrirModalPorTopico('{{ tf.materia }}','{{ tf.topico }}')"
+              style="cursor:pointer">
+          {{ tf.topico }} ({{ tf.percentual|round|int }}%)
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ── CATÁLOGO (linhas Netflix) ── -->
+<div class="q-catalog" id="catalog">
+  {% if catalogo %}
+    {% for materia, topicos in catalogo.items() %}
+    <div class="q-row" data-materia="{{ materia }}">
+      <div class="q-row-header">
+        <span class="q-row-title" onclick="filtrarMateria('{{ materia }}')">{{ materia }}</span>
+        <span class="q-row-count">{{ topicos|length }} tópicos</span>
+        <span class="q-row-arrow">Ver todos →</span>
+      </div>
+      <div class="q-scroll-row">
+        {% for t in topicos %}
+        <div class="q-topic-card"
+             onclick="abrirModal('{{ materia }}','{{ t.topico }}',{{ t.subtopicos|tojson|e }},{{ t.total_questoes }})">
+          <span class="q-tc-emoji">{{ loop.cycle('📘','🔬','📐','🌍','💬','⚗️','🧬','📊','🏛️','✏️') }}</span>
+          <div class="q-tc-name">{{ t.topico }}</div>
+          <div class="q-tc-meta">
+            <span>{{ t.total_questoes }} questões</span>
+            {% if t.subtopicos %}
+            <span>{{ t.subtopicos|length }} subtópicos</span>
+            {% endif %}
+          </div>
+          <div class="q-tc-action">
+            <span>Estudar agora</span>
+            <span>→</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="q-empty">
+      <i class="bi bi-inbox"></i>
+      Nenhuma questão encontrada para os filtros selecionados.
+    </div>
+  {% endif %}
+</div>
+
+</div><!-- #app -->
+
+<!-- ── MODAL SUBTÓPICOS ── -->
+<div class="q-modal-overlay" id="modalOverlay" onclick="fecharModal(event)">
+  <div class="q-modal" id="modal">
+    <div class="q-modal-handle"></div>
+    <div class="q-modal-materia" id="modal-materia"></div>
+    <div class="q-modal-topico" id="modal-topico"></div>
+    <div class="q-modal-desc" id="modal-desc"></div>
+
+    <!-- Quantidade -->
+    <div class="q-config-row">
+      <span class="q-config-label">Quantas questões?</span>
+      <div class="q-qty-control">
+        <button class="q-qty-btn" onclick="ajustarQtd(-5)">−</button>
+        <span class="q-qty-val" id="qtdVal">10</span>
+        <button class="q-qty-btn" onclick="ajustarQtd(5)">+</button>
+      </div>
+    </div>
+
+    <!-- Lista de subtópicos -->
+    <div id="modal-subtopicos" class="q-sub-list"></div>
+
+    <div class="q-cta-row">
+      <a class="q-btn-primary" id="btn-iniciar" href="#">
+        <i class="bi bi-lightning-charge-fill"></i>
+        Iniciar Prática
+      </a>
+      <button class="q-btn-ghost" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Estado ──
+let _provas = {{ provas_selecionadas|tojson }};
+let _modalMateria = '', _modalTopico = '', _modalSubtopico = '', _qtd = 10;
+
+// ── Chips de vestibular ──
+function toggleProva(prova, el) {
+  const allChip = document.querySelector('[data-prova="__all__"]');
+  if (prova === '__all__') {
+    _provas = [];
+    document.querySelectorAll('.q-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    allChip.classList.remove('active');
+    el.classList.toggle('active');
+    if (el.classList.contains('active')) {
+      if (!_provas.includes(prova)) _provas.push(prova);
+    } else {
+      _provas = _provas.filter(p => p !== prova);
+    }
+    if (_provas.length === 0) allChip.classList.add('active');
+  }
+  atualizarCatalogo();
+}
+
+async function atualizarCatalogo() {
+  const catalog = document.getElementById('catalog');
+  catalog.style.opacity = '.4';
+  catalog.style.pointerEvents = 'none';
+
+  const params = _provas.length ? _provas.map(p => `provas=${encodeURIComponent(p)}`).join('&') : '';
+  const res = await fetch(`/questoes/explorar?${params}`);
+  const data = await res.json();
+
+  if (data.success) {
+    renderCatalogo(data.catalogo);
+  }
+  catalog.style.opacity = '1';
+  catalog.style.pointerEvents = '';
+}
+
+function renderCatalogo(catalogo) {
+  const catalog = document.getElementById('catalog');
+  const emojis = ['📘','🔬','📐','🌍','💬','⚗️','🧬','📊','🏛️','✏️'];
+  let html = '';
+
+  const materias = Object.keys(catalogo);
+  if (!materias.length) {
+    catalog.innerHTML = '<div class="q-empty"><i class="bi bi-inbox"></i>Nenhuma questão encontrada.</div>';
+    return;
+  }
+
+  materias.forEach(materia => {
+    const topicos = catalogo[materia];
+    html += `<div class="q-row" data-materia="${materia}">
+      <div class="q-row-header">
+        <span class="q-row-title">${materia}</span>
+        <span class="q-row-count">${topicos.length} tópicos</span>
+        <span class="q-row-arrow">Ver todos →</span>
+      </div>
+      <div class="q-scroll-row">`;
+
+    topicos.forEach((t, i) => {
+      const emoji = emojis[i % emojis.length];
+      const subs = JSON.stringify(t.subtopicos).replace(/"/g, '&quot;');
+      html += `<div class="q-topic-card"
+                    onclick="abrirModal('${materia}','${t.topico.replace(/'/g,"\\'")}',${JSON.stringify(t.subtopicos)},${t.total_questoes})">
+        <span class="q-tc-emoji">${emoji}</span>
+        <div class="q-tc-name">${t.topico}</div>
+        <div class="q-tc-meta">
+          <span>${t.total_questoes} questões</span>
+          ${t.subtopicos.length ? `<span>${t.subtopicos.length} subtópicos</span>` : ''}
+        </div>
+        <div class="q-tc-action"><span>Estudar agora</span><span>→</span></div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  catalog.innerHTML = html;
+}
+
+// ── Modal ──
+function abrirModal(materia, topico, subtopicos, total) {
+  _modalMateria = materia; _modalTopico = topico; _modalSubtopico = '';
+
+  document.getElementById('modal-materia').textContent = materia;
+  document.getElementById('modal-topico').textContent = topico;
+  document.getElementById('modal-desc').textContent = `${total} questões disponíveis`;
+
+  // Subtópicos
+  const list = document.getElementById('modal-subtopicos');
+  let html = `<div class="q-sub-item q-sub-all" onclick="selecionarSub('',this)">
+    <span class="q-sub-name">🎯 Todos os subtópicos</span>
+    <span class="q-sub-qty">${total} questões</span>
+  </div>`;
+  subtopicos.forEach(s => {
+    html += `<div class="q-sub-item" onclick="selecionarSub('${s.nome.replace(/'/g,"\\'")}',this)">
+      <span class="q-sub-name">${s.nome}</span>
+      <span class="q-sub-qty">${s.total_questoes} questões</span>
+    </div>`;
+  });
+  list.innerHTML = html;
+
+  // Selecionar "todos" por padrão
+  list.querySelector('.q-sub-all').classList.add('selected');
+  atualizarLink();
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function abrirModalPorTopico(materia, topico) {
+  // Abre modal para um tópico específico (usado pelos badges de desempenho)
+  const card = document.querySelector(`.q-row[data-materia="${materia}"] .q-topic-card`);
+  if (card) card.click();
+}
+
+function selecionarSub(sub, el) {
+  document.querySelectorAll('.q-sub-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  _modalSubtopico = sub;
+  atualizarLink();
+}
+
+function ajustarQtd(delta) {
+  _qtd = Math.max(5, Math.min(50, _qtd + delta));
+  document.getElementById('qtdVal').textContent = _qtd;
+  atualizarLink();
+}
+
+function atualizarLink() {
+  let url = `/questoes/praticar?materia=${encodeURIComponent(_modalMateria)}&topico=${encodeURIComponent(_modalTopico)}&quantidade=${_qtd}`;
+  if (_modalSubtopico) url += `&subtopico=${encodeURIComponent(_modalSubtopico)}`;
+  _provas.forEach(p => { url += `&provas=${encodeURIComponent(p)}`; });
+  document.getElementById('btn-iniciar').href = url;
+}
+
+function fecharModal(event) {
+  if (event && event.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ESC para fechar
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+</script>
+{% endblock %}

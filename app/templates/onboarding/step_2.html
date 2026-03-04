@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}Diagnóstico Rápido - Launcher{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Progresso -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Etapa 2 de 5</span>
+                    <span class="text-muted">40%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 40%"></div>
+                </div>
+            </div>
+
+            <!-- Card Principal -->
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h2 mb-3">🎯 Diagnóstico Rápido</h1>
+                        <p class="text-muted">Responda 5 questões para identificarmos seus pontos fortes</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('onboarding.finalizar_diagnostico') }}">
+                        {% for questao in questoes %}
+                        <div class="card mb-4 border">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="badge bg-primary">Questão {{ loop.index }}/5</span>
+                                    <span class="badge bg-secondary">{{ questao.area or 'Geral' }}</span>
+                                </div>
+
+                                <h5 class="mb-3">{{ questao.enunciado }}</h5>
+
+                                <div class="list-group">
+                                    {% for letra in ['A', 'B', 'C', 'D', 'E'] %}
+                                    <label class="list-group-item list-group-item-action cursor-pointer">
+                                        <input class="form-check-input me-2" type="radio" 
+                                               name="questao_{{ questao.id }}" 
+                                               value="{{ letra }}" 
+                                               required>
+                                        <strong>{{ letra }})</strong> 
+                                        {{ questao.get_alternativas_dict()[letra] }}
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('onboarding.step_1') }}" class="btn btn-outline-secondary">
+                                ← Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                Finalizar Diagnóstico →
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+.list-group-item-action input:checked ~ * {
+    color: #0d6efd;
+    font-weight: 500;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>
+{% endblock %}

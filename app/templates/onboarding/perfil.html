@@ -1,0 +1,399 @@
+{% extends "layout.html" %}
+
+{% block title %}Bem-vindo à Launcher! | Perfil{% endblock %}
+
+{% block content %}
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    }
+
+    .onboarding-card {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .onboarding-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .onboarding-logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    }
+
+    .onboarding-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .onboarding-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+    }
+
+    .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 6px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #10b981;
+        background: rgba(15, 23, 42, 0.8);
+    }
+
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .checkbox-item {
+        position: relative;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .checkbox-item label {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .checkbox-item input[type="checkbox"]:checked + label {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: #10b981;
+        color: white;
+    }
+
+    .checkbox-item label::before {
+        content: '';
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        margin-right: 0.75rem;
+        transition: all 0.2s;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked + label::before {
+        background: #10b981;
+        border-color: #10b981;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+        background-size: 14px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .radio-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .radio-item {
+        position: relative;
+    }
+
+    .radio-item input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .radio-item label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem 1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .radio-item input[type="radio"]:checked + label {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: #10b981;
+    }
+
+    .radio-label-title {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .radio-label-subtitle {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 1rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .step-indicator {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+    }
+</style>
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-header">
+            <div class="onboarding-logo">L</div>
+            <h1 class="onboarding-title">Vamos começar! 🚀</h1>
+            <p class="onboarding-subtitle">Conte-nos um pouco sobre você para personalizar sua experiência</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 20%"></div>
+        </div>
+
+        <form id="perfilForm">
+            <!-- Objetivo -->
+            <div class="form-group">
+                <label class="form-label">Qual é o seu objetivo principal?</label>
+                <select class="form-select" id="objetivo" required>
+                    <option value="">Selecione...</option>
+                    <option value="ENEM 2025">ENEM 2025</option>
+                    <option value="ENEM 2026">ENEM 2026</option>
+                    <option value="Concurso Público">Concurso Público</option>
+                    <option value="Vestibular">Vestibular</option>
+                    <option value="Aperfeiçoar">Aperfeiçoar Conhecimentos</option>
+                </select>
+            </div>
+
+            <!-- Data do Exame -->
+            <div class="form-group">
+                <label class="form-label">Quando é seu exame?</label>
+                <input type="date" class="form-input" id="data_exame" required>
+            </div>
+
+            <!-- Áreas Difíceis -->
+            <div class="form-group">
+                <label class="form-label">Quais áreas você tem mais dificuldade?</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_mat" value="Matemática">
+                        <label for="area_mat">📐 Matemática</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_por" value="Português">
+                        <label for="area_por">📚 Português</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_his" value="História">
+                        <label for="area_his">🏛️ História</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_cie" value="Ciências">
+                        <label for="area_cie">🔬 Ciências</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_fil" value="Filosofia">
+                        <label for="area_fil">💭 Filosofia</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="area_art" value="Arte">
+                        <label for="area_art">🎨 Arte</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tempo Disponível -->
+            <div class="form-group">
+                <label class="form-label">Quanto tempo você tem disponível por dia?</label>
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <input type="radio" id="tempo_15" name="tempo_diario" value="15" required>
+                        <label for="tempo_15">
+                            <div class="radio-label-title">15 min</div>
+                            <div class="radio-label-subtitle">Corrido</div>
+                        </label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="tempo_30" name="tempo_diario" value="30">
+                        <label for="tempo_30">
+                            <div class="radio-label-title">30 min</div>
+                            <div class="radio-label-subtitle">Light</div>
+                        </label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="tempo_60" name="tempo_diario" value="60">
+                        <label for="tempo_60">
+                            <div class="radio-label-title">1 hora</div>
+                            <div class="radio-label-subtitle">Regular</div>
+                        </label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="tempo_120" name="tempo_diario" value="120">
+                        <label for="tempo_120">
+                            <div class="radio-label-title">2h+</div>
+                            <div class="radio-label-subtitle">Intensivo</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btnContinuar">
+                Continuar →
+            </button>
+        </form>
+
+        <div class="step-indicator">
+            Etapa 1 de 5
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('perfilForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btnContinuar = document.getElementById('btnContinuar');
+    btnContinuar.disabled = true;
+    btnContinuar.textContent = 'Salvando...';
+    
+    // Coletar áreas selecionadas
+    const areas = [];
+    document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked').forEach(cb => {
+        areas.push(cb.value);
+    });
+    
+    if (areas.length === 0) {
+        alert('Selecione pelo menos uma área de dificuldade');
+        btnContinuar.disabled = false;
+        btnContinuar.textContent = 'Continuar →';
+        return;
+    }
+    
+    const data = {
+        objetivo: document.getElementById('objetivo').value,
+        data_exame: document.getElementById('data_exame').value,
+        areas_dificeis: areas,
+        tempo_diario: document.querySelector('input[name="tempo_diario"]:checked').value
+    };
+    
+    try {
+        const response = await fetch('{{ url_for("onboarding.perfil") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            window.location.href = result.next_step;
+        } else {
+            alert('Erro ao salvar perfil. Tente novamente.');
+            btnContinuar.disabled = false;
+            btnContinuar.textContent = 'Continuar →';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao salvar perfil. Tente novamente.');
+        btnContinuar.disabled = false;
+        btnContinuar.textContent = 'Continuar →';
+    }
+});
+
+// Definir data mínima como hoje
+document.getElementById('data_exame').min = new Date().toISOString().split('T')[0];
+</script>
+
+{% endblock %}

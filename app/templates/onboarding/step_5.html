@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+
+{% block title %}Bem-vindo à Launcher! - Launcher{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Progresso -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Etapa 5 de 5</span>
+                    <span class="text-muted">100%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- Card Principal -->
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 mb-3">🎉 Parabéns!</h1>
+                        <p class="lead text-muted">Sua conta está configurada e pronta para usar</p>
+                    </div>
+
+                    <!-- Funcionalidades -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">📝</span>
+                                    </div>
+                                    <h5 class="card-title">Simulados ENEM</h5>
+                                    <p class="card-text text-muted">
+                                        Pratique com questões reais e receba nota TRI calculada automaticamente
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">✍️</span>
+                                    </div>
+                                    <h5 class="card-title">Correção de Redações</h5>
+                                    <p class="card-text text-muted">
+                                        IA avançada corrige suas redações com feedback detalhado
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">📊</span>
+                                    </div>
+                                    <h5 class="card-title">Dashboard Inteligente</h5>
+                                    <p class="card-text text-muted">
+                                        Acompanhe seu progresso com gráficos e estatísticas detalhadas
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">🎯</span>
+                                    </div>
+                                    <h5 class="card-title">Cronograma Personalizado</h5>
+                                    <p class="card-text text-muted">
+                                        Plano de estudos adaptado ao seu ritmo e disponibilidade
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">💎</span>
+                                    </div>
+                                    <h5 class="card-title">Sistema de Recompensas</h5>
+                                    <p class="card-text text-muted">
+                                        Ganhe XP, diamantes e moedas estudando e troque por prêmios
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <span class="display-4">💬</span>
+                                    </div>
+                                    <h5 class="card-title">HelpZone</h5>
+                                    <p class="card-text text-muted">
+                                        Tire dúvidas com a comunidade e professores especializados
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="text-center">
+                        <form method="POST" action="{{ url_for('onboarding.concluir_onboarding') }}">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 mb-3">
+                                🚀 Começar Agora!
+                            </button>
+                        </form>
+                        <p class="text-muted small">
+                            Você ganhou <strong>+50 XP</strong> por completar a configuração inicial! 🎉
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,453 @@
+{% extends "layout.html" %}
+
+{% block title %}Diagnóstico Rápido{% endblock %}
+
+{% block content %}
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    }
+
+    .onboarding-card {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 800px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .onboarding-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .onboarding-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .onboarding-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+    }
+
+    .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 6px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .questao-container {
+        display: none;
+    }
+
+    .questao-container.active {
+        display: block;
+    }
+
+    .questao-numero {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+
+    .questao-enunciado {
+        background: rgba(15, 23, 42, 0.6);
+        padding: 1.5rem;
+        border-radius: 12px;
+        color: white;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .alternativas {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alternativa {
+        position: relative;
+    }
+
+    .alternativa input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .alternativa label {
+        display: flex;
+        align-items: flex-start;
+        padding: 1rem 1.25rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .alternativa input[type="radio"]:checked + label {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: #10b981;
+        color: white;
+    }
+
+    .alternativa-letra {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        margin-right: 1rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .alternativa input[type="radio"]:checked + label .alternativa-letra {
+        background: #10b981;
+        color: white;
+    }
+
+    .alternativa-texto {
+        flex: 1;
+        line-height: 1.5;
+    }
+
+    .navegacao {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex: 1;
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .timer {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+
+    .resultado-container {
+        display: none;
+        text-align: center;
+    }
+
+    .resultado-container.active {
+        display: block;
+    }
+
+    .resultado-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .resultado-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .resultado-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2rem;
+    }
+
+    .resultado-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(15, 23, 42, 0.6);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-valor {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+
+    .step-indicator {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+    }
+</style>
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-header">
+            <h1 class="onboarding-title">🎯 Diagnóstico Rápido</h1>
+            <p class="onboarding-subtitle">Responda 5 questões para avaliarmos seu nível</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 40%"></div>
+        </div>
+
+        <!-- Questões -->
+        <div id="questoesArea">
+            {% for questao in questoes %}
+            <div class="questao-container {% if loop.first %}active{% endif %}" data-questao-id="{{ questao.id }}" data-index="{{ loop.index0 }}">
+                <div class="questao-numero">Questão {{ loop.index }} de {{ questoes|length }}</div>
+                
+                <div class="questao-enunciado">
+                    {{ questao.enunciado|safe }}
+                </div>
+
+                <div class="alternativas">
+                    <div class="alternativa">
+                        <input type="radio" id="q{{ questao.id }}_a" name="questao_{{ questao.id }}" value="A">
+                        <label for="q{{ questao.id }}_a">
+                            <div class="alternativa-letra">A</div>
+                            <div class="alternativa-texto">{{ questao.alternativa_a }}</div>
+                        </label>
+                    </div>
+                    <div class="alternativa">
+                        <input type="radio" id="q{{ questao.id }}_b" name="questao_{{ questao.id }}" value="B">
+                        <label for="q{{ questao.id }}_b">
+                            <div class="alternativa-letra">B</div>
+                            <div class="alternativa-texto">{{ questao.alternativa_b }}</div>
+                        </label>
+                    </div>
+                    <div class="alternativa">
+                        <input type="radio" id="q{{ questao.id }}_c" name="questao_{{ questao.id }}" value="C">
+                        <label for="q{{ questao.id }}_c">
+                            <div class="alternativa-letra">C</div>
+                            <div class="alternativa-texto">{{ questao.alternativa_c }}</div>
+                        </label>
+                    </div>
+                    <div class="alternativa">
+                        <input type="radio" id="q{{ questao.id }}_d" name="questao_{{ questao.id }}" value="D">
+                        <label for="q{{ questao.id }}_d">
+                            <div class="alternativa-letra">D</div>
+                            <div class="alternativa-texto">{{ questao.alternativa_d }}</div>
+                        </label>
+                    </div>
+                    <div class="alternativa">
+                        <input type="radio" id="q{{ questao.id }}_e" name="questao_{{ questao.id }}" value="E">
+                        <label for="q{{ questao.id }}_e">
+                            <div class="alternativa-letra">E</div>
+                            <div class="alternativa-texto">{{ questao.alternativa_e }}</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="navegacao">
+                    {% if not loop.first %}
+                    <button class="btn btn-secondary" onclick="voltarQuestao()">← Anterior</button>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+                    
+                    {% if not loop.last %}
+                    <button class="btn btn-primary" onclick="proximaQuestao()" id="btnProxima{{ loop.index0 }}">Próxima →</button>
+                    {% else %}
+                    <button class="btn btn-primary" onclick="finalizarDiagnostico()" id="btnFinalizar">Finalizar 🎯</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Resultado -->
+        <div class="resultado-container" id="resultadoArea">
+            <div class="resultado-icon">✅</div>
+            <h2 class="resultado-title">Diagnóstico Completo!</h2>
+            <p class="resultado-subtitle">Você ganhou +10 XP</p>
+            
+            <div class="resultado-stats" id="statsArea"></div>
+
+            <button class="btn btn-primary" onclick="continuarOnboarding()">
+                Continuar →
+            </button>
+        </div>
+
+        <div class="step-indicator">
+            Etapa 2 de 5
+        </div>
+    </div>
+</div>
+
+<script>
+let questaoAtual = 0;
+const totalQuestoes = {{ questoes|length }};
+const respostas = {};
+
+function proximaQuestao() {
+    const questaoAtiva = document.querySelector('.questao-container.active');
+    const questaoId = questaoAtiva.dataset.questaoId;
+    const respostaSelecionada = document.querySelector(`input[name="questao_${questaoId}"]:checked`);
+    
+    if (!respostaSelecionada) {
+        alert('Por favor, selecione uma alternativa');
+        return;
+    }
+    
+    respostas[questaoId] = respostaSelecionada.value;
+    
+    questaoAtual++;
+    mostrarQuestao(questaoAtual);
+}
+
+function voltarQuestao() {
+    questaoAtual--;
+    mostrarQuestao(questaoAtual);
+}
+
+function mostrarQuestao(index) {
+    document.querySelectorAll('.questao-container').forEach((q, i) => {
+        q.classList.toggle('active', i === index);
+    });
+    
+    // Atualizar barra de progresso
+    const progresso = 40 + ((index + 1) / totalQuestoes) * 20;
+    document.getElementById('progressBar').style.width = progresso + '%';
+}
+
+async function finalizarDiagnostico() {
+    const questaoAtiva = document.querySelector('.questao-container.active');
+    const questaoId = questaoAtiva.dataset.questaoId;
+    const respostaSelecionada = document.querySelector(`input[name="questao_${questaoId}"]:checked`);
+    
+    if (!respostaSelecionada) {
+        alert('Por favor, selecione uma alternativa');
+        return;
+    }
+    
+    respostas[questaoId] = respostaSelecionada.value;
+    
+    const btnFinalizar = document.getElementById('btnFinalizar');
+    btnFinalizar.disabled = true;
+    btnFinalizar.textContent = 'Processando...';
+    
+    try {
+        const response = await fetch('{{ url_for("onboarding.diagnostico_submeter") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ respostas })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarResultado(result);
+        } else {
+            alert('Erro ao processar diagnóstico');
+            btnFinalizar.disabled = false;
+            btnFinalizar.textContent = 'Finalizar 🎯';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao processar diagnóstico');
+        btnFinalizar.disabled = false;
+        btnFinalizar.textContent = 'Finalizar 🎯';
+    }
+}
+
+function mostrarResultado(result) {
+    document.getElementById('questoesArea').style.display = 'none';
+    document.getElementById('resultadoArea').classList.add('active');
+    document.getElementById('progressBar').style.width = '60%';
+    
+    const statsArea = document.getElementById('statsArea');
+    statsArea.innerHTML = '';
+    
+    for (const [area, score] of Object.entries(result.resultado)) {
+        const percentual = Math.round(score * 100);
+        const statCard = `
+            <div class="stat-card">
+                <div class="stat-valor">${percentual}%</div>
+                <div class="stat-label">${area}</div>
+            </div>
+        `;
+        statsArea.innerHTML += statCard;
+    }
+    
+    window.nextStepUrl = result.next_step;
+}
+
+function continuarOnboarding() {
+    window.location.href = window.nextStepUrl;
+}
+</script>
+
+{% endblock %}

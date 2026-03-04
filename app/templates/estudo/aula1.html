@@ -1,0 +1,923 @@
+<!-- app/templates/estudo/aula.html -->
+{% extends "layout.html" %}
+
+{% block title %}{{ aula.titulo }} - LauncherFlix{% endblock %}
+
+{% block styles %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+    /* --- VARIAVEIS GLOBAIS DARK --- */
+    :root {
+        --bg-color: #000000;
+        --card-bg: #141414;
+        --accent: {{ aula.modulo.materia.cor or '#e50914' }}; /* Cor da matéria ou Vermelho Padrão */
+        --text-main: #ffffff;
+        --text-secondary: #a3a3a3;
+        --border-color: #262626;
+        --success: #46d369;
+    }
+
+    /* Reset Geral */
+    html, body {
+        background-color: var(--bg-color) !important;
+        color: var(--text-main) !important;
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .bg-dark, .wrapper, .main-content {
+        background-color: var(--bg-color) !important;
+    }
+
+    /* Remove limitações de container padrão */
+    .container, .container-fluid {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* --- LAYOUT PRINCIPAL --- */
+    .netflix-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- TOP BAR (Navegação) --- */
+    .aula-topbar {
+        padding: 20px 4%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .breadcrumb-flix {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .breadcrumb-flix a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .breadcrumb-flix a:hover { color: white; }
+    .breadcrumb-separator { opacity: 0.4; }
+    .breadcrumb-current { color: white; opacity: 0.8; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* --- THEATER MODE (Área do Vídeo/Conteúdo) --- */
+    .theater-stage {
+        width: 100%;
+        background: #000; /* Preto absoluto para vídeo */
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        position: relative;
+    }
+
+    .content-container-fluid {
+        width: 100%;
+        max-width: 1400px; /* Limite para telas ultra-wide */
+        margin: 0 auto;
+    }
+
+    /* Video Player Responsivo */
+    .video-wrapper {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        background: #000;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .video-wrapper iframe, 
+    .video-wrapper video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* PDF Viewer Ajustado */
+    .pdf-wrapper {
+        height: 85vh;
+        width: 100%;
+        background: #1a1a1a;
+    }
+    .pdf-wrapper iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Texto Rico Container */
+    .text-content-wrapper {
+        padding: 60px 20px;
+        max-width: 900px;
+        margin: 0 auto;
+        min-height: 60vh;
+    }
+
+    /* --- INFO SECTION (Abaixo do Player) --- */
+    .info-section {
+        padding: 40px 4% 80px;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 2fr 1fr; /* 2/3 para info, 1/3 para materiais/ações */
+        gap: 60px;
+    }
+
+    /* Coluna Esquerda: Título e Descrição */
+    .aula-main-info {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .aula-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    .aula-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+    }
+
+    .meta-tag {
+        background: rgba(255,255,255,0.1);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #ddd;
+    }
+
+    .aula-description {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #ccc;
+        margin-top: 10px;
+        border-top: 1px solid var(--border-color);
+        padding-top: 20px;
+    }
+
+    /* Coluna Direita: Ações e Materiais */
+    .aula-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* Card de Progresso */
+    .progress-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+    .progress-track {
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        transition: width 0.5s ease;
+        box-shadow: 0 0 10px var(--accent);
+    }
+
+    .timer-text {
+        font-family: monospace;
+        color: var(--accent);
+        font-weight: bold;
+    }
+
+    /* Botões de Ação */
+    .action-btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .btn-complete {
+        background: white;
+        color: black;
+    }
+    .btn-complete:hover { background: #e6e6e6; transform: scale(1.02); }
+
+    .btn-next {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        margin-top: 10px;
+    }
+    .btn-next:hover { background: rgba(255,255,255,0.2); }
+
+    .btn-completed-state {
+        background: var(--success);
+        color: white;
+        cursor: default;
+    }
+
+    /* Lista de Materiais */
+    .materials-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .material-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: #ccc;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .material-item:hover { background: #222; border-color: #444; color: white; }
+
+    .material-icon { font-size: 1.2rem; }
+    .material-name { font-size: 0.9rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Rich Text Content Style */
+    .rich-text-display {
+        color: #e5e5e5;
+        line-height: 1.7;
+        font-size: 1.1rem;
+    }
+    .rich-text-display h1, .rich-text-display h2 { color: white; margin-top: 1.5em; }
+    .rich-text-display a { color: var(--accent); text-decoration: underline; }
+    .rich-text-display img { max-width: 100%; border-radius: 8px; margin: 20px 0; }
+    .rich-text-display blockquote { border-left: 3px solid var(--accent); padding-left: 20px; color: #999; margin: 20px 0; }
+
+    /* Admin Debug & Controls */
+    .admin-panel {
+        background: rgba(255, 193, 7, 0.05);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 30px;
+        font-size: 0.85rem;
+        color: #aaa;
+    }
+    
+    .editor-controls {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 900px) {
+        .info-section { grid-template-columns: 1fr; gap: 40px; }
+        .aula-sidebar { flex-direction: column-reverse; } /* Botões em cima no mobile? ou manter ordem */
+    }
+
+    @media (max-width: 768px) {
+        .aula-title { font-size: 1.5rem; }
+        .aula-topbar { padding: 15px 5%; }
+        .info-section { padding: 30px 5%; }
+        .pdf-wrapper { height: 60vh; }
+    }
+    
+    /* Animação de Notificação */
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+
+
+/* =========================================
+   HELPZONE MISSION CARD - GATILHO COMPORTAMENTAL
+   ========================================= */
+
+.helpzone-mission {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px;
+    margin: 32px 0;
+    
+    /* Visual de Card Premium/Glass */
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.2); /* Roxo sutil na borda */
+    border-left: 4px solid #8b5cf6; /* Indicador de status/missão */
+    border-radius: 16px;
+    
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+}
+
+.helpzone-mission:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Efeito de brilho no fundo (opcional) */
+.helpzone-mission::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.mission-left {
+    display: flex;
+    align-items: flex-start; /* Alinhado ao topo para melhor leitura */
+    gap: 18px;
+    z-index: 1;
+}
+
+.mission-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 12px;
+    font-size: 1.8rem;
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.mission-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mission-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fbbf24; /* Amarelo/Gold para remeter a prêmio/XP */
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.mission-badge i {
+    font-size: 0.8rem;
+}
+
+.mission-content h4 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+}
+
+.mission-content p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    max-width: 450px;
+}
+
+/* O Gatilho de Ação */
+.mission-action-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #7c3aed; /* Cor sólida vibrante */
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+    z-index: 2;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mission-action-btn:hover {
+    background: #6d28d9;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 16px rgba(124, 58, 237, 0.4);
+    color: #fff;
+}
+
+.mission-action-btn:active {
+    transform: translateY(0);
+}
+
+/* Ícone animado no hover */
+.mission-action-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.mission-action-btn:hover i {
+    transform: rotate(-10deg) scale(1.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .helpzone-mission {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+        text-align: left;
+        gap: 20px;
+    }
+
+    .mission-left {
+        align-items: flex-start;
+    }
+    
+    .mission-icon-box {
+        min-width: 48px; /* Evita encolhimento */
+    }
+
+    .mission-action-btn {
+        width: 100%;
+        padding: 16px;
+    }
+}
+
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="netflix-wrapper">
+
+    <!-- 1. Top Bar de Navegação -->
+    <div class="aula-topbar">
+        <nav class="breadcrumb-flix">
+            <a href="{{ url_for('estudo.index') }}">Início</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{{ url_for('estudo.materia', materia_id=aula.modulo.materia.id) }}">{{ aula.modulo.materia.nome }}</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{{ url_for('estudo.modulo', modulo_id=aula.modulo.id) }}">{{ aula.modulo.titulo }}</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">{{ aula.titulo }}</span>
+        </nav>
+        
+        <!-- Botão Voltar Rápido -->
+        <a href="{{ url_for('estudo.modulo', modulo_id=aula.modulo.id) }}" style="color: #fff; text-decoration: none; font-size: 1.5rem; line-height: 0;">×</a>
+    </div>
+
+    <!-- 2. Palco Principal (Vídeo/PDF/Texto) -->
+    <div class="theater-stage">
+        
+        <!-- OPÇÃO A: VÍDEO -->
+        {% if aula.tipo == 'video' and aula.url_video %}
+        <div class="content-container-fluid">
+            <div class="video-wrapper">
+                <!-- Lógica Inline para YouTube (Sem depender de Python) -->
+                {% if 'youtube.com' in aula.url_video or 'youtu.be' in aula.url_video %}
+                    {% set video_id = '' %}
+                    {% if 'watch?v=' in aula.url_video %}
+                        {% set parts = aula.url_video.split('watch?v=') %}
+                        {% if parts|length > 1 %}{% set video_id = parts[1].split('&')[0] %}{% endif %}
+                    {% elif 'youtu.be/' in aula.url_video %}
+                        {% set parts = aula.url_video.split('youtu.be/') %}
+                        {% if parts|length > 1 %}{% set video_id = parts[1].split('?')[0] %}{% endif %}
+                    {% endif %}
+                    
+                    {% if video_id %}
+                        <iframe src="https://www.youtube.com/embed/{{ video_id }}?rel=0&modestbranding=1" allowfullscreen></iframe>
+                    {% else %}
+                        <!-- Fallback se falhar extração -->
+                        <iframe src="{{ aula.url_video }}" allowfullscreen></iframe>
+                    {% endif %}
+
+                {% elif 'vimeo.com' in aula.url_video %}
+                    {% set vimeo_id = aula.url_video.split('vimeo.com/')[-1].split('?')[0] %}
+                    <iframe src="https://player.vimeo.com/video/{{ vimeo_id }}" allowfullscreen></iframe>
+                
+                {% elif 'drive.google.com' in aula.url_video %}
+                    <iframe src="{{ aula.url_video }}" allow="autoplay"></iframe>
+                
+                {% else %}
+                    <video controls>
+                        <source src="{{ aula.url_video }}" type="video/mp4">
+                        Seu navegador não suporta este vídeo.
+                    </video>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- OPÇÃO B: PDF -->
+        {% elif aula.tipo == 'pdf' %}
+        <div class="pdf-wrapper">
+            {% if aula.url_pdf %}
+                <iframe src="{{ url_for('static', filename=aula.url_pdf) }}#toolbar=0&navpanes=0"></iframe>
+            {% else %}
+                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📄</div>
+                    <p>Arquivo PDF não encontrado.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- OPÇÃO C: TEXTO -->
+        {% elif aula.tipo == 'texto' %}
+        <div class="text-content-wrapper">
+            <div class="rich-text-display" id="rich-text-content">
+                {{ aula.conteudo|safe }}
+            </div>
+
+            <!-- Editor Admin (Hidden by default) -->
+            {% if current_user.is_admin %}
+            <div class="editor-controls">
+                <button id="edit-content-btn" class="action-btn" style="background: #333; color: white; width: auto;">
+                    ✏️ Editar Conteúdo
+                </button>
+                <button id="save-content-btn" class="action-btn" style="background: var(--success); color: white; width: auto; display: none;">
+                    💾 Salvar
+                </button>
+                <button id="cancel-edit-btn" class="action-btn" style="background: transparent; border: 1px solid #555; color: white; width: auto; display: none;">
+                    Cancelar
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+<!-- CTA HELPZONE – GATILHO DE RETENÇÃO -->
+<div class="helpzone-mission">
+    <div class="mission-left">
+        <!-- Ícone Visualmente Destacado -->
+        <div class="mission-icon-box">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+
+        <div class="mission-content">
+            <!-- Gatilho de Recompensa/Status -->
+            <span class="mission-badge">
+                <i class="bi bi-lightning-fill"></i> Missão de Aula
+            </span>
+            
+            <!-- Título Ativo -->
+            <h4>Não deixe o conteúdo escapar</h4>
+            
+            <!-- Explicação do "Porquê" (Learning by Teaching) -->
+            <p>
+                A melhor forma de aprender é explicar. Poste suas anotações, ganhe destaque na comunidade e ajude outros alunos.
+            </p>
+        </div>
+    </div>
+
+    <!-- Botão de Ação Clara -->
+    <a href="/helpzone/criar-post?origem=aula&aula_id={{ aula.id }}" 
+       class="mission-action-btn">
+        <i class="bi bi-camera-fill"></i>
+        <span>Cumprir Missão</span>
+    </a>
+</div>
+
+    <!-- 3. Informações e Ações -->
+    <div class="info-section">
+        
+        <!-- Coluna Esquerda: Detalhes -->
+        <div class="aula-main-info">
+            <h1 class="aula-title">{{ aula.titulo }}</h1>
+            
+            <div class="aula-meta-row">
+                <span class="meta-tag">{{ aula.modulo.dificuldade|title }}</span>
+                <span>•</span>
+                <span>{{ aula.duracao_estimada or '15' }} min</span>
+                <span>•</span>
+                <span>{{ aula.tipo|upper }}</span>
+                {% if progresso.concluida %}
+                <span style="color: var(--success); display: flex; align-items: center; gap: 5px;">
+                    ✓ Concluída
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="aula-description">
+                {{ aula.descricao or 'Sem descrição disponível para esta aula.' }}
+            </div>
+
+            {% if current_user.is_admin %}
+            <div class="admin-panel">
+                <strong>Admin Debug:</strong> ID Aula: {{ aula.id }} | Tipo: {{ aula.tipo }} | 
+                <a href="{{ url_for('estudo.editar_aula', aula_id=aula.id) }}" style="color: #ffc107; margin-left: 10px;">Editar Metadados</a>
+            </div>
+            {% endif %}
+        </div>
+
+
+        <!-- Coluna Direita: Progresso e Materiais -->
+        <div class="aula-sidebar">
+            
+            <!-- Ações Principais -->
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span>Progresso da Sessão</span>
+                    <span class="timer-text" id="timer">00:00:00</span>
+                </div>
+                <!-- Barra de Progresso Animada -->
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill" style="width: {{ (progresso.tempo_assistido / (aula.duracao_estimada * 60) * 100) if aula.duracao_estimada else 0 }}%"></div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    {% if not progresso.concluida %}
+                        <button id="btn-concluir" class="action-btn btn-complete">
+                            <span>✅</span> Marcar como Concluída
+                        </button>
+                    {% else %}
+                        <button class="action-btn btn-completed-state">
+                            <span>✓</span> Aula Concluída
+                        </button>
+                    {% endif %}
+
+                    <!-- Botão Próxima (Lógica visual apenas, backend deve fornecer o link) -->
+                    <a href="{{ url_for('estudo.modulo', modulo_id=aula.modulo.id) }}" class="action-btn btn-next">
+                        Voltar para Temporada
+                    </a>
+                </div>
+            </div>
+
+            <!-- Materiais de Apoio -->
+            {% if materiais or (aula.tipo == 'pdf' and aula.url_pdf) %}
+            <div class="materials-section">
+                <h4 style="color: white; margin-bottom: 15px; font-size: 1rem;">Materiais Complementares</h4>
+                <div class="materials-list">
+                    <!-- Botão Download do PDF Principal se for aula PDF -->
+                    {% if aula.tipo == 'pdf' and aula.url_pdf %}
+                    <a href="{{ url_for('static', filename=aula.url_pdf) }}" download class="material-item">
+                        <span class="material-icon">📄</span>
+                        <span class="material-name">Baixar PDF da Aula</span>
+                        <span style="font-size: 1.2rem;">⬇</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Outros Materiais -->
+                    {% for material in materiais %}
+                    <a href="{{ url_for('static', filename=material.arquivo) }}" target="_blank" class="material-item">
+                        <span class="material-icon">📎</span>
+                        <span class="material-name">{{ material.nome }}</span>
+                        <span style="font-size: 1.2rem;">↗</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Força Background Preto
+    document.body.style.backgroundColor = "#000000";
+    
+    // Variáveis de Controle
+    let startTime = Date.now();
+    let sessionId = {{ sessao_id }};
+    let aulaId = {{ aula.id }};
+    let tempoInicial = {{ progresso.tempo_assistido or 0 }};
+    let tempoAtual = tempoInicial;
+    let isActive = true;
+    let trackingAtivo = true;
+    let editorInstance = null;
+    let originalContent = '';
+    
+    // Timer Visual
+    function updateTimer() {
+        if (!isActive || !trackingAtivo) return;
+        
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        tempoAtual = tempoInicial + elapsed;
+
+        let hours = Math.floor(tempoAtual / 3600);
+        let minutes = Math.floor((tempoAtual % 3600) / 60);
+        let seconds = tempoAtual % 60;
+        
+        const timerElement = document.getElementById('timer');
+        if (timerElement) {
+            timerElement.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Atualiza barra visualmente
+        {% if aula.duracao_estimada %}
+        let duracaoTotal = {{ aula.duracao_estimada * 60 }};
+        let percent = Math.min((tempoAtual / duracaoTotal) * 100, 100);
+        const bar = document.getElementById('progress-fill');
+        if(bar) bar.style.width = percent + '%';
+        {% endif %}
+    }
+    
+    setInterval(updateTimer, 1000);
+
+    // Salva progresso no backend a cada 30s
+    setInterval(function() {
+        if (!isActive || !trackingAtivo) return;
+        
+        fetch('/estudo/api/atualizar_progresso', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                aula_id: aulaId,
+                tempo_assistido: tempoAtual,
+                sessao_id: sessionId
+            })
+        }).then(r => r.json()).then(data => {
+            if(data.success && data.aula_concluida) {
+                // Se concluiu automaticamente pelo tempo, atualiza UI
+                const btn = document.getElementById('btn-concluir');
+                if(btn) {
+                    btn.classList.remove('btn-complete');
+                    btn.classList.add('btn-completed-state');
+                    btn.innerHTML = '<span>✓</span> Aula Concluída';
+                    btn.disabled = true;
+                }
+            }
+        });
+    }, 30000);
+
+    // Botão Concluir Manualmente
+    const btnConcluir = document.getElementById('btn-concluir');
+    if(btnConcluir) {
+        btnConcluir.addEventListener('click', function() {
+            if(confirm('Marcar como concluída?')) {
+                fetch('/estudo/api/atualizar_progresso', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        aula_id: aulaId,
+                        tempo_assistido: tempoAtual,
+                        sessao_id: sessionId,
+                        forcar_conclusao: true
+                    })
+                }).then(r => r.json()).then(data => {
+                    if(data.success) {
+                        location.reload(); // Recarrega para atualizar status visual
+                    }
+                });
+            }
+        });
+    }
+
+    // Detecção de Inatividade Básica
+    ['mousemove', 'keydown', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, () => { isActive = true; });
+    });
+    setInterval(() => { isActive = false; }, 300000); // 5 min inativo pausa timer interno
+
+    // --- TinyMCE Logic para Admin ---
+    {% if current_user.is_admin %}
+    const richText = document.getElementById('rich-text-content');
+    if(richText) originalContent = richText.innerHTML;
+
+    const editBtn = document.getElementById('edit-content-btn');
+    if(editBtn) {
+        editBtn.addEventListener('click', () => {
+            richText.innerHTML = '<div style="color:#666; padding:20px; text-align:center;">Carregando editor...</div>';
+            editBtn.style.display = 'none';
+            document.getElementById('save-content-btn').style.display = 'inline-flex';
+            document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+
+            tinymce.init({
+                selector: '#rich-text-content',
+                height: 500,
+                menubar: false,
+                skin: 'oxide-dark', // Tema escuro para combinar
+                content_css: 'dark',
+                plugins: ['advlist', 'lists', 'link', 'image', 'code', 'table'],
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter | bullist numlist | link image | code',
+                setup: function(editor) {
+                    editor.on('init', () => editor.setContent(originalContent));
+                }
+            });
+            editorInstance = tinymce.get('rich-text-content');
+        });
+    }
+
+    const saveBtn = document.getElementById('save-content-btn');
+    if(saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            if(!editorInstance) return;
+            const content = editorInstance.getContent();
+            saveBtn.innerHTML = 'Salvando...';
+            
+            fetch('/estudo/api/update_content', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ aula_id: aulaId, content: content })
+            }).then(r => r.json()).then(data => {
+                if(data.success) {
+                    tinymce.remove('#rich-text-content');
+                    richText.innerHTML = content;
+                    originalContent = content;
+                    editorInstance = null;
+                    
+                    editBtn.style.display = 'inline-flex';
+                    saveBtn.style.display = 'none';
+                    saveBtn.innerHTML = '💾 Salvar';
+                    document.getElementById('cancel-edit-btn').style.display = 'none';
+                } else {
+                    alert('Erro ao salvar');
+                    saveBtn.innerHTML = '💾 Salvar';
+                }
+            });
+        });
+    }
+    
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    if(cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            if(editorInstance) tinymce.remove('#rich-text-content');
+            richText.innerHTML = originalContent;
+            editorInstance = null;
+            editBtn.style.display = 'inline-flex';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

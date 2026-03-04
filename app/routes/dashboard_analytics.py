@@ -1,25 +1,79 @@
-# app/routes/dashboard_analytics_v2.py
+# app/routes/dashboard_analytics.py
 from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 from app import db
 from app.models.user import User
-from app.models.simulado import Simulado, Questao
+from app.models.simulado import Simulado
 from app.models.redacao import Redacao
-from sqlalchemy import func, cast, Date, extract, case, and_, or_, text
-from datetime import datetime, timedelta, date
+from app.models.estatisticas import TempoEstudo
+from datetime import datetime, timedelta, date, time
+from sqlalchemy import func, cast, Date, extract, case, and_, or_, text, distinct
 from collections import defaultdict
 import json
+import pytz
 from sqlalchemy import distinct
 
 
 
+
+# ============================================================
+# TIMEZONE DE BRASÍLIA
+# ============================================================
+BRASILIA_TZ = pytz.timezone('America/Sao_Paulo')
+
+
+def now_brasilia():
+    """Retorna datetime atual com timezone de Brasília"""
+    return datetime.now(BRASILIA_TZ)
+
+
+def to_brasilia(dt):
+    """
+    Converte datetime UTC para timezone de Brasília
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        # Se não tem timezone, assume UTC e converte para Brasília
+        utc_tz = pytz.UTC
+        dt = utc_tz.localize(dt)
+    return dt.astimezone(BRASILIA_TZ)
+
+
+def tornar_aware(dt):
+    """
+    Converte datetime/date do banco para timezone-aware
+    
+    CORRIGIDO: Agora detecta corretamente date vs datetime
+    """
+    if dt is None:
+        return None
+    
+    # ✅ CORRIGIDO: Verificar se tem atributo 'hour' (datetime tem, date não tem)
+    if hasattr(dt, 'hour'):
+        # É datetime
+        if dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None:
+            # Já tem timezone, converter para Brasília
+            return dt.astimezone(BRASILIA_TZ)
+        else:
+            # Não tem timezone, adicionar timezone de Brasília
+            return BRASILIA_TZ.localize(dt)
+    else:
+        # É date (não tem 'hour')
+        # Converter para datetime às 00:00:00 e adicionar timezone
+        dt_as_datetime = datetime.combine(dt, time.min)
+        return BRASILIA_TZ.localize(dt_as_datetime)
+
+
 dashboard_analytics_bp = Blueprint('dashboard_analytics', __name__, url_prefix='/dashboard-analytics')
+
+
 def safe_date(obj):
     """Converte datetime ou date para date de forma segura"""
     if obj is None:
         return None
-    # Se já é date, retorna direto
-    if isinstance(obj, date) and not isinstance(obj, datetime):
+    # Se já é date puro (não datetime), retorna direto
+    if type(obj) == date:
         return obj
     # Se é datetime, extrai o date
     if isinstance(obj, datetime):
@@ -31,25 +85,104 @@ def verificar_admin():
     """Verifica se o usuário atual é admin"""
     return current_user.is_authenticated and current_user.is_admin
 
+
 def parse_date_filter(request):
-    """Parse filtros de data da requisição"""
+    """
+    Extrai filtros de data da requisição
+    Retorna (data_inicio, data_fim) como datetime aware
+    """
+    periodo = request.args.get('periodo', '30')
     data_inicio_str = request.args.get('data_inicio')
     data_fim_str = request.args.get('data_fim')
     
+    hoje = now_brasilia()
+    
     if data_inicio_str and data_fim_str:
+        # Usar datas customizadas
         try:
             data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d')
-            data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
-            return data_inicio, data_fim
+            data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d')
+            
+            # Adicionar timezone
+            data_inicio = BRASILIA_TZ.localize(data_inicio.replace(hour=0, minute=0, second=0))
+            data_fim = BRASILIA_TZ.localize(data_fim.replace(hour=23, minute=59, second=59))
         except:
-            pass
-    
-    # Fallback para período padrão
-    periodo = request.args.get('periodo', '30')
-    data_fim = datetime.now()
-    data_inicio = data_fim - timedelta(days=int(periodo))
+            # Se falhar, usar período padrão
+            dias = int(periodo)
+            data_inicio = hoje - timedelta(days=dias)
+            data_fim = hoje
+    else:
+        # Usar período
+        dias = int(periodo)
+        data_inicio = hoje - timedelta(days=dias)
+        data_fim = hoje
     
     return data_inicio, data_fim
+
+
+def verificar_usuario_ativado(user_id, data_inicio=None, data_fim=None):
+    """
+    Verifica se usuário está ativado (fez simulado, redação OU assistiu aula)
+    COM correção de timezone
+    """
+    try:
+        # Verificar simulados
+        simulados = Simulado.query.filter_by(user_id=user_id).all()
+        if simulados:
+            if data_inicio and data_fim:
+                # Filtrar por data com conversão
+                simulados_periodo = [
+                    s for s in simulados
+                    if s.data_realizado and 
+                    data_inicio <= tornar_aware(s.data_realizado) <= data_fim
+                ]
+                if simulados_periodo:
+                    return True
+            else:
+                return True
+        
+        # Verificar redações
+        redacoes = Redacao.query.filter_by(user_id=user_id).all()
+        if redacoes:
+            if data_inicio and data_fim:
+                # Filtrar por data com conversão
+                redacoes_periodo = [
+                    r for r in redacoes
+                    if r.data_envio and 
+                    data_inicio <= tornar_aware(r.data_envio) <= data_fim
+                ]
+                if redacoes_periodo:
+                    return True
+            else:
+                return True
+        
+        # Verificar aulas assistidas (TempoEstudo já está importado no topo)
+        tempo_estudo = TempoEstudo.query.filter(
+            TempoEstudo.user_id == user_id,
+            TempoEstudo.atividade.in_(['aula', 'video', 'aula_assistida'])
+        ).all()
+        
+        if tempo_estudo:
+            if data_inicio and data_fim:
+                # Filtrar por data com conversão
+                aulas_periodo = [
+                    t for t in tempo_estudo
+                    if t.data_inicio and 
+                    data_inicio <= tornar_aware(t.data_inicio) <= data_fim
+                ]
+                if aulas_periodo:
+                    return True
+            else:
+                return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"Erro em verificar_usuario_ativado: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
 
 @dashboard_analytics_bp.route('/')
 @login_required
@@ -60,7 +193,7 @@ def index():
     return render_template('dashboard_analytics.html')
 
 # ============================================================
-# APIs de KPIs (mantidas da versão anterior)
+# APIs de KPIs (corrigidas com timezone)
 # ============================================================
 
 @dashboard_analytics_bp.route('/api/kpis-negocio')
@@ -84,7 +217,7 @@ def kpis_negocio():
         # Usuários premium ativos
         usuarios_premium = User.query.filter(
             User.plano_ativo.in_(['mensal', 'anual']),
-            User.data_expiracao_plano > datetime.utcnow()
+            User.data_expiracao_plano > now_brasilia()
         ).count()
         
         # Taxa de conversão
@@ -94,12 +227,12 @@ def kpis_negocio():
         # Receita (MRR e ARR)
         usuarios_mensais = User.query.filter(
             User.plano_ativo == 'mensal',
-            User.data_expiracao_plano > datetime.utcnow()
+            User.data_expiracao_plano > now_brasilia()
         ).count()
         
         usuarios_anuais = User.query.filter(
             User.plano_ativo == 'anual',
-            User.data_expiracao_plano > datetime.utcnow()
+            User.data_expiracao_plano > now_brasilia()
         ).count()
         
         mrr = usuarios_mensais * 49.90
@@ -144,7 +277,7 @@ def kpis_negocio():
 @dashboard_analytics_bp.route('/api/kpis-produto')
 @login_required
 def kpis_produto():
-    """Retorna KPIs de produto"""
+    """Retorna KPIs de produto - CORRIGIDO COM AULAS"""
     if not verificar_admin():
         return jsonify({'erro': 'Acesso negado'}), 403
     
@@ -158,14 +291,8 @@ def kpis_produto():
         
         total_novos = len(novos_usuarios)
         
-        # Usuários ativados (1+ simulado OU 1+ redação)
-        usuarios_ativados = 0
-        for user in novos_usuarios:
-            simulados_count = Simulado.query.filter_by(user_id=user.id).count()
-            redacoes_count = Redacao.query.filter_by(user_id=user.id).count()
-            
-            if simulados_count > 0 or redacoes_count > 0:
-                usuarios_ativados += 1
+        # ✅ CORRIGIDO: Usuários ativados incluindo aulas
+        usuarios_ativados = sum(1 for user in novos_usuarios if verificar_usuario_ativado(user.id))
         
         taxa_ativacao = (usuarios_ativados / total_novos * 100) if total_novos > 0 else 0
         
@@ -174,29 +301,30 @@ def kpis_produto():
         retorno_d7 = 0
         
         for user in novos_usuarios:
-            data_registro = user.data_registro.date() if isinstance(user.data_registro, datetime) else user.data_registro
+            if not user.ultimo_acesso or not user.data_registro:
+                continue
+                
+            data_registro = safe_date(user.data_registro)
+            ultimo_acesso_date = safe_date(user.ultimo_acesso)
             
-            if user.ultimo_acesso:
-                ultimo_acesso_date = user.ultimo_acesso if isinstance(user.ultimo_acesso, date) else user.ultimo_acesso.date()
-                
-                # D1
-                if ultimo_acesso_date == data_registro + timedelta(days=1):
-                    retorno_d1 += 1
-                
-                # D7
-                if data_registro + timedelta(days=1) <= ultimo_acesso_date <= data_registro + timedelta(days=7):
-                    retorno_d7 += 1
+            if not data_registro or not ultimo_acesso_date:
+                continue
+            
+            # D1
+            if ultimo_acesso_date >= data_registro + timedelta(days=1):
+                retorno_d1 += 1
+            
+            # D7
+            if data_registro + timedelta(days=1) <= ultimo_acesso_date <= data_registro + timedelta(days=7):
+                retorno_d7 += 1
         
         taxa_retorno_d1 = (retorno_d1 / total_novos * 100) if total_novos > 0 else 0
         taxa_retorno_d7 = (retorno_d7 / total_novos * 100) if total_novos > 0 else 0
         
         # Tempo médio de uso (APENAS TEMPO_ESTUDO)
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
-        ids_ativados = [user.id for user in novos_usuarios if (
-            Simulado.query.filter_by(user_id=user.id).count() > 0 or
-            Redacao.query.filter_by(user_id=user.id).count() > 0
-        )]
+        ids_ativados = [user.id for user in novos_usuarios if verificar_usuario_ativado(user.id)]
         
         tempo_ativados = db.session.query(
             func.sum(TempoEstudo.minutos)
@@ -207,12 +335,18 @@ def kpis_produto():
         
         tempo_medio_ativados = (tempo_ativados / usuarios_ativados) if usuarios_ativados > 0 else 0
         
-        # DAU e MAU
-        hoje = datetime.now().date()
-        dau = User.query.filter(User.ultimo_acesso == hoje).count()
+        # DAU e MAU - CORRIGIDO
+        hoje_brasilia = now_brasilia().date()
         
-        inicio_mes = hoje.replace(day=1)
-        mau = User.query.filter(User.ultimo_acesso >= inicio_mes).count()
+        # ✅ CORRIGIDO: MAU considera último acesso como DATE, não DATETIME
+        dau = User.query.filter(
+            cast(User.ultimo_acesso, Date) == hoje_brasilia
+        ).count()
+        
+        inicio_mes = hoje_brasilia.replace(day=1)
+        mau = User.query.filter(
+            cast(User.ultimo_acesso, Date) >= inicio_mes
+        ).count()
         
         stickiness = (dau / mau * 100) if mau > 0 else 0
         
@@ -236,6 +370,8 @@ def kpis_produto():
     
     except Exception as e:
         print(f"Erro ao calcular KPIs de produto: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
 # ============================================================
@@ -251,7 +387,7 @@ def engajamento_funcionalidades():
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
         # Agregar por atividade
         resultados = db.session.query(
@@ -265,7 +401,8 @@ def engajamento_funcionalidades():
         ).group_by(
             TempoEstudo.atividade
         ).all()
-        
+
+
         funcionalidades = []
         for resultado in resultados:
             atividade = resultado.atividade or 'Geral'
@@ -299,79 +436,77 @@ def engajamento_funcionalidades():
         return jsonify({'erro': str(e)}), 500
 
 # ============================================================
-# NOVA API: LISTA DE USUÁRIOS ATIVADOS (VISÃO MICRO)
+# NOVA API: LISTA DE USUÁRIOS ATIVADOS (VISÃO MICRO) - CORRIGIDA
 # ============================================================
 
 @dashboard_analytics_bp.route('/api/usuarios-ativados')
-@login_required
-def usuarios_ativados_lista():
-    """Lista usuários ativados com detalhes para visão micro"""
-    if not verificar_admin():
-        return jsonify({'erro': 'Acesso negado'}), 403
-    
+def lista_usuarios_ativados():
+    """
+    Lista de usuários ativados - com correção de timezone
+    """
     try:
         data_inicio, data_fim = parse_date_filter(request)
-        from app.models.estatisticas import TempoEstudo
         
-        # Buscar usuários registrados no período
-        usuarios = User.query.filter(
-            User.data_registro.between(data_inicio, data_fim)
-        ).all()
+        # Buscar usuários novos no período
+        todos_usuarios = User.query.all()
         
+        usuarios_novos = [
+            u for u in todos_usuarios
+            if u.data_registro and 
+            data_inicio <= tornar_aware(u.data_registro) <= data_fim
+        ]
+        
+        # Verificar quais estão ativados
         usuarios_ativados = []
         
-        for user in usuarios:
-            # Verificar se está ativado
-            simulados_count = Simulado.query.filter_by(user_id=user.id).count()
-            redacoes_count = Redacao.query.filter_by(user_id=user.id).count()
-            
-            if simulados_count == 0 and redacoes_count == 0:
-                continue  # Pular usuários não ativados
-            
-            # Tempo total de uso
-            tempo_total = db.session.query(
-                func.sum(TempoEstudo.minutos)
-            ).filter(
-                TempoEstudo.user_id == user.id
-            ).scalar() or 0
-            
-            # Último acesso
-            ultimo_acesso = user.ultimo_acesso
-            if ultimo_acesso:
-                if isinstance(ultimo_acesso, datetime):
-                    ultimo_acesso_str = ultimo_acesso.strftime('%d/%m/%Y %H:%M')
-                else:
-                    ultimo_acesso_str = ultimo_acesso.strftime('%d/%m/%Y')
-            else:
-                ultimo_acesso_str = 'Nunca'
-            
-            usuarios_ativados.append({
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'data_registro': user.data_registro.strftime('%d/%m/%Y'),
-                'ultimo_acesso': ultimo_acesso_str,
-                'plano': user.plano_ativo,
-                'total_simulados': simulados_count,
-                'total_redacoes': redacoes_count,
-                'tempo_total_minutos': int(tempo_total),
-                'tempo_total_horas': round(tempo_total / 60, 2)
-            })
-        
-        # Ordenar por tempo de uso
-        usuarios_ativados.sort(key=lambda x: x['tempo_total_minutos'], reverse=True)
+        for user in usuarios_novos:
+            if verificar_usuario_ativado(user.id, data_inicio, data_fim):
+                # Calcular estatísticas
+                simulados = Simulado.query.filter_by(user_id=user.id).count()
+                redacoes = Redacao.query.filter_by(user_id=user.id).count()
+                
+                # Contar aulas
+                aulas = TempoEstudo.query.filter(
+                    TempoEstudo.user_id == user.id,
+                    TempoEstudo.atividade.in_(['aula', 'video', 'aula_assistida'])
+                ).count()
+                
+                # Tempo total
+                tempo_total = db.session.query(
+                    func.sum(TempoEstudo.minutos)
+                ).filter(
+                    TempoEstudo.user_id == user.id
+                ).scalar() or 0
+                
+                ultimo_acesso = 'Nunca'
+                if user.ultimo_acesso:
+                    ultimo_acesso = tornar_aware(user.ultimo_acesso).strftime('%d/%m/%Y %H:%M')
+                
+                usuarios_ativados.append({
+                    'id': user.id,
+                    'nome_completo': user.nome_completo or user.username,
+                    'telefone': user.telefone or 'Não informado',
+                    'ultimo_acesso': ultimo_acesso,
+                    'plano': user.plano_ativo or 'free',
+                    'tempo_total_horas': round(tempo_total / 60, 1),
+                    'total_simulados': simulados,
+                    'total_redacoes': redacoes,
+                    'total_aulas': aulas
+                })
         
         return jsonify({
             'total': len(usuarios_ativados),
             'usuarios': usuarios_ativados,
             'periodo': {
-                'inicio': data_inicio.strftime('%Y-%m-%d'),
-                'fim': data_fim.strftime('%Y-%m-%d')
+                'inicio': data_inicio.strftime('%d/%m/%Y'),
+                'fim': data_fim.strftime('%d/%m/%Y')
             }
         })
-    
+        
     except Exception as e:
-        print(f"Erro ao listar usuários ativados: {e}")
+        print(f"Erro em lista_usuarios_ativados: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
 # ============================================================
@@ -386,21 +521,20 @@ def detalhes_usuario(user_id):
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
         user = User.query.get_or_404(user_id)
         
         # Informações básicas
         dados_basicos = {
             'id': user.id,
-            'username': user.username,
-            'email': user.email,
             'nome_completo': user.nome_completo,
+            'telefone': user.telefone,
+            'email': user.email if hasattr(user, 'email') else (user.telefone or 'Não informado'),
             'data_registro': user.data_registro.strftime('%d/%m/%Y %H:%M'),
             'plano_ativo': user.plano_ativo,
             'is_admin': user.is_admin
         }
-
 
         # Último acesso
         if user.ultimo_acesso:
@@ -424,7 +558,6 @@ def detalhes_usuario(user_id):
         
         funcionalidades = []
         tempo_total = 0
-
 
         for item in tempo_por_funcionalidade:
             atividade = item.atividade or 'Geral'
@@ -467,7 +600,7 @@ def detalhes_usuario(user_id):
             })
         
         # Atividade nos últimos 30 dias (gráfico)
-        ultimos_30_dias = datetime.now() - timedelta(days=30)
+        ultimos_30_dias = now_brasilia() - timedelta(days=30)
         
         atividade_diaria = db.session.query(
             cast(TempoEstudo.data_inicio, Date).label('data'),
@@ -512,7 +645,7 @@ def detalhes_usuario(user_id):
         return jsonify({'erro': str(e)}), 500
 
 # ============================================================
-# NOVA API: ANÁLISE AVANÇADA - SEGMENTAÇÃO DE USUÁRIOS
+# NOVA API: ANÁLISE AVANÇADA - SEGMENTAÇÃO DE USUÁRIOS COM DRILL-DOWN
 # ============================================================
 
 @dashboard_analytics_bp.route('/api/analise-segmentacao')
@@ -523,7 +656,7 @@ def analise_segmentacao():
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
         # Segmentação por tempo de uso
         usuarios_com_tempo = db.session.query(
@@ -582,6 +715,96 @@ def analise_segmentacao():
         return jsonify({'erro': str(e)}), 500
 
 # ============================================================
+# ✅ NOVO ENDPOINT: DRILL-DOWN DE SEGMENTAÇÃO
+# ============================================================
+
+@dashboard_analytics_bp.route('/api/analise-segmentacao/<string:segmento>')
+@login_required
+def drill_down_segmentacao(segmento):
+    """Lista usuários de um segmento específico"""
+    if not verificar_admin():
+        return jsonify({'erro': 'Acesso negado'}), 403
+    
+    try:
+        #from app.models.estatisticas import TempoEstudo
+        
+        # Definir range do segmento
+        ranges = {
+            'super_engajados': (600, None),  # >10h = >600min
+            'engajados': (300, 600),  # 5-10h = 300-600min
+            'moderados': (60, 300),  # 1-5h = 60-300min
+            'baixo_engajamento': (1, 60),  # <1h = 1-60min
+            'inativos': (0, 0)  # 0h
+        }
+        
+        if segmento not in ranges:
+            return jsonify({'erro': 'Segmento inválido'}), 400
+        
+        min_minutos, max_minutos = ranges[segmento]
+        
+        # Query de usuários com tempo
+        usuarios_com_tempo = db.session.query(
+            User.id,
+            User.nome_completo,
+            User.username,
+            User.telefone,
+            User.plano_ativo,
+            User.ultimo_acesso,
+            func.sum(TempoEstudo.minutos).label('tempo_total')
+        ).outerjoin(
+            TempoEstudo, User.id == TempoEstudo.user_id
+        ).group_by(
+            User.id, User.nome_completo,
+            User.username, User.telefone, User.plano_ativo, User.ultimo_acesso
+        ).all()
+        
+        # Filtrar por range
+        usuarios_filtrados = []
+        for u in usuarios_com_tempo:
+            tempo = u.tempo_total or 0
+            
+            if max_minutos is None:  # super_engajados
+                if tempo >= min_minutos:
+                    usuarios_filtrados.append(u)
+            elif segmento == 'inativos':
+                if tempo == 0:
+                    usuarios_filtrados.append(u)
+            else:
+                if min_minutos <= tempo < max_minutos:
+                    usuarios_filtrados.append(u)
+        
+        # Formatar resposta
+        resultado = []
+        for u in usuarios_filtrados[:100]:  # Limitar a 100
+            tempo_horas = (u.tempo_total or 0) / 60
+            
+            resultado.append({
+                'id': u.id,
+                'nome_completo': u.nome_completo,
+                'telefone': u.telefone,
+                'plano': u.plano_ativo,
+                'tempo_total_horas': round(tempo_horas, 2),
+                'tempo_total_minutos': int(u.tempo_total or 0),
+                'ultimo_acesso': u.ultimo_acesso.strftime('%d/%m/%Y') if u.ultimo_acesso else 'Nunca'
+            })
+        
+        # Ordenar por tempo
+        resultado.sort(key=lambda x: x['tempo_total_minutos'], reverse=True)
+
+
+        return jsonify({
+            'segmento': segmento,
+            'total': len(resultado),
+            'usuarios': resultado
+        })
+        
+    except Exception as e:
+        print(f"Erro no drill-down de segmentação: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'erro': str(e)}), 500
+
+# ============================================================
 # NOVA API: ANÁLISE AVANÇADA - PADRÕES DE USO
 # ============================================================
 
@@ -593,7 +816,7 @@ def analise_padroes_uso():
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
         data_inicio, data_fim = parse_date_filter(request)
         
@@ -667,6 +890,7 @@ def analise_padroes_uso():
 # APIs MANTIDAS (com suporte a filtro de data)
 # ============================================================
 
+
 @dashboard_analytics_bp.route('/api/crescimento-usuarios')
 @login_required
 def crescimento_usuarios():
@@ -676,7 +900,7 @@ def crescimento_usuarios():
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
-        dias = (data_fim - data_inicio).days
+        dias = (data_fim.date() - data_inicio.date()).days
         
         registros_diarios = db.session.query(
             cast(User.data_registro, Date).label('data'),
@@ -695,7 +919,7 @@ def crescimento_usuarios():
         registros_dict = {r.data: r.total for r in registros_diarios}
         
         for i in range(dias + 1):
-            data_atual = (data_inicio + timedelta(days=i)).date()
+            data_atual = (data_inicio.date() + timedelta(days=i))
             total_dia = registros_dict.get(data_atual, 0)
             acumulado += total_dia
             
@@ -748,7 +972,7 @@ def funil_conversao():
         usuarios_pagantes = User.query.filter(
             User.data_registro.between(data_inicio, data_fim),
             User.plano_ativo.in_(['mensal', 'anual']),
-            User.data_expiracao_plano > datetime.utcnow()
+            User.data_expiracao_plano > now_brasilia()
         ).count()
         
         return jsonify({
@@ -846,17 +1070,19 @@ def retencao_coortes():
     
     try:
         semanas = []
-        hoje = datetime.now().date()
+        hoje = now_brasilia().date()
         
         for i in range(8):
             inicio_semana = hoje - timedelta(weeks=i+1)
             fim_semana = inicio_semana + timedelta(days=6)
             
+            inicio_dt = BRASILIA_TZ.localize(datetime.combine(inicio_semana, datetime.min.time()))
+            fim_dt = BRASILIA_TZ.localize(datetime.combine(fim_semana, datetime.max.time()))
+            
             usuarios_coorte = User.query.filter(
-                User.data_registro >= datetime.combine(inicio_semana, datetime.min.time()),
-                User.data_registro <= datetime.combine(fim_semana, datetime.max.time())
+                User.data_registro >= inicio_dt,
+                User.data_registro <= fim_dt
             ).all()
-
 
             if not usuarios_coorte:
                 continue
@@ -869,7 +1095,7 @@ def retencao_coortes():
                 
                 usuarios_retidos = sum(
                     1 for u in usuarios_coorte 
-                    if u.ultimo_acesso and u.ultimo_acesso >= data_check
+                    if u.ultimo_acesso and safe_date(u.ultimo_acesso) >= data_check
                 )
                 
                 taxa_retencao = (usuarios_retidos / total_coorte * 100) if total_coorte > 0 else 0
@@ -892,13 +1118,13 @@ def retencao_coortes():
 @dashboard_analytics_bp.route('/api/metricas-ativacao-detalhadas')
 @login_required
 def metricas_ativacao_detalhadas():
-    """Retorna métricas detalhadas de ativação"""
+    """Retorna métricas detalhadas de ativação - CORRIGIDO COM AULAS"""
     if not verificar_admin():
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
         
         novos_usuarios = User.query.filter(
             User.data_registro.between(data_inicio, data_fim)
@@ -908,11 +1134,9 @@ def metricas_ativacao_detalhadas():
         usuarios_ativados_ids = set()
         tempo_uso_ativados = {}
         
+        # ✅ CORRIGIDO: Usar nova função que inclui aulas
         for user in novos_usuarios:
-            simulados_count = Simulado.query.filter_by(user_id=user.id).count()
-            redacoes_count = Redacao.query.filter_by(user_id=user.id).count()
-            
-            if simulados_count > 0 or redacoes_count > 0:
+            if verificar_usuario_ativado(user.id):
                 usuarios_ativados_ids.add(user.id)
         
         tempos_por_usuario = db.session.query(
@@ -933,16 +1157,22 @@ def metricas_ativacao_detalhadas():
         retorno_d7 = 0
         
         for user in novos_usuarios:
-            data_registro = user.data_registro.date() if isinstance(user.data_registro, datetime) else user.data_registro
+            if not user.ultimo_acesso or not user.data_registro:
+                continue
+                
+            data_registro = safe_date(user.data_registro)
+            ultimo_acesso_date = safe_date(user.ultimo_acesso)
             
-            if user.ultimo_acesso:
-                ultimo_acesso_date = user.ultimo_acesso if isinstance(user.ultimo_acesso, date) else user.ultimo_acesso.date()
-                
-                if ultimo_acesso_date == data_registro + timedelta(days=1):
-                    retorno_d1 += 1
-                
-                if data_registro + timedelta(days=1) <= ultimo_acesso_date <= data_registro + timedelta(days=7):
-                    retorno_d7 += 1
+            if not data_registro or not ultimo_acesso_date:
+                continue
+            
+            diff = (ultimo_acesso_date - data_registro).days
+            
+            if diff >= 1:
+                retorno_d1 += 1
+            
+            if 1 <= diff <= 7:
+                retorno_d7 += 1
         
         taxa_retorno_d1 = (retorno_d1 / total_novos * 100) if total_novos > 0 else 0
         taxa_retorno_d7 = (retorno_d7 / total_novos * 100) if total_novos > 0 else 0
@@ -968,7 +1198,8 @@ def metricas_ativacao_detalhadas():
                 distribuicao_tempo['5h+'] += 1
         
         dias = (data_fim.date() - data_inicio.date()).days
-        
+
+
         return jsonify({
             'periodo_dias': dias,
             'total_novos_usuarios': total_novos,
@@ -995,138 +1226,174 @@ def metricas_ativacao_detalhadas():
 
 
 # ============================================================
-# APIs DE DETALHAMENTO (DRILL-DOWN) - ADICIONAR NO FINAL
+# APIs DE DETALHAMENTO (DRILL-DOWN) - CORRIGIDAS
 # ============================================================
-
 @dashboard_analytics_bp.route('/api/detalhes/total-usuarios')
-@login_required
 def detalhes_total_usuarios():
-    """Detalhes do total de usuários"""
-    if not verificar_admin():
-        return jsonify({'erro': 'Acesso negado'}), 403
+    """
+    ERRO ORIGINAL:
+    "can't compare offset-naive and offset-aware datetimes"
     
+    CAUSA:
+    user.data_registro (naive) sendo comparado com data_inicio (aware)
+    """
     try:
         data_inicio, data_fim = parse_date_filter(request)
         
-        # Todos os usuários
-        todos = db.session.query(
-            User.id,
-            User.username,
-            User.email,
-            User.data_registro,
-            User.plano_ativo,
-            User.ultimo_acesso
-        ).order_by(User.data_registro.desc()).all()
+        # ✅ SOLUÇÃO: Buscar todos e filtrar em Python
+        todos_usuarios = User.query.order_by(User.data_registro.desc()).all()
         
-        # Novos usuários no período
-        novos = db.session.query(
-            User.id,
-            User.username,
-            User.email,
-            User.data_registro,
-            User.plano_ativo
-        ).filter(
-            User.data_registro.between(data_inicio, data_fim)
-        ).order_by(User.data_registro.desc()).all()
+        # Filtrar novos usuários do período (com conversão para aware)
+        novos_usuarios = []
+        for user in todos_usuarios:
+            if user.data_registro:
+                data_reg_aware = tornar_aware(user.data_registro)
+                if data_inicio <= data_reg_aware <= data_fim:
+                    novos_usuarios.append({
+                        'id': user.id,
+                        'nome_completo': user.nome_completo or user.username,
+                        'telefone': user.telefone or 'Não informado',
+                        'data_registro': data_reg_aware.strftime('%d/%m/%Y %H:%M'),
+                        'is_novo': True
+                    })
+        
+        # Preparar lista de todos os usuários
+        todos_usuarios_data = []
+        for user in todos_usuarios[:100]:  # Limitar a 100 para performance
+            data_reg = tornar_aware(user.data_registro) if user.data_registro else None
+            ultimo_acesso = tornar_aware(user.ultimo_acesso) if user.ultimo_acesso else None
+            
+            # Verificar se é novo
+            is_novo = False
+            if data_reg:
+                is_novo = data_inicio <= data_reg <= data_fim
+            
+            todos_usuarios_data.append({
+                'id': user.id,
+                'nome_completo': user.nome_completo,
+                'telefone': user.telefone,
+                'data_registro': data_reg.strftime('%d/%m/%Y %H:%M') if data_reg else 'N/A',
+                'ultimo_acesso': ultimo_acesso.strftime('%d/%m/%Y %H:%M') if ultimo_acesso else 'N/A',
+                'plano': user.plano_ativo or 'free',
+                'is_novo': is_novo
+            })
         
         return jsonify({
-            'total': len(todos),
-            'novos_periodo': len(novos),
+            'total': len(todos_usuarios),
+            'novos_periodo': len(novos_usuarios),
+            'novos_usuarios': novos_usuarios,
+            'todos_usuarios': todos_usuarios_data,
             'periodo': {
                 'inicio': data_inicio.strftime('%d/%m/%Y'),
                 'fim': data_fim.strftime('%d/%m/%Y')
-            },
-            'todos_usuarios': [{
-                'id': u.id,
-                'username': u.username,
-                'email': u.email,
-                'data_registro': u.data_registro.strftime('%d/%m/%Y %H:%M') if u.data_registro else 'N/A',
-                'plano': u.plano_ativo,
-                'ultimo_acesso': u.ultimo_acesso.strftime('%d/%m/%Y') if u.ultimo_acesso else 'Nunca',
-                'is_novo': u.data_registro >= data_inicio if u.data_registro else False
-            } for u in todos[:100]],  # Limitar a 100 para performance
-            'novos_usuarios': [{
-                'id': u.id,
-                'username': u.username,
-                'email': u.email,
-                'data_registro': u.data_registro.strftime('%d/%m/%Y %H:%M') if u.data_registro else 'N/A',
-                'plano': u.plano_ativo
-            } for u in novos]
+            }
         })
+        
     except Exception as e:
+        print(f"Erro em detalhes_total_usuarios: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
-
-@dashboard_analytics_bp.route('/api/detalhes/usuarios-premium')
-@login_required
-def detalhes_usuarios_premium():
-    """Detalhes dos usuários premium"""
-    if not verificar_admin():
-        return jsonify({'erro': 'Acesso negado'}), 403
-    
-    try:
-        # Usuários premium ativos
-        usuarios = db.session.query(
-            User.id,
-            User.username,
-            User.email,
-            User.plano_ativo,
-            User.data_registro,
-            User.data_expiracao_plano,
-            User.ultimo_acesso
-        ).filter(
-            User.plano_ativo.in_(['mensal', 'anual']),
-            User.data_expiracao_plano > datetime.utcnow()
-        ).order_by(User.data_expiracao_plano.desc()).all()
-        
-        # Calcular dias restantes
-        usuarios_formatados = []
-        for u in usuarios:
-            dias_restantes = (u.data_expiracao_plano - datetime.utcnow()).days if u.data_expiracao_plano else 0
-            
-            usuarios_formatados.append({
-                'id': u.id,
-                'username': u.username,
-                'email': u.email,
-                'plano': u.plano_ativo,
-                'data_registro': u.data_registro.strftime('%d/%m/%Y') if u.data_registro else 'N/A',
-                'expira_em': u.data_expiracao_plano.strftime('%d/%m/%Y') if u.data_expiracao_plano else 'N/A',
-                'dias_restantes': dias_restantes,
-                'ultimo_acesso': u.ultimo_acesso.strftime('%d/%m/%Y') if u.ultimo_acesso else 'Nunca'
-            })
-        
-        # Estatísticas
-        total_mensais = sum(1 for u in usuarios if u.plano_ativo == 'mensal')
-        total_anuais = sum(1 for u in usuarios if u.plano_ativo == 'anual')
-        
-        return jsonify({
-            'total': len(usuarios),
-            'mensais': total_mensais,
-            'anuais': total_anuais,
-            'usuarios': usuarios_formatados
-        })
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
 
 # ============================================================
-# API RETORNO D1 (CORRIGIDA)
+# CORREÇÃO 2: /api/detalhes/usuarios-premium
+# ============================================================
+
+@dashboard_analytics_bp.route('/api/detalhes/usuarios-premium')
+def detalhes_usuarios_premium():
+    """
+    ERRO ORIGINAL:
+    "can't subtract offset-naive and offset-aware datetimes"
+    
+    CAUSA:
+    user.data_expiracao_plano (naive) sendo subtraído de hoje (aware)
+    """
+    try:
+        hoje = now_brasilia()
+        
+        # Buscar todos os usuários premium
+        usuarios_query = User.query.filter(
+            User.plano_ativo.in_(['mensal', 'anual'])
+        ).all()
+        
+        # ✅ SOLUÇÃO: Filtrar e calcular em Python com tornar_aware()
+        usuarios_premium = []
+        mensais = 0
+        anuais = 0
+        
+        for user in usuarios_query:
+            # Converter data de expiração para aware
+            if not user.data_expiracao_plano:
+                continue
+                
+            expiracao_aware = tornar_aware(user.data_expiracao_plano)
+            
+            # Verificar se ainda está ativo
+            if expiracao_aware <= hoje:
+                continue
+            
+            # Calcular dias restantes
+            dias_restantes = (expiracao_aware - hoje).days
+            
+            # Contar planos
+            if user.plano_ativo == 'mensal':
+                mensais += 1
+            elif user.plano_ativo == 'anual':
+                anuais += 1
+            
+            # Formatar último acesso
+            ultimo_acesso = 'Nunca'
+            if user.ultimo_acesso:
+                ultimo_acesso_aware = tornar_aware(user.ultimo_acesso)
+                ultimo_acesso = ultimo_acesso_aware.strftime('%d/%m/%Y %H:%M')
+            
+            usuarios_premium.append({
+                'id': user.id,
+                'nome_completo': user.nome_completo or user.username,
+                'telefone': user.telefone or 'Não informado',
+                'plano': user.plano_ativo,
+                'expira_em': expiracao_aware.strftime('%d/%m/%Y'),
+                'dias_restantes': dias_restantes,
+                'ultimo_acesso': ultimo_acesso
+            })
+        
+        return jsonify({
+            'total': len(usuarios_premium),
+            'mensais': mensais,
+            'anuais': anuais,
+            'usuarios': usuarios_premium
+        })
+        
+    except Exception as e:
+        print(f"Erro em detalhes_usuarios_premium: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'erro': str(e)}), 500
+
+
+
+# ============================================================
+# ✅ API RETORNO D1 (CORRIGIDA COM DETALHAMENTO DE ATIVIDADES)
 # ============================================================
 
 @dashboard_analytics_bp.route('/api/detalhes/retorno-d1')
 @login_required
 def detalhes_retorno_d1():
-    """Detalhes dos usuários que retornaram D1"""
+    """Detalhes dos usuários que retornaram D1 - CORRIGIDO COM TEMPO POR ATIVIDADE"""
     if not verificar_admin():
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
+        #from app.models.estatisticas import TempoEstudo
         
         # Usuários que se registraram no período
         novos_usuarios = db.session.query(
             User.id,
+            User.nome_completo,
             User.username,
-            User.email,
+            User.telefone,
             User.data_registro,
             User.ultimo_acesso
         ).filter(
@@ -1138,31 +1405,43 @@ def detalhes_retorno_d1():
         for user in novos_usuarios:
             if user.ultimo_acesso and user.data_registro:
                 try:
-                    # ✅ CORREÇÃO: Usar safe_date para evitar erro
                     data_registro = safe_date(user.data_registro)
                     ultimo_acesso = safe_date(user.ultimo_acesso)
                     
                     if data_registro and ultimo_acesso:
-                        # Calcular diferença em dias
                         diff = (ultimo_acesso - data_registro).days
-                        
                         retornou_d1 = diff >= 1
+                        
+                        # ✅ NOVO: Buscar tempo por atividade
+                        tempo_atividades = db.session.query(
+                            TempoEstudo.atividade,
+                            func.sum(TempoEstudo.minutos).label('total_minutos')
+                        ).filter(
+                            TempoEstudo.user_id == user.id
+                        ).group_by(TempoEstudo.atividade).all()
+                        
+                        detalhes_tempo = []
+                        for ativ, minutos in tempo_atividades:
+                            detalhes_tempo.append({
+                                'atividade': ativ or 'Geral',
+                                'tempo_minutos': int(minutos or 0),
+                                'tempo_horas': round((minutos or 0) / 60, 2)
+                            })
                         
                         usuarios_d1.append({
                             'id': user.id,
-                            'username': user.username,
-                            'email': user.email,
+                            'nome_completo': user.nome_completo or user.username,
+                            'telefone': user.telefone or 'Não informado',
                             'data_registro': user.data_registro.strftime('%d/%m/%Y %H:%M') if isinstance(user.data_registro, datetime) else str(user.data_registro),
                             'ultimo_acesso': user.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if isinstance(user.ultimo_acesso, datetime) else str(user.ultimo_acesso),
                             'dias_ate_retorno': diff,
-                            'retornou_d1': retornou_d1
+                            'retornou_d1': retornou_d1,
+                            'tempo_por_atividade': detalhes_tempo  # ✅ NOVO
                         })
                 except Exception as e:
-                    # Log do erro mas continua processando outros usuários
                     print(f"Erro processando user {user.id}: {str(e)}")
                     continue
         
-        # Filtrar apenas quem retornou
         retornaram = [u for u in usuarios_d1 if u['retornou_d1']]
         
         return jsonify({
@@ -1181,24 +1460,28 @@ def detalhes_retorno_d1():
 
 
 # ============================================================
-# API RETORNO D7 (CORRIGIDA)
+# ✅ API RETORNO D7 (CORRIGIDA COM DETALHAMENTO DE ATIVIDADES)
 # ============================================================
 
 @dashboard_analytics_bp.route('/api/detalhes/retorno-d7')
 @login_required
 def detalhes_retorno_d7():
-    """Detalhes dos usuários que retornaram D7"""
+    """Detalhes dos usuários que retornaram D7 - CORRIGIDO COM TEMPO POR ATIVIDADE"""
     if not verificar_admin():
         return jsonify({'erro': 'Acesso negado'}), 403
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
+        #from app.models.estatisticas import TempoEstudo
         
         # Usuários que se registraram no período
         novos_usuarios = db.session.query(
             User.id,
+            User.nome_completo,
+            User.nome_completo,
             User.username,
-            User.email,
+            User.telefone,
+            User.telefone,
             User.data_registro,
             User.ultimo_acesso
         ).filter(
@@ -1210,26 +1493,39 @@ def detalhes_retorno_d7():
         for user in novos_usuarios:
             if user.ultimo_acesso and user.data_registro:
                 try:
-                    # ✅ CORREÇÃO: Usar safe_date para evitar erro
                     data_registro = safe_date(user.data_registro)
                     ultimo_acesso = safe_date(user.ultimo_acesso)
                     
                     if data_registro and ultimo_acesso:
                         diff = (ultimo_acesso - data_registro).days
-                        
                         retornou_d7 = diff >= 1 and diff <= 7
+                        
+                        # ✅ NOVO: Buscar tempo por atividade
+                        tempo_atividades = db.session.query(
+                            TempoEstudo.atividade,
+                            func.sum(TempoEstudo.minutos).label('total_minutos')
+                        ).filter(
+                            TempoEstudo.user_id == user.id
+                        ).group_by(TempoEstudo.atividade).all()
+                        
+                        detalhes_tempo = []
+                        for ativ, minutos in tempo_atividades:
+                            detalhes_tempo.append({
+                                'atividade': ativ or 'Geral',
+                                'tempo_minutos': int(minutos or 0),
+                                'tempo_horas': round((minutos or 0) / 60, 2)
+                            })
                         
                         usuarios_d7.append({
                             'id': user.id,
-                            'username': user.username,
-                            'email': user.email,
+                            'nome_completo': user.nome_completo or user.username,
+                            'telefone': user.telefone or 'Não informado',
                             'data_registro': user.data_registro.strftime('%d/%m/%Y %H:%M') if isinstance(user.data_registro, datetime) else str(user.data_registro),
                             'ultimo_acesso': user.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if isinstance(user.ultimo_acesso, datetime) else str(user.ultimo_acesso),
                             'dias_ate_retorno': diff,
-                            'retornou_d7': retornou_d7
+                            'retornou_d7': retornou_d7,
+                            'tempo_por_atividade': detalhes_tempo  # ✅ NOVO
                         })
-
-
                 except Exception as e:
                     print(f"Erro processando user {user.id}: {str(e)}")
                     continue
@@ -1251,6 +1547,7 @@ def detalhes_retorno_d7():
         return jsonify({'erro': str(e)}), 500
 
 
+
 # ============================================================
 # API TEMPO MÉDIO (CORRIGIDA)
 # ============================================================
@@ -1263,15 +1560,13 @@ def detalhes_tempo_medio():
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
-        
-        # Buscar tempo de estudo por usuário
-        #from app.models.tempo_estudo import TempoEstudo
-        from app.models.estatisticas import TempoEstudo
+        #from app.models.estatisticas import TempoEstudo
 
         usuarios_tempo = db.session.query(
             User.id,
+            User.nome_completo,
             User.username,
-            User.email,
+            User.telefone,
             User.plano_ativo,
             func.sum(TempoEstudo.minutos).label('total_minutos'),
             func.count(TempoEstudo.id).label('total_sessoes')
@@ -1281,7 +1576,8 @@ def detalhes_tempo_medio():
             TempoEstudo.data_inicio.between(data_inicio, data_fim),
             TempoEstudo.minutos > 0
         ).group_by(
-            User.id, User.username, User.email, User.plano_ativo
+            User.id, User.nome_completo,
+            User.username, User.telefone, User.plano_ativo
         ).order_by(
             func.sum(TempoEstudo.minutos).desc()
         ).all()
@@ -1295,8 +1591,8 @@ def detalhes_tempo_medio():
                 
                 usuarios_formatados.append({
                     'id': u.id,
-                    'username': u.username,
-                    'email': u.email,
+                    'nome_completo': u.nome_completo,
+                    'telefone': u.telefone,
                     'plano': u.plano_ativo,
                     'total_minutos': int(u.total_minutos) if u.total_minutos else 0,
                     'total_horas': round(total_horas, 2),
@@ -1345,82 +1641,109 @@ def detalhes_tempo_medio():
         return jsonify({'erro': str(e)}), 500
 
 
+# ============================================================
+# CORREÇÃO 3: /api/detalhes/dau
+# ============================================================
 
 @dashboard_analytics_bp.route('/api/detalhes/dau')
-@login_required
 def detalhes_dau():
-    """Detalhes dos usuários ativos hoje (DAU)"""
-    if not verificar_admin():
-        return jsonify({'erro': 'Acesso negado'}), 403
-    
+    """
+    Daily Active Users - com correção de timezone
+    """
     try:
-        hoje = datetime.now().date()
+        hoje = now_brasilia().date()
         
-        # Buscar usuários que acessaram hoje
-        usuarios = db.session.query(
-            User.id,
-            User.username,
-            User.email,
-            User.plano_ativo,
-            User.ultimo_acesso
-        ).filter(
-            cast(User.ultimo_acesso, Date) == hoje
-        ).order_by(User.ultimo_acesso.desc()).all()
+        # Buscar todos os usuários
+        todos_usuarios = User.query.all()
+        
+        # ✅ SOLUÇÃO: Filtrar em Python com tornar_aware()
+        usuarios_ativos = []
+        
+        for user in todos_usuarios:
+            if not user.ultimo_acesso:
+                continue
+            
+            # Converter para aware e extrair date
+            ultimo_acesso_aware = tornar_aware(user.ultimo_acesso)
+            ultimo_acesso_date = ultimo_acesso_aware.date()
+            
+            # Verificar se acessou hoje
+            if ultimo_acesso_date == hoje:
+                usuarios_ativos.append({
+                    'id': user.id,
+                    'nome_completo': user.nome_completo or user.username,
+                    'telefone': user.telefone or 'Não informado',
+                    'plano': user.plano_ativo or 'free',
+                    'ultimo_acesso': ultimo_acesso_aware.strftime('%d/%m/%Y %H:%M')
+                })
         
         return jsonify({
-            'total': len(usuarios),
+            'total': len(usuarios_ativos),
             'data': hoje.strftime('%d/%m/%Y'),
-            'usuarios': [{
-                'id': u.id,
-                'username': u.username,
-                'email': u.email,
-                'plano': u.plano_ativo,
-                'ultimo_acesso': u.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if u.ultimo_acesso else 'N/A'
-            } for u in usuarios]
+            'usuarios': usuarios_ativos
         })
+        
     except Exception as e:
+        print(f"Erro em detalhes_dau: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
 
+# ============================================================
+# CORREÇÃO 4: /api/detalhes/mau
+# ============================================================
+
 @dashboard_analytics_bp.route('/api/detalhes/mau')
-@login_required
 def detalhes_mau():
-    """Detalhes dos usuários ativos no mês (MAU)"""
-    if not verificar_admin():
-        return jsonify({'erro': 'Acesso negado'}), 403
-    
+    """
+    Monthly Active Users - com correção de timezone
+    """
     try:
-        hoje = datetime.now()
+        hoje = now_brasilia().date()
         inicio_mes = hoje.replace(day=1)
         
-        # Buscar usuários que acessaram neste mês
-        usuarios = db.session.query(
-            User.id,
-            User.username,
-            User.email,
-            User.plano_ativo,
-            User.ultimo_acesso
-        ).filter(
-            User.ultimo_acesso >= inicio_mes
-        ).order_by(User.ultimo_acesso.desc()).all()
+        # Buscar todos os usuários
+        todos_usuarios = User.query.all()
+        
+        # ✅ SOLUÇÃO: Filtrar em Python com tornar_aware()
+        usuarios_ativos = []
+        
+        for user in todos_usuarios:
+            if not user.ultimo_acesso:
+                continue
+            
+            # Converter para aware e extrair date
+            ultimo_acesso_aware = tornar_aware(user.ultimo_acesso)
+            ultimo_acesso_date = ultimo_acesso_aware.date()
+            
+            # Verificar se acessou neste mês
+            if ultimo_acesso_date >= inicio_mes:
+                usuarios_ativos.append({
+                    'id': user.id,
+                    'nome_completo': user.nome_completo or user.username,
+                    'telefone': user.telefone or 'Não informado',
+                    'plano': user.plano_ativo or 'free',
+                    'ultimo_acesso': ultimo_acesso_aware.strftime('%d/%m/%Y %H:%M')
+                })
         
         return jsonify({
-            'total': len(usuarios),
+            'total': len(usuarios_ativos),
             'mes': hoje.strftime('%B %Y'),
             'periodo': {
                 'inicio': inicio_mes.strftime('%d/%m/%Y'),
                 'fim': hoje.strftime('%d/%m/%Y')
             },
-            'usuarios': [{
-                'id': u.id,
-                'username': u.username,
-                'email': u.email,
-                'plano': u.plano_ativo,
-                'ultimo_acesso': u.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if u.ultimo_acesso else 'N/A'
-            } for u in usuarios]
+            'usuarios': usuarios_ativos
         })
+        
     except Exception as e:
+        print(f"Erro em detalhes_mau: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
+
+
 
 
 @dashboard_analytics_bp.route('/api/detalhes/churn')
@@ -1429,6 +1752,8 @@ def detalhes_churn():
     """Detalhes dos usuários que cancelaram (churn)"""
     if not verificar_admin():
         return jsonify({'erro': 'Acesso negado'}), 403
+
+
     
     try:
         data_inicio, data_fim = parse_date_filter(request)
@@ -1436,8 +1761,9 @@ def detalhes_churn():
         # Usuários que expiraram no período
         usuarios = db.session.query(
             User.id,
+            User.nome_completo,
             User.username,
-            User.email,
+            User.telefone,
             User.plano_ativo,
             User.data_expiracao_plano,
             User.data_registro
@@ -1454,8 +1780,8 @@ def detalhes_churn():
             },
             'usuarios': [{
                 'id': u.id,
-                'username': u.username,
-                'email': u.email,
+                'nome_completo': u.nome_completo,
+                'telefone': u.telefone,
                 'plano_atual': u.plano_ativo,
                 'expirou_em': u.data_expiracao_plano.strftime('%d/%m/%Y') if u.data_expiracao_plano else 'N/A',
                 'tempo_como_cliente': (u.data_expiracao_plano - u.data_registro).days if u.data_expiracao_plano and u.data_registro else 0
@@ -1477,13 +1803,14 @@ def detalhes_mrr():
         # Usuários com plano mensal ativo
         usuarios_mensais = db.session.query(
             User.id,
+            User.nome_completo,
             User.username,
-            User.email,
+            User.telefone,
             User.data_registro,
             User.data_expiracao_plano
         ).filter(
             User.plano_ativo == 'mensal',
-            User.data_expiracao_plano > datetime.utcnow()
+            User.data_expiracao_plano > now_brasilia()
         ).order_by(User.data_expiracao_plano.asc()).all()
         
         # Valor por usuário (configurável)
@@ -1491,8 +1818,8 @@ def detalhes_mrr():
         
         usuarios_formatados = [{
             'id': u.id,
-            'username': u.username,
-            'email': u.email,
+            'nome_completo': u.nome_completo,
+            'telefone': u.telefone,
             'valor': valor_mensal,
             'data_registro': u.data_registro.strftime('%d/%m/%Y') if u.data_registro else 'N/A',
             'proxima_cobranca': u.data_expiracao_plano.strftime('%d/%m/%Y') if u.data_expiracao_plano else 'N/A'

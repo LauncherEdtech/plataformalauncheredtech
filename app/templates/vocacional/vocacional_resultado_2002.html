@@ -1,0 +1,876 @@
+{% extends "layout.html" %}
+{% block title %}Seu Perfil Vocacional — {{ resultado.perfil_primario }}{{ resultado.perfil_secundario }}{% endblock %}
+
+{% block content %}
+<style>
+/* ════════════════════════════════════════════════
+   RESULTADO VOCACIONAL — DESIGN PREMIUM
+════════════════════════════════════════════════ */
+:root {
+  --voc-purple: #8b5cf6;
+  --voc-purple-light: rgba(139,92,246,0.12);
+  --voc-border: #1a1a1a;
+  --voc-card: #0d0d0d;
+  --voc-text: #ffffff;
+  --voc-muted: #6b7280;
+  --cor-primaria: {{ perfil_primario_dados.cor }};
+  --cor-primaria-bg: {{ perfil_primario_dados.cor_bg }};
+  --cor-secundaria: {{ perfil_secundario_dados.cor }};
+}
+
+body { background: #000 !important; }
+.resultado-container { max-width: 800px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+/* ── HERO ── */
+.resultado-hero {
+  background: linear-gradient(135deg, 
+    rgba(0,0,0,0.9) 0%, 
+    {{ perfil_primario_dados.cor_bg }} 50%, 
+    rgba(0,0,0,0.9) 100%);
+  border: 1px solid var(--cor-primaria-bg);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.resultado-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, {{ perfil_primario_dados.cor_bg }}, transparent 70%);
+  pointer-events: none;
+}
+
+.perfil-emoji-hero {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  filter: drop-shadow(0 0 20px var(--cor-primaria));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.perfil-titulo {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 900;
+  color: var(--voc-text);
+  margin-bottom: 0.3rem;
+}
+
+.perfil-combo {
+  font-size: 1rem;
+  color: #9ca3af;
+  margin-bottom: 1.2rem;
+}
+
+.perfil-combo strong { color: var(--cor-primaria); }
+.perfil-combo .sec { color: var(--cor-secundaria); }
+
+.perfil-descricao {
+  font-size: 0.95rem;
+  color: #d1d5db;
+  max-width: 520px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.7;
+}
+
+.share-btn {
+  background: transparent;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.share-btn:hover { border-color: var(--cor-primaria); color: var(--cor-primaria); }
+
+/* ── SEÇÃO ── */
+.secao { margin-bottom: 1.5rem; }
+
+.secao-titulo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--voc-muted);
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.secao-titulo::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--voc-border);
+}
+
+.secao-titulo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--voc-border);
+}
+
+/* ── RADAR CHART ── */
+.radar-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.radar-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.radar-subtitulo {
+  font-size: 0.8rem;
+  color: var(--voc-muted);
+  margin-bottom: 1.2rem;
+}
+
+#radar-chart { max-width: 340px; margin: 0 auto; display: block; }
+
+/* ── BARRAS RIASEC ── */
+.riasec-bars { margin-top: 1.2rem; }
+
+.riasec-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.7rem;
+}
+
+.riasec-bar-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 110px;
+  color: #d1d5db;
+}
+
+.riasec-bar-label span {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--voc-muted);
+}
+
+.riasec-bar-track {
+  flex: 1;
+  background: #111;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.riasec-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.riasec-bar-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── PONTOS FORTES ── */
+.pontos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.6rem;
+}
+
+.ponto-tag {
+  background: var(--cor-primaria-bg);
+  border: 1px solid {{ perfil_primario_dados.cor_bg }};
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.82rem;
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ponto-tag::before {
+  content: '✓';
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
+
+/* ── AMBIENTES IDEAIS ── */
+.ambientes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ambiente-chip {
+  background: #111;
+  border: 1px solid var(--voc-border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* ── CARREIRAS ── */
+.carreira-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.carreira-card:hover {
+  border-color: rgba(139,92,246,0.4);
+  transform: translateY(-2px);
+}
+
+.carreira-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--voc-purple), transparent);
+  transition: width 0.3s;
+}
+
+.carreira-card:hover::before { width: 6px; }
+
+.carreira-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.carreira-emoji-nome {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.carreira-emoji {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.carreira-nome {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--voc-text);
+  margin-bottom: 2px;
+}
+
+.carreira-area {
+  font-size: 0.72rem;
+  color: var(--voc-muted);
+}
+
+.compatibilidade-badge {
+  background: var(--voc-purple-light);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--voc-purple);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.compatibilidade-badge.excelente {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.3);
+  color: #22c55e;
+}
+
+.compat-bar {
+  height: 4px;
+  background: #111;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+}
+
+.compat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+}
+
+.carreira-descricao {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+}
+
+.carreira-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.meta-chip {
+  background: #111;
+  border: 1px solid #1f1f1f;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── CARREIRA EXPANDIDA ── */
+.carreira-detalhes {
+  display: none;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--voc-border);
+  margin-top: 0.8rem;
+}
+
+.carreira-card.expandida .carreira-detalhes { display: block; }
+
+.detalhe-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.detalhe-item {
+  background: #111;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.detalhe-item .label {
+  font-size: 0.65rem;
+  color: var(--voc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.detalhe-item .valor {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--voc-text);
+}
+
+/* ── PERFIL SECUNDÁRIO ── */
+.perfil-sec-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.perfil-sec-emoji {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+/* ── VALORES ── */
+.valores-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.valor-chip {
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  color: #a78bfa;
+}
+
+/* ── CTA PLANO ── */
+.cta-plataforma {
+  background: linear-gradient(135deg, #0d0d0d 0%, rgba(139,92,246,0.08) 100%);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.cta-plataforma h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.cta-plataforma p {
+  font-size: 0.88rem;
+  color: #9ca3af;
+  margin-bottom: 1.2rem;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-btns { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+
+.cta-btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.cta-btn-primary:hover { transform: translateY(-2px); color: white; }
+
+.cta-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--voc-border);
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  color: #9ca3af;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.cta-btn-secondary:hover { border-color: var(--voc-purple); color: white; }
+
+/* ── DATA E META ── */
+.resultado-meta {
+  font-size: 0.72rem;
+  color: #374151;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .detalhe-grid { grid-template-columns: 1fr; }
+  .pontos-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="resultado-container" id="resultado-top">
+
+  <!-- ─── META ─── -->
+  <div class="resultado-meta">
+    Resultado gerado em {{ resultado.data_realizado.strftime('%d/%m/%Y às %H:%M') }}
+    {% if resultado.tempo_segundos %}
+    · Tempo: {{ (resultado.tempo_segundos // 60) }}min {{ resultado.tempo_segundos % 60 }}s
+    {% endif %}
+    · {{ resultado.total_questoes_respondidas if resultado.respostas_brutas else '72' }} questões respondidas
+  </div>
+
+  <!-- ─── HERO ─── -->
+  <div class="resultado-hero">
+    <span class="perfil-emoji-hero">{{ perfil_primario_dados.emoji }}</span>
+
+    <h1 class="perfil-titulo">Você é {{ perfil_primario_dados.nome }}</h1>
+    <p class="perfil-combo">
+      Perfil primário: <strong>{{ perfil_primario_dados.nome }}</strong> · 
+      Perfil secundário: <span class="sec">{{ perfil_secundario_dados.nome }}</span>
+    </p>
+    <p class="perfil-descricao">{{ perfil_primario_dados.descricao }}</p>
+
+    <button class="share-btn" onclick="compartilhar()">
+      📤 Compartilhar resultado
+    </button>
+  </div>
+
+  <!-- ─── RADAR CHART ─── -->
+  <div class="radar-card">
+    <div class="radar-titulo">Seu Mapa Vocacional RIASEC</div>
+    <div class="radar-subtitulo">Distribuição dos seus 6 perfis de interesse e aptidão</div>
+
+    <canvas id="radar-chart" height="300"></canvas>
+
+    <!-- Barras de detalhamento -->
+    <div class="riasec-bars" id="riasec-bars-container">
+      {% set cores_riasec = {'R': '#f97316', 'I': '#3b82f6', 'A': '#ec4899', 'S': '#22c55e', 'E': '#f59e0b', 'C': '#6366f1'} %}
+      {% for dim, score in ranking_riasec %}
+      <div class="riasec-bar-item">
+        <div class="riasec-bar-label">
+          {{ perfis_riasec[dim].emoji }} {{ perfis_riasec[dim].nome }}
+          <span>({{ dim }})</span>
+        </div>
+        <div class="riasec-bar-track">
+          <div class="riasec-bar-fill"
+               style="background: {{ cores_riasec[dim] }}"
+               data-pct="{{ radar_data.get(dim, 0) }}"
+               id="bar-{{ dim }}">
+          </div>
+        </div>
+        <span class="riasec-bar-pct" style="color: {{ cores_riasec[dim] }}">
+          {{ radar_data.get(dim, 0) }}%
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── PONTOS FORTES ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Seus Pontos Fortes</div>
+    <div class="pontos-grid">
+      {% for ponto in perfil_primario_dados.pontos_fortes %}
+      <div class="ponto-tag">{{ ponto }}</div>
+      {% endfor %}
+      {% if perfil_secundario_dados.pontos_fortes %}
+      {% for ponto in perfil_secundario_dados.pontos_fortes[:2] %}
+      <div class="ponto-tag" style="opacity: 0.7;">{{ ponto }}</div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ─── AMBIENTES IDEAIS ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Ambientes Profissionais Ideais</div>
+    <div class="ambientes-grid">
+      {% for amb in perfil_primario_dados.ambientes_ideais %}
+      <span class="ambiente-chip">{{ amb }}</span>
+      {% endfor %}
+      {% for amb in perfil_secundario_dados.ambientes_ideais[:2] %}
+      <span class="ambiente-chip" style="opacity:0.65;">{{ amb }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── PERFIL SECUNDÁRIO ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Seu Segundo Perfil</div>
+    <div class="perfil-sec-card">
+      <div class="perfil-sec-emoji">{{ perfil_secundario_dados.emoji }}</div>
+      <div>
+        <div style="font-weight:700; margin-bottom:4px;">
+          {{ perfil_secundario_dados.nome }} 
+          <span style="font-size:0.72rem; color:{{ perfil_secundario_dados.cor }}; font-weight:600;">
+            ({{ resultado.perfil_secundario }})
+          </span>
+        </div>
+        <p style="font-size:0.82rem; color:#9ca3af; margin:0; line-height:1.5;">
+          {{ perfil_secundario_dados.descricao_curta }}. {{ perfil_secundario_dados.descricao }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VALORES ─── -->
+  {% if resultado.valores_usuario %}
+  <div class="secao">
+    <div class="secao-titulo">Seus Valores de Trabalho</div>
+    <div class="valores-grid">
+      {% set valores_labels = {
+        'estabilidade': '🏠 Estabilidade',
+        'autonomia': '🦅 Autonomia',
+        'remuneracao': '💰 Alta remuneração',
+        'impacto_social': '🌍 Impacto social',
+        'reconhecimento': '🏆 Reconhecimento',
+        'equilibrio': '⚖️ Equilíbrio vida/trabalho',
+        'desafio_intelectual': '🧠 Desafio intelectual',
+        'ajudar_pessoas': '🤝 Ajudar pessoas',
+        'inovacao': '💡 Inovação',
+        'melhoria': '🔧 Aperfeiçoamento',
+        'lideranca': '👑 Liderança',
+        'colaboracao': '👥 Colaboração',
+        'prestigio': '⭐ Prestígio',
+        'satisfacao_pessoal': '😊 Satisfação pessoal',
+        'tecnologia': '💻 Tecnologia',
+        'humanismo': '❤️ Humanismo',
+        'aprendizado_continuo': '📖 Aprendizado contínuo',
+        'especializacao': '🎯 Especialização',
+        'resultados': '📈 Resultados mensuráveis',
+        'proposito': '🌟 Propósito',
+        'centros_urbanos': '🏙️ Grandes centros',
+        'flexibilidade_local': '🏡 Flexibilidade de local',
+        'empreendedorismo': '🚀 Empreendedorismo',
+        'concurso_empresa': '🏛️ Empresa/Serviço público',
+      } %}
+      {% for valor in resultado.valores_usuario[:8] %}
+      <span class="valor-chip">{{ valores_labels.get(valor, valor) }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ─── CARREIRAS RECOMENDADAS ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Carreiras Recomendadas Para Você</div>
+    <p style="font-size:0.82rem; color:#6b7280; margin-bottom:1rem;">
+      Baseado no seu perfil {{ perfil_primario_dados.nome }}-{{ perfil_secundario_dados.nome }} e nos seus valores. 
+      Clique em cada carreira para ver mais detalhes.
+    </p>
+
+    {% for item in top_carreiras %}
+    {% set c = item.detalhes if item.detalhes else item %}
+    <div class="carreira-card" onclick="toggleCarreira(this)">
+      <div class="carreira-header">
+        <div class="carreira-emoji-nome">
+          <span class="carreira-emoji">{{ item.emoji }}</span>
+          <div>
+            <div class="carreira-nome">{{ item.nome }}</div>
+            <div class="carreira-area">{{ item.area }}</div>
+          </div>
+        </div>
+        <span class="compatibilidade-badge {% if item.compatibilidade >= 75 %}excelente{% endif %}">
+          {{ item.compatibilidade }}% match
+        </span>
+      </div>
+
+      <div class="compat-bar">
+        <div class="compat-bar-fill" style="width: {{ item.compatibilidade }}%;
+          background: linear-gradient(90deg, 
+            {% if item.compatibilidade >= 75 %}#16a34a, #22c55e{% else %}#7c3aed, #8b5cf6{% endif %}
+          );"></div>
+      </div>
+
+      {% if c.descricao is defined %}
+      <p class="carreira-descricao">{{ c.descricao }}</p>
+      {% endif %}
+
+      <div class="carreira-meta">
+        <span class="meta-chip">⏱️ {{ item.duracao_label }}</span>
+        <span class="meta-chip">
+          💰 R$ {{ '{:,.0f}'.format(item.salario_min).replace(',','.')}}&ndash;{{ '{:,.0f}'.format(item.salario_max).replace(',','.') }}
+        </span>
+        <span class="meta-chip">📈 {{ item.perspectiva_mercado }}</span>
+        {% if c.concurso_opcao is defined and c.concurso_opcao %}
+        <span class="meta-chip" style="color:#a78bfa;">🏛️ Concurso disponível</span>
+        {% endif %}
+        {% if c.remoto_opcao is defined and c.remoto_opcao %}
+        <span class="meta-chip" style="color:#22c55e;">💻 Pode ser remoto</span>
+        {% endif %}
+      </div>
+
+      {% if c.dificuldade_enem is defined %}
+      <div class="carreira-detalhes">
+        <div class="detalhe-grid">
+          <div class="detalhe-item">
+            <div class="label">Dificuldade ENEM/Vestibular</div>
+            <div class="valor">{{ c.dificuldade_enem }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Duração</div>
+            <div class="valor">{{ c.duracao_label }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Salário Mínimo</div>
+            <div class="valor">R$ {{ '{:,.0f}'.format(item.salario_min).replace(',','.') }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Teto Salarial</div>
+            <div class="valor">R$ {{ '{:,.0f}'.format(item.salario_max).replace(',','.') }}</div>
+          </div>
+        </div>
+
+        {% if c.tags is defined and c.tags %}
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+          {% for tag in c.tags %}
+          <span style="background:#111; border:1px solid #222; border-radius:999px; 
+                       padding:2px 10px; font-size:0.7rem; color:#6b7280;">
+            #{{ tag }}
+          </span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="margin-top:0.8rem; text-align:right;">
+          <span style="font-size:0.72rem; color:#4b5563;">
+            💡 Use o ENEM para ingressar nesta carreira. Veja os conteúdos mais importantes no seu plano de estudos.
+          </span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ─── CTA PLATAFORMA ─── -->
+  <div class="cta-plataforma">
+    <h3>🎯 Agora que você conhece seu perfil...</h3>
+    <p>
+      Monte seu plano de estudos personalizado para o ENEM com foco nas matérias 
+      que mais importam para as carreiras do seu perfil 
+      <strong style="color:#a78bfa;">{{ perfil_primario_dados.nome }}-{{ perfil_secundario_dados.nome }}</strong>.
+    </p>
+    <div class="cta-btns">
+      <a href="{{ url_for('estudo.index') if 'estudo' in config else '#' }}" class="cta-btn-primary">
+        📚 Ir para meus Estudos
+      </a>
+      <a href="{{ url_for('simulado.index') if 'simulado' in config else '#' }}" class="cta-btn-secondary">
+        📝 Fazer um Simulado
+      </a>
+      <a href="{{ url_for('vocacional.index') }}" class="cta-btn-secondary">
+        🔄 Refazer o Teste
+      </a>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// ── RADAR CHART ──────────────────────────────────────────
+const radarData = {{ radar_data | tojson }};
+const ctx = document.getElementById('radar-chart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: [
+      ['🔧 Realista', '(prático e técnico)'],
+      ['🔬 Investigativo', '(analítico e científico)'],
+      ['🎨 Artístico', '(criativo e expressivo)'],
+      ['🤝 Social', '(empático e colaborativo)'],
+      ['🚀 Empreendedor', '(líder e ambicioso)'],
+      ['📋 Convencional', '(organizado e metódico)'],
+    ],
+    datasets: [{
+      label: 'Seu Perfil',
+      data: [
+        radarData.R || 0,
+        radarData.I || 0,
+        radarData.A || 0,
+        radarData.S || 0,
+        radarData.E || 0,
+        radarData.C || 0,
+      ],
+      backgroundColor: 'rgba(139, 92, 246, 0.2)',
+      borderColor: '#8b5cf6',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#8b5cf6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      r: {
+        min: 0,
+        max: 100,
+        ticks: {
+          stepSize: 25,
+          display: true,
+          color: '#374151',
+          font: { size: 9 },
+          backdropColor: 'transparent',
+        },
+        grid: { color: '#1a1a1a' },
+        angleLines: { color: '#1a1a1a' },
+        pointLabels: {
+          color: '#9ca3af',
+          font: { size: 11, weight: '500' },
+        }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111',
+        borderColor: '#262626',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: '#9ca3af',
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.r}%`,
+        }
+      }
+    },
+    animation: { duration: 1500, easing: 'easeInOutQuart' }
+  }
+});
+
+// ── BARRAS RIASEC (animação após carregamento) ──────────
+window.addEventListener('load', () => {
+  document.querySelectorAll('.riasec-bar-fill').forEach(bar => {
+    const pct = bar.getAttribute('data-pct');
+    setTimeout(() => {
+      bar.style.width = pct + '%';
+    }, 300);
+  });
+});
+
+// ── TOGGLE CARREIRAS ─────────────────────────────────────
+function toggleCarreira(card) {
+  const jaExpandida = card.classList.contains('expandida');
+  document.querySelectorAll('.carreira-card.expandida').forEach(c => {
+    c.classList.remove('expandida');
+  });
+  if (!jaExpandida) card.classList.add('expandida');
+}
+
+// ── COMPARTILHAR ─────────────────────────────────────────
+async function compartilhar() {
+  const texto = `🧭 Fiz o Teste Vocacional da plataforma Launcher e descobri que sou do perfil {{ perfil_primario_dados.nome }} + {{ perfil_secundario_dados.nome }}!\n\n{{ perfil_primario_dados.descricao_curta }}\n\nDescubra o seu também!`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Meu Perfil Vocacional — Launcher',
+        text: texto,
+        url: window.location.href
+      });
+    } catch (e) {}
+  } else {
+    navigator.clipboard.writeText(texto + '\n' + window.location.href)
+      .then(() => alert('Resultado copiado! Cole e compartilhe onde quiser.'))
+      .catch(() => alert('Link: ' + window.location.href));
+  }
+}
+
+// Inicializa barras com 0
+document.querySelectorAll('.riasec-bar-fill').forEach(bar => {
+  bar.style.width = '0%';
+});
+</script>
+{% endblock %}

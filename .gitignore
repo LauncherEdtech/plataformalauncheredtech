@@ -16,9 +16,6 @@ logs/
 *.log
 
 # Uploads / mídia (não versionar - vai pro S3)
-static/uploads/
-media/
-uploads/
 
 # Node
 node_modules/
@@ -43,3 +40,4 @@ htmlcov/
 service_account_credentials.json
 **/*.backup
 test_openai_key.py
+app/firebase-credentials.json

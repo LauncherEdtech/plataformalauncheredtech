@@ -9,6 +9,8 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from sqlalchemy.exc import OperationalError, DatabaseError
 from sqlalchemy import inspect, text
+from flask import request
+
 
 # NOVO: Carregar variáveis de ambiente do .env
 try:
@@ -106,6 +108,10 @@ def create_app(config_name=None):
     app.config['SMTP_PASSWORD'] = os.environ.get('SMTP_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
+    # PWA / Firebase
+    app.config['FIREBASE_VAPID_KEY'] = os.environ.get('FIREBASE_VAPID_KEY', '')
+    app.config['FIREBASE_CREDENTIALS_PATH'] = os.environ.get('FIREBASE_CREDENTIALS_PATH', 'firebase-credentials.json')
+
     # Banco: prioriza DATABASE_URL; senão, compõe com ENV (mantém fallback compatível)
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
@@ -173,7 +179,7 @@ def create_app(config_name=None):
             from app.models.user import User  # noqa
             from app.models.simulado import Simulado, Questao, Alternativa  # noqa
             from app.models.dashboard import Estatistica  # noqa
-
+            from app.models.questao_diagnostico import QuestaoDiagnostico
             # 2) Modelos de estudo (opcionais)
             try:
                 from app.models.estudo import (  # noqa
@@ -264,7 +270,11 @@ def create_app(config_name=None):
 
     #Metricas
     _register_bp("app.routes.dashboard_analytics", "dashboard_analytics_bp", "dashboard_analytics", required=False)
+    _register_bp("app.routes.questoes", "questoes_bp", "questoes", required=False)
+    _register_bp("app.routes.onboarding", "onboarding_bp", "onboarding", required=False)
 
+    _register_bp("app.routes.vocacional", "vocacional_bp", "vocacional", required=False)
+    _register_bp("app.routes.pwa", "pwa_bp", "pwa", required=False)
 
 
     # Inicialização de badges (se a tabela existir)
@@ -280,6 +290,17 @@ def create_app(config_name=None):
                     app.logger.warning(f"Aviso ao inicializar badges: {e}")
         except Exception as e:
             app.logger.warning(f"Falha ao inspecionar tabelas para badges: {e}")
+
+
+        # Inicializar questoes_service (cria tabela questao_performance)
+        try:
+            from app.services.questoes_service import inicializar as _questoes_init
+            _questoes_init()
+            app.logger.info("✅ questoes_service inicializado com sucesso")
+        except Exception as e:
+            app.logger.warning(f"⚠️ Aviso ao inicializar questoes_service: {e}")
+
+
 
     # --------- Filtros de template ---------
     @app.template_filter("timeago")
@@ -313,6 +334,7 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_globals():
         return {"app_name": "Plataforma Launcher", "app_version": "2.0.0"}
+
 
     @app.context_processor
     def inject_user_data():
@@ -363,6 +385,41 @@ def create_app(config_name=None):
         except Exception as e:
             app.logger.error(f"Health check falhou: {e}")
             return {"status": "unhealthy", "error": str(e)}, 500
+
+
+
+
+    @app.route('/sw.js')
+    def service_worker_root():
+        from flask import send_from_directory, make_response
+        response = make_response(send_from_directory(app.static_folder, 'sw.js'))
+        response.headers['Content-Type'] = 'application/javascript'
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+
+    @app.route('/firebase-messaging-sw.js')
+    def firebase_sw_root():
+        from flask import send_from_directory, make_response
+        response = make_response(send_from_directory(app.static_folder, 'firebase-messaging-sw.js'))
+        response.headers['Content-Type'] = 'application/javascript'
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+
+    @app.route('/offline')
+    def offline_page():
+        from flask import render_template
+        return render_template('pwa/offline.html')
+
+    app.logger.info("🚀 Aplicação Flask criada com sucesso")
+    return app
+
+
+    @app.before_request
+    def log_request_info():
+        app.logger.info(f"REQ {request.method} {request.path}")
+
 
     app.logger.info("🚀 Aplicação Flask criada com sucesso")
     return app

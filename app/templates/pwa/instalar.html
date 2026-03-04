@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="manifest" href="/pwa/manifest.json">
+    <title>Instalar App - Launcher</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#000; color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+        .card { background:#0a0a1a; border:1px solid #8b5cf6; border-radius:24px; padding:36px 28px; max-width:400px; width:100%; text-align:center; }
+        .logo { width:80px; height:80px; border-radius:20px; margin:0 auto 20px; background:#8b5cf6; display:flex; align-items:center; justify-content:center; font-size:40px; }
+        h1 { font-size:24px; margin-bottom:8px; }
+        .sub { color:#a3a3a3; font-size:14px; line-height:1.6; margin-bottom:28px; }
+        .btn-install { background:#8b5cf6; color:white; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:700; cursor:pointer; width:100%; margin-bottom:12px; }
+        .btn-install:disabled { opacity:0.4; cursor:not-allowed; }
+        .ios-guide { display:none; background:#1a1a2e; border-radius:14px; padding:16px; text-align:left; margin-top:16px; }
+        .ios-guide p { font-size:13px; color:#a3a3a3; line-height:1.8; }
+        .ios-guide strong { color:#fff; }
+        .features { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
+        .feature { background:#111; border-radius:12px; padding:14px 10px; font-size:12px; color:#a3a3a3; }
+        .feature span { display:block; font-size:22px; margin-bottom:6px; }
+        #status-msg { font-size:13px; color:#22c55e; margin-top:10px; min-height:20px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">🚀</div>
+    <h1>Instalar Launcher</h1>
+    <p class="sub">Acesse sua plataforma de estudos como um app nativo, sem precisar da Play Store ou App Store.</p>
+
+    <div class="features">
+        <div class="feature"><span>🔔</span>Notificações em tempo real</div>
+        <div class="feature"><span>⚡</span>Acesso ultra-rápido</div>
+        <div class="feature"><span>📶</span>Funciona offline</div>
+        <div class="feature"><span>🏠</span>Ícone na tela inicial</div>
+    </div>
+
+    <button class="btn-install" id="btn-instalar" disabled>
+        Preparando instalação...
+    </button>
+
+    <div id="status-msg"></div>
+
+    <!-- Guia específico para iOS -->
+    <div class="ios-guide" id="ios-guide">
+        <p>No iPhone/iPad, instale manualmente:</p>
+        <p>1. Toque em <strong>Compartilhar</strong> (ícone ↑ na barra do Safari)</p>
+        <p>2. Role e toque em <strong>"Adicionar à Tela de Início"</strong></p>
+        <p>3. Toque em <strong>Adicionar</strong> no canto superior direito</p>
+    </div>
+</div>
+
+<script>
+    let deferredPrompt = null;
+    const btn = document.getElementById('btn-instalar');
+    const msg = document.getElementById('status-msg');
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    // Já está instalado
+    if (isInStandaloneMode) {
+        btn.textContent = '✅ App já instalado!';
+        btn.disabled = true;
+        msg.textContent = 'Você já está usando o app instalado.';
+    }
+    // iOS — não tem prompt automático
+    else if (isIOS) {
+        btn.textContent = 'Ver instruções para iPhone';
+        btn.disabled = false;
+        btn.addEventListener('click', () => {
+            document.getElementById('ios-guide').style.display = 'block';
+            btn.style.display = 'none';
+        });
+    }
+    // Android/Chrome — espera o evento beforeinstallprompt
+    else {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            btn.textContent = '📲 Instalar App Agora';
+            btn.disabled = false;
+        });
+
+        btn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                msg.textContent = 'Abra este link no Chrome para instalar.';
+                return;
+            }
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                btn.textContent = '✅ Instalado com sucesso!';
+                btn.disabled = true;
+                msg.textContent = 'Procure o ícone na sua tela inicial!';
+                localStorage.setItem('pwa_instalado', 'true');
+            }
+            deferredPrompt = null;
+        });
+
+        // Se o Chrome não disparar o evento (já instalado ou não elegível)
+        setTimeout(() => {
+            if (btn.disabled && !isInStandaloneMode) {
+                btn.textContent = 'Instalar App';
+                btn.disabled = false;
+                btn.addEventListener('click', () => {
+                    msg.textContent = 'Para instalar: menu do Chrome (⋮) → "Adicionar à tela inicial"';
+                });
+            }
+        }, 3000);
+    }
+
+    window.addEventListener('appinstalled', () => {
+        btn.textContent = '✅ Instalado!';
+        btn.disabled = true;
+        msg.textContent = '🎉 App instalado! Procure o ícone na tela inicial.';
+    });
+</script>
+</body>
+</html>

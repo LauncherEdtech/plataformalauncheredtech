@@ -1,0 +1,363 @@
+{% extends "layout.html" %}
+
+{% block title %}Seu Plano de Ataque{% endblock %}
+
+{% block content %}
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    }
+
+    .onboarding-card {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 700px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .onboarding-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .onboarding-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .onboarding-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+    }
+
+    .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 6px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .cronograma-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .cronograma-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+
+    .urgencia-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .urgencia-alta {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .urgencia-moderada {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .urgencia-planejada {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .distribuicao-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .distribuicao-title {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .distribuicao-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .distribuicao-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .item-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .item-value {
+        font-weight: 600;
+        color: white;
+    }
+
+    .info-box {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 1.25rem;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 1.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 1rem;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 1rem;
+    }
+
+    .btn-secondary:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        color: white;
+    }
+
+    .step-indicator {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+    }
+</style>
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-header">
+            <h1 class="onboarding-title">🎯 Seu Plano de Ataque</h1>
+            <p class="onboarding-subtitle">Cronograma personalizado da primeira semana</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 80%"></div>
+        </div>
+
+        <div class="cronograma-card">
+            <div class="cronograma-title">
+                <span>📅</span>
+                <span>Resumo Semanal</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">{{ cronograma.aulas_semana }}</div>
+                    <div class="stat-label">Aulas/semana</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ cronograma.simulados_semana }}</div>
+                    <div class="stat-label">Simulados</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ cronograma.redacoes_semana }}</div>
+                    <div class="stat-label">Redações</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ cronograma.tempo_diario_min }}</div>
+                    <div class="stat-label">Min/dia</div>
+                </div>
+            </div>
+
+            <div class="urgencia-badge urgencia-{{ cronograma.urgencia|lower }}">
+                {% if cronograma.urgencia == 'Alta' %}
+                    🔥 Ritmo Intensivo
+                {% elif cronograma.urgencia == 'Moderada' %}
+                    ⚡ Ritmo Equilibrado
+                {% else %}
+                    ✨ Ritmo Planejado
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="distribuicao-box">
+            <div class="distribuicao-title">
+                <span>📊</span>
+                <span>Distribuição Semanal</span>
+            </div>
+            <div class="distribuicao-items">
+                <div class="distribuicao-item">
+                    <div class="item-label">
+                        <span>📚</span>
+                        <span>Aulas</span>
+                    </div>
+                    <div class="item-value">{{ cronograma.aulas_semana }}x/semana</div>
+                </div>
+                <div class="distribuicao-item">
+                    <div class="item-label">
+                        <span>📝</span>
+                        <span>Simulados</span>
+                    </div>
+                    <div class="item-value">{{ cronograma.simulados_semana }}x/semana</div>
+                </div>
+                <div class="distribuicao-item">
+                    <div class="item-label">
+                        <span>✍️</span>
+                        <span>Redações</span>
+                    </div>
+                    <div class="item-value">{{ cronograma.redacoes_semana }}x/semana</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            💡 Esse cronograma foi criado baseado no seu tempo disponível ({{ cronograma.tempo_diario_min }} min/dia) e nas suas áreas de dificuldade. Você pode ajustá-lo a qualquer momento!
+        </div>
+
+        <button class="btn-primary" onclick="confirmarPlano()">
+            ✅ Confirmar Meu Plano
+        </button>
+
+        <button class="btn-secondary" onclick="ajustarManualmente()">
+            ⚙️ Ajustar Manualmente
+        </button>
+
+        <div class="step-indicator">
+            Etapa 4 de 5
+        </div>
+    </div>
+</div>
+
+<script>
+async function confirmarPlano() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Criando cronograma...';
+    
+    try {
+        const response = await fetch('{{ url_for("onboarding.plano_ataque_confirmar") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ aceitar: true })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            btn.textContent = '✅ Cronograma criado!';
+            
+            setTimeout(() => {
+                window.location.href = result.next_step;
+            }, 1000);
+        } else {
+            alert('Erro ao criar cronograma');
+            btn.disabled = false;
+            btn.textContent = '✅ Confirmar Meu Plano';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao criar cronograma');
+        btn.disabled = false;
+        btn.textContent = '✅ Confirmar Meu Plano';
+    }
+}
+
+function ajustarManualmente() {
+    // Redirecionar para o wizard de cronograma
+    window.location.href = '{{ url_for("cronograma.wizard") }}';
+}
+</script>
+
+{% endblock %}

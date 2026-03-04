@@ -158,6 +158,20 @@ def nova_redacao():
                     else:
                         success_msg = 'Redação avaliada com sucesso!'
                         current_app.logger.info(f"💰 [REDAÇÃO DEBUG] Nenhuma moeda concedida")
+
+
+                    # ==================== HOOK ONBOARDING ====================
+                    try:
+                        from app.services.onboarding_service import verificar_onboarding_ativo, avancar_etapa
+                        if verificar_onboarding_ativo(current_user.id):
+                            current_app.logger.info(f"🎓 Onboarding: usuário {current_user.id} enviou redação")
+                            resultado_onb = avancar_etapa(current_user.id, 'enviar_redacao')
+                            if resultado_onb.get('status') == 'ativo':
+                                current_app.logger.info(f"✅ Onboarding avançado para etapa {resultado_onb.get('etapa')}")
+                    except Exception as e:
+                        current_app.logger.error(f"❌ Erro no hook de onboarding (redação): {e}")
+                    # =========================================================
+
                     
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         return jsonify({
@@ -350,7 +364,6 @@ def debug_test_evaluation():
             'error_type': type(e).__name__,
             'stack_trace': traceback.format_exc()
         }), 500
-
 
 
 

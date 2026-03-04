@@ -1,0 +1,1029 @@
+{% extends "layout.html" %}
+{% block title %}Teste Vocacional — Descubra sua Carreira Ideal{% endblock %}
+
+{% block content %}
+<style>
+/* ════════════════════════════════════════════════════════════
+   TESTE VOCACIONAL — DESIGN SYSTEM
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --voc-purple: #8b5cf6;
+  --voc-purple-light: rgba(139, 92, 246, 0.15);
+  --voc-purple-border: rgba(139, 92, 246, 0.4);
+  --voc-bg: #000000;
+  --voc-card: #0d0d0d;
+  --voc-border: #1a1a1a;
+  --voc-text: #ffffff;
+  --voc-muted: #6b7280;
+  --voc-green: #22c55e;
+  --voc-yellow: #f59e0b;
+  --voc-red: #ef4444;
+}
+
+body { background: var(--voc-bg) !important; }
+
+/* ── TELA INICIAL ── */
+#tela-intro {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.intro-logo {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 30px rgba(139,92,246,0.5));
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(139,92,246,0.4)); }
+  50% { filter: drop-shadow(0 0 40px rgba(139,92,246,0.8)); }
+}
+
+.intro-title {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #8b5cf6 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.intro-subtitle {
+  color: #9ca3af;
+  font-size: 1.05rem;
+  max-width: 480px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.intro-cards {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.intro-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  min-width: 130px;
+}
+
+.intro-card .num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--voc-purple);
+}
+
+.intro-card .label {
+  font-size: 0.75rem;
+  color: var(--voc-muted);
+  margin-top: 2px;
+}
+
+.btn-comecar {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6, #a78bfa);
+  border: none;
+  border-radius: 16px;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(139,92,246,0.4);
+  letter-spacing: 0.3px;
+}
+
+.btn-comecar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(139,92,246,0.6);
+}
+
+/* ── TELA DO TESTE ── */
+#tela-teste {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--voc-border);
+  padding: 0.75rem 1.5rem;
+}
+
+.progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  color: var(--voc-muted);
+  font-weight: 500;
+}
+
+.progress-counter {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--voc-purple);
+}
+
+.progress-bar-wrap {
+  background: var(--voc-border);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #8b5cf6, #c084fc);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+.progress-bloco {
+  font-size: 0.72rem;
+  color: #4b5563;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* ── QUESTÃO ── */
+.questao-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 1.5rem 120px;
+  min-height: 100vh;
+}
+
+.questao-card {
+  max-width: 540px;
+  width: 100%;
+  animation: slide-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-out-left {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.bloco-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--voc-purple-light);
+  border: 1px solid var(--voc-purple-border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  color: #a78bfa;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.questao-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+  display: block;
+}
+
+.questao-texto {
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  color: var(--voc-text);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+/* ── ESCALA LIKERT ── */
+.likert-container {
+  margin-top: 1.8rem;
+}
+
+.likert-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.likert-labels span {
+  font-size: 0.7rem;
+  color: var(--voc-muted);
+}
+
+.likert-options {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.likert-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: 72px;
+  border-radius: 12px;
+  border: 2px solid var(--voc-border);
+  background: var(--voc-card);
+  color: var(--voc-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.likert-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.likert-btn[data-val="1"]::before { background: rgba(239, 68, 68, 0.15); }
+.likert-btn[data-val="2"]::before { background: rgba(245, 158, 11, 0.1); }
+.likert-btn[data-val="3"]::before { background: rgba(156, 163, 175, 0.1); }
+.likert-btn[data-val="4"]::before { background: rgba(34, 197, 94, 0.1); }
+.likert-btn[data-val="5"]::before { background: rgba(139, 92, 246, 0.15); }
+
+.likert-btn:hover {
+  transform: scale(1.06);
+  border-color: var(--voc-purple);
+}
+
+.likert-btn:hover::before { opacity: 1; }
+
+.likert-btn.selecionado[data-val="1"] { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.15); }
+.likert-btn.selecionado[data-val="2"] { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
+.likert-btn.selecionado[data-val="3"] { border-color: #6b7280; color: #9ca3af; background: rgba(107,114,128,0.15); }
+.likert-btn.selecionado[data-val="4"] { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.15); }
+.likert-btn.selecionado[data-val="5"] { border-color: var(--voc-purple); color: var(--voc-purple); background: var(--voc-purple-light); }
+
+.likert-btn.selecionado { transform: scale(1.08); }
+
+.likert-emoji { font-size: 1.2rem; }
+.likert-num { font-size: 0.65rem; opacity: 0.7; }
+
+/* ── ESCOLHA FORÇADA (VALORES) ── */
+.forcada-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.forcada-btn {
+  background: var(--voc-card);
+  border: 2px solid var(--voc-border);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.forcada-btn:hover {
+  border-color: var(--voc-purple);
+  background: var(--voc-purple-light);
+  transform: translateX(4px);
+}
+
+.forcada-btn.selecionado {
+  border-color: var(--voc-purple);
+  background: var(--voc-purple-light);
+}
+
+.forcada-btn .opcao-emoji {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.forcada-btn .opcao-texto {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--voc-text);
+  line-height: 1.3;
+}
+
+/* ── MÚLTIPLA ESCOLHA (CONTEXTO) ── */
+.radio-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+}
+
+.radio-btn {
+  background: var(--voc-card);
+  border: 2px solid var(--voc-border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.radio-btn:hover {
+  border-color: var(--voc-purple-border);
+  background: var(--voc-purple-light);
+}
+
+.radio-btn.selecionado {
+  border-color: var(--voc-purple);
+  background: var(--voc-purple-light);
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #4b5563;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-btn.selecionado .radio-circle {
+  border-color: var(--voc-purple);
+  background: var(--voc-purple);
+}
+
+.radio-btn.selecionado .radio-circle::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.radio-texto {
+  font-size: 0.9rem;
+  color: var(--voc-text);
+  line-height: 1.3;
+}
+
+/* ── NAVEGAÇÃO INFERIOR ── */
+.nav-questao {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--voc-border);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  z-index: 100;
+}
+
+.btn-nav {
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-voltar {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  color: var(--voc-muted);
+}
+
+.btn-voltar:hover:not(:disabled) {
+  border-color: var(--voc-purple-border);
+  color: white;
+}
+
+.btn-voltar:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.btn-avancar {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  color: white;
+  flex: 1;
+  max-width: 200px;
+  box-shadow: 0 4px 15px rgba(139,92,246,0.3);
+}
+
+.btn-avancar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139,92,246,0.5);
+}
+
+.btn-avancar:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.skip-link {
+  font-size: 0.75rem;
+  color: var(--voc-muted);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:hover { color: #9ca3af; }
+
+/* ── TELA DE LOADING ── */
+#tela-carregando {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--voc-bg);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-circle {
+  width: 80px;
+  height: 80px;
+  border: 4px solid var(--voc-border);
+  border-top-color: var(--voc-purple);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-fases {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.loading-fases li {
+  font-size: 0.85rem;
+  color: var(--voc-muted);
+  padding: 0.3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading-fases li.ativa {
+  color: var(--voc-purple);
+  font-weight: 600;
+}
+
+.loading-fases li.concluida {
+  color: var(--voc-green);
+}
+
+/* ── MICRO-INSIGHT INTERMEDIÁRIO ── */
+.insight-banner {
+  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(192,132,252,0.05));
+  border: 1px solid var(--voc-purple-border);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.insight-banner p {
+  font-size: 0.82rem;
+  color: #a78bfa;
+  margin: 0;
+}
+
+/* ── JÁ FEZ O TESTE ── */
+.historico-card {
+  background: var(--voc-card);
+  border: 1px solid var(--voc-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* ── TRANSIÇÃO ── */
+.questao-card.saindo {
+  animation: slide-out-left 0.2s ease forwards;
+}
+
+.questao-card.entrando {
+  animation: slide-in-right 0.25s ease forwards;
+}
+
+/* ── RESPONSIVO ── */
+@media (min-width: 640px) {
+  .likert-btn { max-width: 80px; }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TELA 1: INTRODUÇÃO
+════════════════════════════════════════════════════════════ -->
+<div id="tela-intro">
+  <div style="max-width: 560px; width: 100%;">
+
+    <div class="intro-logo">🧭</div>
+    <h1 class="intro-title">Descubra sua Carreira Ideal</h1>
+    <p class="intro-subtitle">
+      O teste vocacional mais completo do Brasil. Baseado em psicometria RIASEC, 
+      personalidade e seus valores reais — não apenas um quiz superficial.
+    </p>
+
+    <div class="intro-cards">
+      <div class="intro-card">
+        <div class="num">72</div>
+        <div class="label">Questões científicas</div>
+      </div>
+      <div class="intro-card">
+        <div class="num">52</div>
+        <div class="label">Carreiras mapeadas</div>
+      </div>
+      <div class="intro-card">
+        <div class="num">~12min</div>
+        <div class="label">Para concluir</div>
+      </div>
+    </div>
+
+    <div style="background:#0d0d0d; border:1px solid #1a1a1a; border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.5rem; text-align:left;">
+      <p style="font-size:0.82rem; color:#6b7280; margin:0; line-height:1.6;">
+        💡 <strong style="color:#9ca3af;">Dica:</strong> Responda com base em como você é <em>agora</em>, 
+        não como gostaria de ser. Quanto mais honesto, mais preciso o resultado.
+      </p>
+    </div>
+
+    {% if ultimo_resultado %}
+    <div class="historico-card mb-3">
+      <p style="font-size:0.8rem; color:#6b7280; margin:0 0 8px;">
+        🔄 Você já fez este teste em {{ ultimo_resultado.data_realizado.strftime('%d/%m/%Y') }}
+      </p>
+      <p style="font-size:0.9rem; color:#e5e7eb; margin:0 0 12px;">
+        Perfil: <strong style="color:#8b5cf6;">
+          {{ perfis_riasec[ultimo_resultado.perfil_primario]['nome'] }} 
+          + {{ perfis_riasec[ultimo_resultado.perfil_secundario]['nome'] }}
+        </strong>
+      </p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="{{ url_for('vocacional.resultado', resultado_id=ultimo_resultado.id) }}" 
+           style="font-size:0.8rem; color:#8b5cf6; text-decoration:none; 
+                  background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3);
+                  border-radius:8px; padding:4px 12px;">
+          Ver resultado anterior
+        </a>
+        <button onclick="iniciarTeste()" 
+                style="font-size:0.8rem; background:#111; border:1px solid #262626; color:#9ca3af;
+                       border-radius:8px; padding:4px 12px; cursor:pointer;">
+          Refazer o teste
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    <button class="btn-comecar" onclick="iniciarTeste()">
+      Começar Agora →
+    </button>
+
+    <p style="font-size:0.72rem; color:#374151; margin-top:1rem;">
+      Gratuito · Seus dados ficam protegidos · Resultado imediato
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TELA 2: TESTE
+════════════════════════════════════════════════════════════ -->
+<div id="tela-teste">
+
+  <!-- Progress Bar -->
+  <div class="progress-container">
+    <div class="progress-top">
+      <span class="progress-label" id="bloco-label">Interesses Vocacionais</span>
+      <span class="progress-counter"><span id="q-atual">1</span> / {{ total_questoes }}</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+  </div>
+
+  <!-- Questão Atual -->
+  <div class="questao-container" id="questao-area">
+    <!-- Preenchido dinamicamente pelo JS -->
+  </div>
+
+  <!-- Navegação -->
+  <div class="nav-questao">
+    <button class="btn-nav btn-voltar" id="btn-voltar" onclick="questaoAnterior()" disabled>
+      ← Voltar
+    </button>
+    <button class="btn-nav btn-avancar" id="btn-avancar" onclick="proximaQuestao()" disabled>
+      Próxima →
+    </button>
+    <span class="skip-link" onclick="pularQuestao()" id="btn-pular">pular</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TELA 3: LOADING/PROCESSANDO
+════════════════════════════════════════════════════════════ -->
+<div id="tela-carregando">
+  <div class="loading-circle"></div>
+  <h3 style="font-weight:700; margin-bottom:0.5rem;">Analisando seu perfil</h3>
+  <p style="color:#6b7280; font-size:0.9rem;">Processando suas respostas com algoritmo RIASEC...</p>
+
+  <ul class="loading-fases">
+    <li id="fase1" class="ativa">🔍 Calculando perfil de interesses</li>
+    <li id="fase2">🧠 Analisando traços de personalidade</li>
+    <li id="fase3">💫 Mapeando valores e prioridades</li>
+    <li id="fase4">📊 Comparando com 52 carreiras</li>
+    <li id="fase5">✅ Gerando relatório completo</li>
+  </ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — ENGINE DO TESTE
+════════════════════════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════
+// DADOS DO TESTE (gerados pelo Jinja)
+// ═══════════════════════════════════
+const QUESTOES = [];
+const TOTAL = {{ total_questoes }};
+
+// Bloco 1: RIASEC (interesses)
+const BLOCOS = {
+  riasec: {
+    nome: "Interesses Vocacionais",
+    descricao: "O quanto você gosta dessas atividades?",
+    tipo: "likert",
+    questoes: {{ questoes_blocos.riasec | tojson }},
+    cor: "#8b5cf6"
+  },
+  habilidades: {
+    nome: "Suas Habilidades",
+    descricao: "O quanto você se considera bom nisso?",
+    tipo: "likert",
+    questoes: {{ questoes_blocos.habilidades | tojson }},
+    cor: "#22c55e"
+  },
+  personalidade: {
+    nome: "Sua Personalidade",
+    descricao: "O quanto você se identifica com cada afirmação?",
+    tipo: "likert",
+    questoes: {{ questoes_blocos.personalidade | tojson }},
+    cor: "#f59e0b"
+  },
+  valores: {
+    nome: "Seus Valores de Trabalho",
+    descricao: "Escolha o que é mais importante para você:",
+    tipo: "forcada",
+    questoes: {{ questoes_blocos.valores | tojson }},
+    cor: "#ec4899"
+  },
+  contexto: {
+    nome: "Seu Contexto de Vida",
+    descricao: "Nos ajude a personalizar suas recomendações:",
+    tipo: "radio",
+    questoes: {{ questoes_blocos.contexto | tojson }},
+    cor: "#3b82f6"
+  },
+};
+
+// Monta lista global de questões com referência ao bloco
+const ORDEM_BLOCOS = ["riasec", "habilidades", "personalidade", "valores", "contexto"];
+const LISTA_QUESTOES = [];
+ORDEM_BLOCOS.forEach(bloco => {
+  BLOCOS[bloco].questoes.forEach(q => {
+    LISTA_QUESTOES.push({ ...q, _bloco: bloco, _bloco_dados: BLOCOS[bloco] });
+  });
+});
+
+// ═══════════════════════════════════
+// ESTADO DO TESTE
+// ═══════════════════════════════════
+let respostas = {};
+let questaoAtual = 0;
+let tempoInicio = null;
+
+// Insights mostrados por bloco
+const INSIGHTS = {
+  habilidades: "💡 Você está indo bem! Agora vamos entender o que você faz melhor.",
+  personalidade: "✨ Metade do caminho! Essas perguntas revelam como você age no trabalho.",
+  valores: "🎯 Quase lá! O que importa para você na carreira define tudo.",
+  contexto: "🏁 Última etapa! Essas info deixam seu resultado mais realista.",
+};
+
+// ═══════════════════════════════════
+// FUNÇÕES PRINCIPAIS
+// ═══════════════════════════════════
+
+function iniciarTeste() {
+  document.getElementById('tela-intro').style.display = 'none';
+  const tela = document.getElementById('tela-teste');
+  tela.style.display = 'flex';
+  tela.style.flexDirection = 'column';
+  tempoInicio = Date.now();
+  questaoAtual = 0;
+  renderizarQuestao(0, 'entrada');
+}
+
+function renderizarQuestao(idx, direcao = 'entrada') {
+  const q = LISTA_QUESTOES[idx];
+  const bloco = q._bloco_dados;
+  const area = document.getElementById('questao-area');
+
+  // Atualiza progress
+  const pct = ((idx + 1) / LISTA_QUESTOES.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('q-atual').textContent = idx + 1;
+  document.getElementById('bloco-label').textContent = bloco.nome;
+
+  // Botões nav
+  document.getElementById('btn-voltar').disabled = idx === 0;
+  const temResposta = respostas[q.id] !== undefined;
+  document.getElementById('btn-avancar').disabled = !temResposta;
+  document.getElementById('btn-avancar').textContent =
+    idx === LISTA_QUESTOES.length - 1 ? 'Ver Resultado 🎉' : 'Próxima →';
+
+  // Mostra/oculta pular
+  const ehContexto = q._bloco === 'contexto';
+  document.getElementById('btn-pular').style.display = ehContexto ? 'inline' : 'none';
+
+  // Monta HTML da questão
+  let respostaAtual = respostas[q.id];
+  let htmlResposta = '';
+
+  if (bloco.tipo === 'likert') {
+    const emojis = ['😣','😕','😐','😊','🤩'];
+    htmlResposta = `
+      <div class="likert-container">
+        <div class="likert-labels">
+          <span>Não gosto</span>
+          <span>Amo muito</span>
+        </div>
+        <div class="likert-options">
+          ${[1,2,3,4,5].map(val => `
+            <button class="likert-btn ${respostaAtual == val ? 'selecionado' : ''}"
+                    data-val="${val}"
+                    onclick="selecionarLikert('${q.id}', ${val}, this)">
+              <span class="likert-emoji">${emojis[val-1]}</span>
+              <span class="likert-num">${val}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (bloco.tipo === 'forcada') {
+    htmlResposta = `
+      <div class="forcada-opcoes">
+        <button class="forcada-btn ${respostaAtual === 'a' ? 'selecionado' : ''}"
+                onclick="selecionarForcada('${q.id}', 'a', this)">
+          <span class="opcao-emoji">${q.opcao_a.emoji}</span>
+          <span class="opcao-texto">${q.opcao_a.texto}</span>
+        </button>
+        <button class="forcada-btn ${respostaAtual === 'b' ? 'selecionado' : ''}"
+                onclick="selecionarForcada('${q.id}', 'b', this)">
+          <span class="opcao-emoji">${q.opcao_b.emoji}</span>
+          <span class="opcao-texto">${q.opcao_b.texto}</span>
+        </button>
+      </div>
+    `;
+  } else if (bloco.tipo === 'radio') {
+    htmlResposta = `
+      <div class="radio-opcoes">
+        ${q.opcoes.map(op => `
+          <button class="radio-btn ${respostaAtual === op.valor ? 'selecionado' : ''}"
+                  onclick="selecionarRadio('${q.id}', '${op.valor}', this)">
+            <div class="radio-circle"></div>
+            <span class="radio-texto">${op.texto}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Insight se for início de novo bloco
+  let insightHtml = '';
+  const ehPrimeiraDoBLoco = idx > 0 &&
+    LISTA_QUESTOES[idx]._bloco !== LISTA_QUESTOES[idx-1]._bloco &&
+    INSIGHTS[q._bloco];
+  if (ehPrimeiraDoBLoco) {
+    insightHtml = `
+      <div class="insight-banner">
+        <p>${INSIGHTS[q._bloco]}</p>
+      </div>
+    `;
+  }
+
+  area.innerHTML = `
+    <div class="questao-card" id="qcard">
+      <div class="bloco-badge">
+        <span style="width:8px;height:8px;background:${bloco.cor};border-radius:50%;display:inline-block;"></span>
+        ${bloco.nome} · ${bloco.descricao}
+      </div>
+      <span class="questao-emoji">${q.emoji || '❓'}</span>
+      <h2 class="questao-texto">${q.texto}</h2>
+      ${htmlResposta}
+      ${insightHtml}
+    </div>
+  `;
+}
+
+function selecionarLikert(qid, val, btn) {
+  respostas[qid] = val;
+
+  // Visual: remove selecionado de todos, adiciona no clicado
+  btn.closest('.likert-options').querySelectorAll('.likert-btn').forEach(b => {
+    b.classList.remove('selecionado');
+  });
+  btn.classList.add('selecionado');
+
+  document.getElementById('btn-avancar').disabled = false;
+  
+  // Auto-avança após 0.5s
+  clearTimeout(window._autoAdv);
+  window._autoAdv = setTimeout(() => {
+    if (questaoAtual < LISTA_QUESTOES.length - 1) proximaQuestao();
+  }, 500);
+}
+
+function selecionarForcada(qid, val, btn) {
+  respostas[qid] = val;
+
+  btn.closest('.forcada-opcoes').querySelectorAll('.forcada-btn').forEach(b => {
+    b.classList.remove('selecionado');
+  });
+  btn.classList.add('selecionado');
+
+  document.getElementById('btn-avancar').disabled = false;
+
+  clearTimeout(window._autoAdv);
+  window._autoAdv = setTimeout(() => {
+    if (questaoAtual < LISTA_QUESTOES.length - 1) proximaQuestao();
+  }, 600);
+}
+
+function selecionarRadio(qid, val, btn) {
+  respostas[qid] = val;
+
+  btn.closest('.radio-opcoes').querySelectorAll('.radio-btn').forEach(b => {
+    b.classList.remove('selecionado');
+  });
+  btn.classList.add('selecionado');
+
+  document.getElementById('btn-avancar').disabled = false;
+}
+
+function proximaQuestao() {
+  if (questaoAtual >= LISTA_QUESTOES.length - 1) {
+    // Última questão: processar resultado
+    processarResultado();
+    return;
+  }
+
+  if (document.getElementById('btn-avancar').disabled) return;
+
+  questaoAtual++;
+  renderizarQuestao(questaoAtual);
+}
+
+function questaoAnterior() {
+  if (questaoAtual <= 0) return;
+  questaoAtual--;
+  renderizarQuestao(questaoAtual, 'volta');
+}
+
+function pularQuestao() {
+  if (questaoAtual < LISTA_QUESTOES.length - 1) {
+    questaoAtual++;
+    document.getElementById('btn-avancar').disabled =
+      respostas[LISTA_QUESTOES[questaoAtual].id] === undefined;
+    renderizarQuestao(questaoAtual);
+  }
+}
+
+// ═══════════════════════════════════
+// PROCESSAR E ENVIAR RESULTADO
+// ═══════════════════════════════════
+async function processarResultado() {
+  // Mostra loading
+  document.getElementById('tela-teste').style.display = 'none';
+  const telaLoad = document.getElementById('tela-carregando');
+  telaLoad.style.display = 'flex';
+  telaLoad.style.flexDirection = 'column';
+
+  // Anima fases do loading
+  const fases = ['fase1','fase2','fase3','fase4','fase5'];
+  for (let i = 0; i < fases.length; i++) {
+    await sleep(700);
+    document.getElementById(fases[i]).className = 'concluida';
+    if (i + 1 < fases.length) {
+      document.getElementById(fases[i+1]).className = 'ativa';
+    }
+  }
+
+  const tempoSegundos = Math.round((Date.now() - tempoInicio) / 1000);
+
+  try {
+    const resp = await fetch('{{ url_for("vocacional.processar") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ respostas, tempo_segundos: tempoSegundos })
+    });
+
+    const dados = await resp.json();
+
+    if (dados.sucesso) {
+      window.location.href = dados.redirect;
+    } else {
+      alert('Erro: ' + dados.erro);
+      document.getElementById('tela-carregando').style.display = 'none';
+      document.getElementById('tela-teste').style.display = 'flex';
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão. Verifique sua internet e tente novamente.');
+    document.getElementById('tela-carregando').style.display = 'none';
+    document.getElementById('tela-teste').style.display = 'flex';
+  }
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// Salva progresso a cada 10 questões
+let ultimoSalvo = 0;
+const originalProxima = proximaQuestao;
+setInterval(() => {
+  if (Object.keys(respostas).length > ultimoSalvo + 9) {
+    ultimoSalvo = Object.keys(respostas).length;
+    fetch('{{ url_for("vocacional.salvar_progresso") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ respostas, tempo_inicio: tempoInicio })
+    }).catch(() => {});
+  }
+}, 15000);
+</script>
+{% endblock %}

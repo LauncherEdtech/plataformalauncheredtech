@@ -1,0 +1,2961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analytics - Plataforma Launcher</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --dark-blue: #1e40af;
+            --light-blue: #3b82f6;
+            --accent-blue: #60a5fa;
+            --black: #0f172a;
+            --dark-gray: #1e293b;
+            --medium-gray: #475569;
+            --light-gray: #cbd5e1;
+            --white: #ffffff;
+            --bg-gray: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gray);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Controls */
+        .controls {
+            background: var(--white);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .controls-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--medium-gray);
+        }
+
+        select, button, .date-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: var(--white);
+            color: var(--black);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        select:hover, button:hover, .date-input:hover {
+            border-color: var(--primary-blue);
+        }
+
+        button.primary {
+            background: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        button.primary:hover {
+            background: var(--dark-blue);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--medium-gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+
+        .tab:hover {
+            color: var(--primary-blue);
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card.clickable {
+            cursor: pointer;
+        }
+
+        .kpi-card.clickable:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .kpi-icon.blue { background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); }
+        .kpi-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .kpi-icon.yellow { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .kpi-icon.red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .kpi-change.positive { color: var(--success); }
+        .kpi-change.negative { color: var(--danger); }
+        .kpi-change.neutral { color: var(--medium-gray); }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 0.25rem;
+        }
+
+        .chart-subtitle {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .data-table thead {
+            background: var(--bg-gray);
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--medium-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            color: var(--black);
+        }
+
+        .data-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-gray);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Metrics Panel */
+        .metrics-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .metrics-description {
+            color: var(--medium-gray);
+            font-size: 0.9375rem;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-item h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--medium-gray);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-item .value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .metric-item .label {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            margin-top: 0.25rem;
+        }
+
+        .formula {
+            background: var(--bg-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            color: var(--medium-gray);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--black);
+        }
+
+        .user-detail-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .user-detail-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 1rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            padding: 1rem;
+            background: var(--bg-gray);
+            border-radius: 8px;
+        }
+
+        .detail-item label {
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-item .value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        /* Segmento Item */
+        .segmento-item {
+            padding: 1rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>📊 Dashboard Analytics</h1>
+                <div class="header-subtitle">Análise completa de métricas de negócio e produto</div>
+            </div>
+            <div class="control-group">
+                <label>Atualizado em:</label>
+                <span id="lastUpdate" style="font-weight: 600;">--:--</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="controls-content">
+            <div class="control-group">
+                <label for="periodoSelect">Período:</label>
+                <select id="periodoSelect">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30" selected>Últimos 30 dias</option>
+                    <option value="60">Últimos 60 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                </select>
+            </div>
+
+
+            <div class="control-group">
+                <label for="dataInicio">Data Início:</label>
+                <input type="date" id="dataInicio" class="date-input">
+            </div>
+            <div class="control-group">
+                <label for="dataFim">Data Fim:</label>
+                <input type="date" id="dataFim" class="date-input">
+            </div>
+            <button class="primary" onclick="filtrarPorData()">🔍 Filtrar por Data</button>
+            <button class="primary" onclick="carregarDados()">🔄 Atualizar Dados</button>
+            <button onclick="exportarDados()">📥 Exportar Relatório</button>
+        </div>
+    </div>
+
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('negocio')">💰 Negócio</button>
+            <button class="tab" onclick="showTab('produto')">📱 Produto</button>
+            <button class="tab" onclick="showTab('ativacao')">🎯 Ativação & Retenção</button>
+            <button class="tab" onclick="showTab('analise')">📈 Análise Avançada</button>
+        </div>
+
+        <!-- Tab: Negócio -->
+        <div id="tab-negocio" class="tab-content active">
+            <div class="kpi-grid" id="kpisNegocio">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando KPIs de negócio...</p>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Crescimento de Usuários</h3>
+                        <p class="chart-subtitle">Novos registros por dia</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartCrescimento"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribuição de Planos</h3>
+                        <p class="chart-subtitle">Usuários por tipo de plano</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartPlanos"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card full-width">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Funil de Conversão</h3>
+                        <p class="chart-subtitle">Jornada do usuário até a conversão</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartFunil"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Produto -->
+        <div id="tab-produto" class="tab-content">
+            <div class="kpi-grid" id="kpisProduto">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando KPIs de produto...</p>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Engajamento por Funcionalidade</h3>
+                        <p class="chart-subtitle">Uso de cada feature</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartEngajamento"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Performance em Simulados</h3>
+                        <p class="chart-subtitle">Evolução das notas</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartPerformance"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card full-width">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Análise de Retenção por Coortes</h3>
+                        <p class="chart-subtitle">Taxa de retenção semanal</p>
+                    </div>
+                    <div id="tableCoortes" style="overflow-x: auto;">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando coortes...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Ativação & Retenção -->
+        <div id="tab-ativacao" class="tab-content">
+            <div class="metrics-panel">
+                <div class="metrics-header">
+                    <h2 class="metrics-title">Métricas de Ativação e Retenção</h2>
+                    <p class="metrics-description">
+                        Análise detalhada do comportamento de novos usuários com fórmulas e cálculos precisos
+                    </p>
+                </div>
+
+                <div id="metricsAtivacao">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Carregando métricas detalhadas...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribuição de Tempo de Uso</h3>
+                        <p class="chart-subtitle">Usuários ativados por faixa de tempo</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDistribuicaoTempo"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Comparativo de Retenção</h3>
+                        <p class="chart-subtitle">D1 vs D7</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartRetencao"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Análise Avançada -->
+        <div id="tab-analise" class="tab-content">
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Segmentação de Usuários</h3>
+                        <p class="chart-subtitle">Por tempo de engajamento</p>
+                    </div>
+                    <div id="segmentacaoUsuarios">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Carregando segmentação...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Padrões de Uso por Hora</h3>
+                        <p class="chart-subtitle">Minutos de uso por hora do dia</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartUsoPorHora"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card full-width">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Padrões de Uso por Dia da Semana</h3>
+                        <p class="chart-subtitle">Minutos de uso por dia</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartUsoPorDia"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes do Usuário -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalUsuario()">&times;</span>
+            <div id="conteudoModalUsuario">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando detalhes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // VARIÁVEIS GLOBAIS
+        // ============================================================
+        let charts = {};
+        let currentPeriodo = 30;
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDados();
+            
+            // Auto-refresh a cada 5 minutos
+            setInterval(carregarDados, 5 * 60 * 1000);
+        });
+
+        // ============================================================
+        // UTILITÁRIOS
+        // ============================================================
+        function getDateParams() {
+            const params = new URLSearchParams();
+            
+            if (window.currentDataInicio && window.currentDataFim) {
+                params.append('data_inicio', window.currentDataInicio);
+                params.append('data_fim', window.currentDataFim);
+            } else {
+                params.append('periodo', currentPeriodo);
+            }
+            
+            return params.toString();
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function filtrarPorData() {
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+            
+            if (!dataInicio || !dataFim) {
+                alert('Por favor, selecione ambas as datas');
+                return;
+            }
+            
+            if (new Date(dataInicio) > new Date(dataFim)) {
+                alert('Data início não pode ser maior que data fim');
+                return;
+            }
+            
+            // Salvar datas globalmente
+            window.currentDataInicio = dataInicio;
+            window.currentDataFim = dataFim;
+            
+            // Recarregar todos os dados com o novo filtro
+            carregarDados();
+        }
+
+        // ============================================================
+        // TAB SWITCHING
+        // ============================================================
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============================================================
+        // CARREGAMENTO PRINCIPAL
+        // ============================================================
+        async function carregarDados() {
+            currentPeriodo = document.getElementById('periodoSelect').value;
+            
+            updateLastUpdate();
+            
+            await Promise.all([
+                carregarKPIsNegocio(),
+                carregarKPIsProduto(),
+                carregarCrescimentoUsuarios(),
+                carregarDistribuicaoPlanos(),
+                carregarFunilConversao(),
+                carregarEngajamento(),
+                carregarPerformance(),
+                carregarCoortes(),
+                carregarMetricasAtivacao(),
+                carregarSegmentacao(),
+                carregarPadroesUso()
+            ]);
+        }
+
+        // ============================================================
+        // KPIs DE NEGÓCIO
+        // ============================================================
+        async function carregarKPIsNegocio() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/kpis-negocio?${params}`);
+                const data = await response.json();
+
+
+const container = document.getElementById('kpisNegocio');
+container.innerHTML = `
+    <!-- TOTAL DE USUÁRIOS - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesTotalUsuarios()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Total de Usuários</div>
+                <div class="kpi-value">${data.total_usuarios.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="kpi-icon blue">👥</div>
+        </div>
+        <div class="kpi-change positive">+${data.novos_usuarios} novos</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- USUÁRIOS PREMIUM - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesUsuariosPremium()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Usuários Premium</div>
+                <div class="kpi-value">${data.usuarios_premium.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="kpi-icon green">⭐</div>
+        </div>
+        <div class="kpi-change neutral">${data.usuarios_free.toLocaleString('pt-BR')} gratuitos</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- TAXA DE CONVERSÃO - NÃO CLICÁVEL (por enquanto) -->
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Taxa de Conversão</div>
+                <div class="kpi-value">${data.taxa_conversao}%</div>
+            </div>
+            <div class="kpi-icon blue">📈</div>
+        </div>
+        <div class="kpi-change ${data.taxa_conversao > 5 ? 'positive' : 'neutral'}">
+            Free → Pago
+        </div>
+    </div>
+
+    <!-- MRR - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesMRR()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">MRR</div>
+                <div class="kpi-value">R$ ${data.mrr.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            </div>
+            <div class="kpi-icon green">💰</div>
+        </div>
+        <div class="kpi-change neutral">Receita recorrente mensal</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- RECEITA MENSAL - NÃO CLICÁVEL (por enquanto) -->
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Receita Mensal</div>
+                <div class="kpi-value">R$ ${data.receita_mensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            </div>
+            <div class="kpi-icon green">💵</div>
+        </div>
+        <div class="kpi-change neutral">MRR + ARR/12</div>
+    </div>
+
+    <!-- CHURN RATE - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesChurn()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Churn Rate</div>
+                <div class="kpi-value">${data.churn_rate}%</div>
+            </div>
+            <div class="kpi-icon ${data.churn_rate > 5 ? 'red' : 'yellow'}">⚠️</div>
+        </div>
+
+
+        <div class="kpi-change ${data.churn_rate > 5 ? 'negative' : 'neutral'}">
+            Taxa de cancelamento
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- LTV e LTV/CAC - Manter sem clique -->
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">LTV</div>
+                <div class="kpi-value">R$ ${data.ltv.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            </div>
+            <div class="kpi-icon blue">📊</div>
+        </div>
+        <div class="kpi-change neutral">Lifetime Value médio</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">LTV / CAC</div>
+                <div class="kpi-value">${data.ltv_cac_ratio}x</div>
+            </div>
+            <div class="kpi-icon ${data.ltv_cac_ratio > 3 ? 'green' : 'yellow'}">🎯</div>
+        </div>
+        <div class="kpi-change ${data.ltv_cac_ratio > 3 ? 'positive' : 'neutral'}">
+            ${data.ltv_cac_ratio > 3 ? 'Excelente!' : 'Melhorar'}
+        </div>
+    </div>
+`;
+
+            } catch (error) {
+                console.error('Erro ao carregar KPIs de negócio:', error);
+            }
+        }
+
+        // ============================================================
+        // KPIs DE PRODUTO
+        // ============================================================
+        async function carregarKPIsProduto() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/kpis-produto?${params}`);
+                const data = await response.json();
+
+
+const container = document.getElementById('kpisProduto');
+container.innerHTML = `
+    <!-- TAXA DE ATIVAÇÃO - JÁ CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarUsuariosAtivados()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Taxa de Ativação</div>
+                <div class="kpi-value">${data.taxa_ativacao}%</div>
+            </div>
+            <div class="kpi-icon blue">🎯</div>
+        </div>
+        <div class="kpi-change neutral">${data.usuarios_ativados}/${data.total_novos_usuarios} usuários</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para ver detalhes
+        </div>
+    </div>
+
+    <!-- RETORNO D1 - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesRetornoD1()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Retorno D1</div>
+                <div class="kpi-value">${data.taxa_retorno_d1}%</div>
+            </div>
+            <div class="kpi-icon yellow">📅</div>
+        </div>
+        <div class="kpi-change neutral">${data.retorno_d1} usuários retornaram</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- RETORNO D7 - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesRetornoD7()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Retorno D7</div>
+                <div class="kpi-value">${data.taxa_retorno_d7}%</div>
+            </div>
+            <div class="kpi-icon green">📆</div>
+        </div>
+        <div class="kpi-change neutral">${data.retorno_d7} usuários retornaram</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- TEMPO MÉDIO - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesTempoMedio()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Tempo Médio (Ativados)</div>
+                <div class="kpi-value">${Math.round(data.tempo_medio_uso_ativados)} min</div>
+            </div>
+            <div class="kpi-icon blue">⏱️</div>
+        </div>
+        <div class="kpi-change neutral">${(data.tempo_medio_uso_ativados / 60).toFixed(1)}h por usuário</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- DAU - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesDAU()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">DAU</div>
+                <div class="kpi-value">${data.dau.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="kpi-icon green">👤</div>
+        </div>
+        <div class="kpi-change neutral">Usuários ativos hoje</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- MAU - CLICÁVEL -->
+    <div class="kpi-card clickable" onclick="mostrarDetalhesMAU()">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">MAU</div>
+                <div class="kpi-value">${data.mau.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="kpi-icon blue">👥</div>
+        </div>
+        <div class="kpi-change neutral">Usuários ativos no mês</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue);">
+            👉 Clique para detalhes
+        </div>
+    </div>
+
+    <!-- STICKINESS - NÃO CLICÁVEL -->
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-label">Stickiness</div>
+                <div class="kpi-value">${data.stickiness}%</div>
+            </div>
+            <div class="kpi-icon ${data.stickiness > 20 ? 'green' : 'yellow'}">🔥</div>
+        </div>
+        <div class="kpi-change ${data.stickiness > 20 ? 'positive' : 'neutral'}">
+            DAU/MAU ratio
+        </div>
+    </div>
+`;
+
+                
+            } catch (error) {
+                console.error('Erro ao carregar KPIs de produto:', error);
+            }
+        }
+
+        // ============================================================
+        // GRÁFICOS - NEGÓCIO
+        // ============================================================
+        async function carregarCrescimentoUsuarios() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/crescimento-usuarios?${params}`);
+                const data = await response.json();
+
+                if (charts.crescimento) {
+                    charts.crescimento.destroy();
+                }
+
+                const ctx = document.getElementById('chartCrescimento').getContext('2d');
+                charts.crescimento = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: 'Novos Usuários',
+                                data: data.novos,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Total Acumulado',
+                                data: data.acumulado,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar crescimento:', error);
+            }
+        }
+
+        async function carregarDistribuicaoPlanos() {
+            try {
+                const response = await fetch('/dashboard-analytics/api/distribuicao-planos');
+                const data = await response.json();
+
+                if (charts.planos) {
+                    charts.planos.destroy();
+                }
+
+                const ctx = document.getElementById('chartPlanos').getContext('2d');
+                charts.planos = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.values,
+                            backgroundColor: [
+                                '#cbd5e1',
+                                '#3b82f6',
+                                '#10b981'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar planos:', error);
+            }
+        }
+
+        async function carregarFunilConversao() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/funil-conversao?${params}`);
+                const data = await response.json();
+
+                if (charts.funil) {
+                    charts.funil.destroy();
+                }
+
+                const ctx = document.getElementById('chartFunil').getContext('2d');
+                charts.funil = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.funil.map(f => f.etapa),
+                        datasets: [{
+                            label: 'Usuários',
+                            data: data.funil.map(f => f.total),
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const index = context.dataIndex;
+                                        const percentual = data.funil[index].percentual;
+                                        return `${context.parsed.x} usuários (${percentual}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar funil:', error);
+            }
+        }
+
+        // ============================================================
+        // GRÁFICOS - PRODUTO
+        // ============================================================
+        async function carregarEngajamento() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/engajamento-funcionalidades?${params}`);
+                const data = await response.json();
+
+                if (charts.engajamento) {
+                    charts.engajamento.destroy();
+                }
+
+                const ctx = document.getElementById('chartEngajamento').getContext('2d');
+                charts.engajamento = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.funcionalidades.map(f => f.nome),
+                        datasets: [
+                            {
+                                label: 'Tempo de Uso (min)',
+                                data: data.funcionalidades.map(f => f.total_uso_minutos),
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Usuários Únicos',
+                                data: data.funcionalidades.map(f => f.usuarios_unicos),
+                                backgroundColor: '#10b981',
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+
+
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar engajamento:', error);
+            }
+        }
+
+
+        async function carregarPerformance() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/performance-simulados?${params}`);
+                const data = await response.json();
+
+                if (charts.performance) {
+                    charts.performance.destroy();
+                }
+
+
+                const ctx = document.getElementById('chartPerformance').getContext('2d');
+                charts.performance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.evolucao_notas.map((_, i) => `#${i+1}`),
+                        datasets: [{
+                            label: 'Nota TRI',
+                            data: data.evolucao_notas,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1000
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar performance:', error);
+            }
+        }
+
+        async function carregarCoortes() {
+            try {
+                const response = await fetch('/dashboard-analytics/api/retencao-coortes');
+                const data = await response.json();
+
+                const container = document.getElementById('tableCoortes');
+                
+                if (!data.coortes || data.coortes.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--medium-gray); padding: 2rem;">Dados insuficientes para análise de coortes</p>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Coorte (Semana)</th>
+                                <th>Total Usuários</th>
+                                <th>Semana 1</th>
+                                <th>Semana 2</th>
+                                <th>Semana 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.coortes.forEach(coorte => {
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${coorte.inicio}</strong></td>
+                            <td>${coorte.total}</td>
+                            <td style="background: rgba(16, 185, 129, ${(coorte.retencoes[0] || 0) / 100}); font-weight: 600;">
+                                ${coorte.retencoes[0] !== undefined ? coorte.retencoes[0] + '%' : '-'}
+                            </td>
+                            <td style="background: rgba(16, 185, 129, ${(coorte.retencoes[1] || 0) / 100}); font-weight: 600;">
+                                ${coorte.retencoes[1] !== undefined ? coorte.retencoes[1] + '%' : '-'}
+                            </td>
+                            <td style="background: rgba(16, 185, 129, ${(coorte.retencoes[2] || 0) / 100}); font-weight: 600;">
+                                ${coorte.retencoes[2] !== undefined ? coorte.retencoes[2] + '%' : '-'}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            } catch (error) {
+                console.error('Erro ao carregar coortes:', error);
+            }
+        }
+
+        // ============================================================
+        // MÉTRICAS DE ATIVAÇÃO
+        // ============================================================
+        async function carregarMetricasAtivacao() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/metricas-ativacao-detalhadas?${params}`);
+                const data = await response.json();
+
+                const container = document.getElementById('metricsAtivacao');
+                container.innerHTML = `
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <h4>Taxa de Ativação</h4>
+                            <div class="value">${data.taxa_ativacao}%</div>
+                            <div class="label">${data.usuarios_ativados} de ${data.total_novos_usuarios} usuários novos</div>
+                            <div class="formula">
+                                Fórmula: (usuários que fizeram simulado OU redação ÷ total novos) × 100
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Evento-chave</h4>
+                            <div class="value">${data.usuarios_ativados}</div>
+                            <div class="label">Usuários ativados</div>
+                            <div class="formula">
+                                Evento: Realizou ≥ 1 simulado OU ≥ 1 redação
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Período</h4>
+                            <div class="value">${data.periodo_dias}</div>
+                            <div class="label">Dias analisados</div>
+                            <div class="formula">
+                                Últimos ${data.periodo_dias} dias
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <h4>Retorno D1</h4>
+                            <div class="value">${data.taxa_retorno_d1}%</div>
+                            <div class="label">${data.retorno_d1} usuários retornaram</div>
+                            <div class="formula">
+                                Fórmula: (usuários que acessaram em D+1 ÷ total novos) × 100
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Retorno D7</h4>
+                            <div class="value">${data.taxa_retorno_d7}%</div>
+                            <div class="label">${data.retorno_d7} usuários retornaram</div>
+                            <div class="formula">
+                                Fórmula: (usuários que acessaram entre D+1 e D+7 ÷ total novos) × 100
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Diferença D1→D7</h4>
+                            <div class="value">+${(data.taxa_retorno_d7 - data.taxa_retorno_d1).toFixed(2)}pp</div>
+                            <div class="label">Pontos percentuais</div>
+                            <div class="formula">
+                                Crescimento da retenção
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <h4>Tempo Médio (min)</h4>
+                            <div class="value">${data.tempo_medio_uso_ativados_minutos.toFixed(1)}</div>
+                            <div class="label">Minutos por usuário ativado</div>
+                            <div class="formula">
+                                Fórmula: Σ(tempo de uso ativados) ÷ Nº ativados
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Tempo Médio (horas)</h4>
+                            <div class="value">${data.tempo_medio_uso_ativados_horas.toFixed(2)}h</div>
+                            <div class="label">Horas por usuário ativado</div>
+                            <div class="formula">
+                                Conversão: minutos ÷ 60
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <h4>Base de Cálculo</h4>
+                            <div class="value">${data.usuarios_ativados}</div>
+                            <div class="label">Apenas usuários ativados</div>
+                            <div class="formula">
+                                Exclui usuários não-ativados
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Gráfico de distribuição de tempo
+                if (charts.distribuicaoTempo) {
+                    charts.distribuicaoTempo.destroy();
+                }
+
+                const ctx = document.getElementById('chartDistribuicaoTempo').getContext('2d');
+                const labels = Object.keys(data.distribuicao_tempo);
+                const valores = Object.values(data.distribuicao_tempo);
+
+                charts.distribuicaoTempo = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Usuários',
+                            data: valores,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Gráfico comparativo de retenção
+                if (charts.retencao) {
+                    charts.retencao.destroy();
+                }
+
+                const ctx2 = document.getElementById('chartRetencao').getContext('2d');
+                charts.retencao = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['D1', 'D7'],
+                        datasets: [{
+                            label: 'Taxa de Retorno (%)',
+                            data: [data.taxa_retorno_d1, data.taxa_retorno_d7],
+                            backgroundColor: ['#3b82f6', '#10b981'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar métricas de ativação:', error);
+            }
+        }
+
+        // ============================================================
+        // ANÁLISE AVANÇADA - SEGMENTAÇÃO
+        // ============================================================
+        async function carregarSegmentacao() {
+            try {
+                const response = await fetch('/dashboard-analytics/api/analise-segmentacao');
+                const data = await response.json();
+                
+                const container = document.getElementById('segmentacaoUsuarios');
+                
+                const segmentosHTML = Object.entries(data.segmentos).map(([nome, valor]) => {
+                    const nomeFormatado = {
+                        'super_engajados': 'Super Engajados (>10h)',
+                        'engajados': 'Engajados (5-10h)',
+                        'moderados': 'Moderados (1-5h)',
+                        'baixo_engajamento': 'Baixo Engajamento (<1h)',
+                        'inativos': 'Inativos (0h)'
+                    }[nome];
+                    
+                    const percentual = data.segmentos_percentual[nome];
+                    
+                    return `
+                        <div class="segmento-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600;">${nomeFormatado}</span>
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-blue);">
+                                    ${percentual}%
+                                </span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--medium-gray);">
+                                <span>${valor} usuários</span>
+                                <span>${valor} / ${data.total_usuarios}</span>
+                            </div>
+                            <div style="height: 8px; background: var(--bg-gray); border-radius: 4px; margin-top: 0.5rem; overflow: hidden;">
+                                <div style="height: 100%; width: ${percentual}%; background: var(--primary-blue);"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = segmentosHTML;
+                
+            } catch (error) {
+                console.error('Erro ao carregar segmentação:', error);
+            }
+        }
+
+
+
+
+
+        // ============================================================
+        // ANÁLISE AVANÇADA - PADRÕES DE USO
+        // ============================================================
+        async function carregarPadroesUso() {
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/analise-padroes-uso?${params}`);
+                const data = await response.json();
+                
+                // Gráfico por hora
+                if (charts.usoPorHora) {
+                    charts.usoPorHora.destroy();
+                }
+                
+                const ctxHora = document.getElementById('chartUsoPorHora').getContext('2d');
+                charts.usoPorHora = new Chart(ctxHora, {
+                    type: 'line',
+                    data: {
+                        labels: data.uso_por_hora.labels,
+                        datasets: [{
+                            label: 'Minutos de Uso',
+                            data: data.uso_por_hora.minutos,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // Gráfico por dia da semana
+                if (charts.usoPorDia) {
+                    charts.usoPorDia.destroy();
+                }
+                
+                const ctxDia = document.getElementById('chartUsoPorDia').getContext('2d');
+                charts.usoPorDia = new Chart(ctxDia, {
+                    type: 'bar',
+                    data: {
+                        labels: data.uso_por_dia_semana.labels,
+                        datasets: [{
+                            label: 'Minutos de Uso',
+                            data: data.uso_por_dia_semana.minutos,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Erro ao carregar padrões de uso:', error);
+            }
+        }
+
+        // ============================================================
+        // MODAL - USUÁRIOS ATIVADOS
+        // ============================================================
+        async function mostrarUsuariosAtivados() {
+            const modal = document.getElementById('modalUsuario');
+            const conteudo = document.getElementById('conteudoModalUsuario');
+            
+            modal.style.display = 'block';
+            conteudo.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando lista de usuários ativados...</p>
+                </div>
+            `;
+            
+            try {
+                const params = getDateParams();
+                const response = await fetch(`/dashboard-analytics/api/usuarios-ativados?${params}`);
+                const data = await response.json();
+                
+                const usuariosHTML = data.usuarios.map(u => `
+                    <tr onclick="abrirDetalhesUsuario(${u.id})">
+                        <td><strong>${u.username}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${u.ultimo_acesso}</td>
+                        <td>
+                            <span style="padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px;">
+                                ${u.plano}
+                            </span>
+                        </td>
+                        <td><strong>${u.tempo_total_horas}h</strong></td>
+                        <td>${u.total_simulados}</td>
+                        <td>${u.total_redacoes}</td>
+                    </tr>
+                `).join('');
+                
+                conteudo.innerHTML = `
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                            👥 Usuários Ativados (${data.total})
+                        </h2>
+                        <p style="color: var(--medium-gray); margin-bottom: 2rem;">
+                            Período: ${new Date(data.periodo.inicio).toLocaleDateString('pt-BR')} até ${new Date(data.periodo.fim).toLocaleDateString('pt-BR')}
+                        </p>
+                        
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Último Acesso</th>
+                                        <th>Plano</th>
+                                        <th>Tempo Total</th>
+                                        <th>Simulados</th>
+                                        <th>Redações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${usuariosHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <p style="margin-top: 1rem; text-align: center; color: var(--medium-gray); font-size: 0.875rem;">
+                            💡 Clique em qualquer linha para ver detalhes completos do usuário
+                        </p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                conteudo.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                        <p>❌ Erro ao carregar usuários ativados</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // MODAL - DETALHES DO USUÁRIO
+        // ============================================================
+        async function abrirDetalhesUsuario(userId) {
+            const modal = document.getElementById('modalUsuario');
+            const conteudo = document.getElementById('conteudoModalUsuario');
+            
+            modal.style.display = 'block';
+            conteudo.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando detalhes do usuário...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`/dashboard-analytics/api/usuario/${userId}`);
+                const data = await response.json();
+                
+                renderizarDetalhesUsuario(data);
+                
+            } catch (error) {
+                conteudo.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                        <p>❌ Erro ao carregar detalhes do usuário</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderizarDetalhesUsuario(data) {
+            const conteudo = document.getElementById('conteudoModalUsuario');
+            
+            const funcionalidadesHTML = data.tempo_por_funcionalidade.map(f => `
+                <div class="detail-item">
+                    <label>${f.atividade}</label>
+                    <div class="value">${f.tempo_horas}h (${f.tempo_minutos}min)</div>
+                    <div style="font-size: 0.75rem; color: var(--medium-gray); margin-top: 0.25rem;">
+                        ${f.sessoes} sessões • Média: ${f.media_por_sessao} min/sessão
+                    </div>
+                </div>
+            `).join('');
+            
+            const simuladosHTML = data.simulados.ultimos.map(s => `
+                <tr>
+                    <td>${s.data}</td>
+                    <td><span style="padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px;">${s.status}</span></td>
+                    <td><strong>${s.nota_tri}</strong></td>
+                </tr>
+            `).join('');
+            
+            const redacoesHTML = data.redacoes.ultimas.map(r => `
+                <tr>
+                    <td>${r.data}</td>
+                    <td>${r.tema}</td>
+                </tr>
+            `).join('');
+            
+            conteudo.innerHTML = `
+                <div class="user-detail-section">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                        ${data.dados_basicos.username}
+                    </h2>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <div class="value" style="font-size: 0.875rem;">${data.dados_basicos.email}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Plano</label>
+                            <div class="value">${data.dados_basicos.plano_ativo}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Registrado em</label>
+                            <div class="value" style="font-size: 0.875rem;">${data.dados_basicos.data_registro}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Último Acesso</label>
+                            <div class="value" style="font-size: 0.875rem;">${data.dados_basicos.ultimo_acesso}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="user-detail-section">
+                    <h3>⏱️ Tempo Total de Uso</h3>
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);">
+                        ${data.tempo_total_horas}h (${data.tempo_total_minutos} min)
+                    </div>
+                </div>
+                
+                <div class="user-detail-section">
+                    <h3>📊 Tempo por Funcionalidade</h3>
+                    <div class="detail-grid">
+                        ${funcionalidadesHTML}
+                    </div>
+                </div>
+                
+                <div class="user-detail-section">
+                    <h3>📝 Simulados (${data.simulados.total})</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Nota TRI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${simuladosHTML || '<tr><td colspan="3" style="text-align: center;">Nenhum simulado realizado</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="user-detail-section">
+                    <h3>✍️ Redações (${data.redacoes.total})</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${redacoesHTML || '<tr><td colspan="2" style="text-align: center;">Nenhuma redação criada</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="user-detail-section">
+                    <h3>📈 Atividade nos Últimos 30 Dias</h3>
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="chartAtividadeUsuario"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            // Criar gráfico de atividade
+            setTimeout(() => {
+                const ctx = document.getElementById('chartAtividadeUsuario').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.atividade_30_dias.datas,
+                        datasets: [{
+                            label: 'Minutos de Uso',
+                            data: data.atividade_30_dias.minutos,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }, 100);
+        }
+
+
+
+        function fecharModalUsuario() {
+            document.getElementById('modalUsuario').style.display = 'none';
+        }
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalUsuario');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // EXPORTAR DADOS
+        // ============================================================
+        function exportarDados() {
+            alert('Funcionalidade de exportação em desenvolvimento.\nEm breve você poderá exportar relatórios em PDF, Excel e CSV.');
+        }
+
+
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+        document.getElementById('periodoSelect').addEventListener('change', function() {
+            carregarDados();
+        });
+
+
+async function mostrarDetalhesTotalUsuarios() {
+    abrirModal('Carregando total de usuários...');
+    
+    try {
+        const params = getDateParams();
+        const response = await fetch(`/dashboard-analytics/api/detalhes/total-usuarios?${params}`);
+        const data = await response.json();
+        
+        const novosHTML = data.novos_usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>${u.data_registro}</td>
+                <td><span class="badge badge-success">NOVO</span></td>
+            </tr>
+        `).join('');
+        
+        const todosHTML = data.todos_usuarios.slice(0, 50).map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>${u.data_registro}</td>
+                <td>${u.ultimo_acesso}</td>
+                <td>
+                    <span class="badge badge-${u.is_novo ? 'success' : 'secondary'}">
+                        ${u.is_novo ? 'NOVO' : u.plano.toUpperCase()}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                👥 Total de Usuários
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Total Geral</label>
+                    <div class="value">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Novos no Período</label>
+                    <div class="value" style="color: var(--success);">${data.novos_periodo}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Período</label>
+                    <div class="value" style="font-size: 0.875rem;">${data.periodo.inicio} - ${data.periodo.fim}</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                🆕 Novos Usuários (${data.novos_periodo})
+            </h3>
+            <div style="overflow-x: auto; margin-bottom: 2rem;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Data de Registro</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${novosHTML || '<tr><td colspan="4" style="text-align: center;">Nenhum novo usuário</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                📋 Últimos 50 Usuários
+            </h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Registro</th>
+                            <th>Último Acesso</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${todosHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 1rem; text-align: center; color: var(--medium-gray); font-size: 0.875rem;">
+                💡 Clique em qualquer usuário para ver detalhes completos
+            </p>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar usuários: ' + error.message);
+    }
+}
+
+// ============================================================
+// NEGÓCIO - USUÁRIOS PREMIUM
+// ============================================================
+async function mostrarDetalhesUsuariosPremium() {
+    abrirModal('Carregando usuários premium...');
+    
+    try {
+        const response = await fetch('/dashboard-analytics/api/detalhes/usuarios-premium');
+        const data = await response.json();
+        
+        const usuariosHTML = data.usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>
+                    <span class="badge badge-${u.plano === 'mensal' ? 'primary' : 'success'}">
+                        ${u.plano.toUpperCase()}
+                    </span>
+                </td>
+                <td>${u.expira_em}</td>
+                <td>
+                    <span style="color: ${u.dias_restantes < 7 ? 'var(--danger)' : 'var(--success)'}; font-weight: 600;">
+                        ${u.dias_restantes} dias
+                    </span>
+                </td>
+                <td>${u.ultimo_acesso}</td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                ⭐ Usuários Premium
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Total Premium</label>
+                    <div class="value">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Planos Mensais</label>
+                    <div class="value" style="color: var(--primary-blue);">${data.mensais}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Planos Anuais</label>
+                    <div class="value" style="color: var(--success);">${data.anuais}</div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Plano</th>
+                            <th>Expira em</th>
+                            <th>Dias Restantes</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 1rem; text-align: center; color: var(--medium-gray); font-size: 0.875rem;">
+                💡 Clique em qualquer usuário para ver detalhes completos
+            </p>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar usuários premium: ' + error.message);
+    }
+}
+
+// ============================================================
+// NEGÓCIO - MRR
+// ============================================================
+async function mostrarDetalhesMRR() {
+    abrirModal('Carregando detalhes do MRR...');
+    
+    try {
+        const response = await fetch('/dashboard-analytics/api/detalhes/mrr');
+        const data = await response.json();
+        
+        const usuariosHTML = data.usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>R$ ${u.valor.toFixed(2)}</td>
+                <td>${u.proxima_cobranca}</td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                💰 MRR - Monthly Recurring Revenue
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>MRR Total</label>
+                    <div class="value" style="color: var(--success);">R$ ${data.mrr_total.toFixed(2)}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Assinantes Mensais</label>
+                    <div class="value">${data.total_assinantes}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Valor por Assinante</label>
+                    <div class="value">R$ ${data.valor_por_assinante.toFixed(2)}</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                📊 Assinantes Ativos
+            </h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Valor Mensal</th>
+                            <th>Próxima Cobrança</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--bg-gray); border-radius: 8px;">
+                <strong>Fórmula MRR:</strong> Número de assinantes × Valor mensal
+                <br>
+                <strong>Cálculo:</strong> ${data.total_assinantes} × R$ ${data.valor_por_assinante.toFixed(2)} = R$ ${data.mrr_total.toFixed(2)}
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar MRR: ' + error.message);
+    }
+}
+
+// ============================================================
+// NEGÓCIO - CHURN
+// ============================================================
+async function mostrarDetalhesChurn() {
+    abrirModal('Carregando dados de churn...');
+    
+    try {
+        const params = getDateParams();
+        const response = await fetch(`/dashboard-analytics/api/detalhes/churn?${params}`);
+        const data = await response.json();
+        
+        const usuariosHTML = data.usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>${u.expirou_em}</td>
+                <td>${u.tempo_como_cliente} dias</td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                ⚠️ Churn - Usuários que Cancelaram
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Total de Cancelamentos</label>
+                    <div class="value" style="color: var(--danger);">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Período</label>
+                    <div class="value" style="font-size: 0.875rem;">${data.periodo.inicio} - ${data.periodo.fim}</div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Data de Cancelamento</th>
+                            <th>Tempo como Cliente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML || '<tr><td colspan="4" style="text-align: center;">Nenhum cancelamento no período</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar churn: ' + error.message);
+    }
+}
+
+
+
+
+// ============================================================
+// PRODUTO - RETORNO D1 (CORRIGIDO)
+// ============================================================
+async function mostrarDetalhesRetornoD1() {
+    abrirModal('Carregando retorno D1...');
+    
+    try {
+        const params = getDateParams();
+        const response = await fetch(`/dashboard-analytics/api/detalhes/retorno-d1?${params}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // VALIDAÇÃO: Verificar se dados existem
+        if (!data || data.erro) {
+            throw new Error(data?.erro || 'Dados não encontrados');
+        }
+        
+        // VALIDAÇÃO: Garantir que usuarios existe e é um array
+        const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+        
+        if (usuarios.length === 0) {
+            const conteudo = `
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    📅 Retorno D1 (Day 1 Retention)
+                </h2>
+                
+                <div class="detail-grid" style="margin-bottom: 2rem;">
+                    <div class="detail-item">
+                        <label>Taxa de Retorno D1</label>
+                        <div class="value" style="color: var(--primary-blue);">${data.taxa_retorno || 0}%</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Total Novos</label>
+                        <div class="value">${data.total_novos || 0}</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Período</label>
+                        <div class="value" style="font-size: 0.875rem;">
+                            ${data.periodo?.inicio || 'N/A'} - ${data.periodo?.fim || 'N/A'}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding: 2rem; background: var(--bg-gray); border-radius: 8px;">
+                    <p style="color: var(--medium-gray);">
+                        📊 Nenhum dado disponível para o período selecionado
+                    </p>
+                </div>
+            `;
+            
+            renderizarConteudoModal(conteudo);
+            return;
+        }
+
+
+        const retornaram = data.usuarios.filter(u => u.retornou_d1);
+        
+        const naoRetornaram = usuarios.filter(u => u.retornou_d1 !== true);
+        
+        const retornaramHTML = retornaram.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username || 'N/A'}</strong></td>
+                <td>${u.email || 'N/A'}</td>
+                <td>${u.data_registro || 'N/A'}</td>
+                <td>${u.ultimo_acesso || 'N/A'}</td>
+                <td><span style="color: var(--success); font-weight: 600;">${u.dias_ate_retorno} dias</span></td>
+            </tr>
+        `).join('');
+        
+        const naoRetornaramHTML = naoRetornaram.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username || 'N/A'}</strong></td>
+                <td>${u.email || 'N/A'}</td>
+                <td>${u.data_registro || 'N/A'}</td>
+                <td>${u.ultimo_acesso || 'N/A'}</td>
+                <td><span style="color: var(--danger);">Não retornou</span></td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                📅 Retorno D1 (Day 1 Retention)
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Taxa de Retorno D1</label>
+                    <div class="value" style="color: var(--primary-blue);">${data.taxa_retorno || 0}%</div>
+                </div>
+                <div class="detail-item">
+                    <label>Retornaram</label>
+                    <div class="value" style="color: var(--success);">${retornaram.length}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Total Novos</label>
+                    <div class="value">${data.total_novos || 0}</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                ✅ Usuários que Retornaram (${retornaram.length})
+            </h3>
+            <div style="overflow-x: auto; margin-bottom: 2rem;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Registro</th>
+                            <th>Último Acesso</th>
+                            <th>Tempo até Retorno</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${retornaramHTML || '<tr><td colspan="5" style="text-align: center;">Nenhum usuário retornou</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                ❌ Usuários que Não Retornaram (${naoRetornaram.length})
+            </h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Registro</th>
+                            <th>Último Acesso</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${naoRetornaramHTML || '<tr><td colspan="5" style="text-align: center;">Todos retornaram!</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--bg-gray); border-radius: 8px;">
+                <strong>Fórmula D1:</strong> (Usuários que acessaram D+1 ÷ Total novos) × 100
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        console.error('Erro detalhado:', error);
+        mostrarErroModal('Erro ao carregar retorno D1: ' + error.message);
+    }
+}
+
+// ============================================================
+// PRODUTO - RETORNO D7 (CORRIGIDO)
+// ============================================================
+async function mostrarDetalhesRetornoD7() {
+    abrirModal('Carregando retorno D7...');
+    
+    try {
+        const params = getDateParams();
+        const response = await fetch(`/dashboard-analytics/api/detalhes/retorno-d7?${params}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // VALIDAÇÃO: Verificar se dados existem
+        if (!data || data.erro) {
+            throw new Error(data?.erro || 'Dados não encontrados');
+        }
+        
+        // VALIDAÇÃO: Garantir que usuarios existe e é um array
+        const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+        
+        if (usuarios.length === 0) {
+            const conteudo = `
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    📆 Retorno D7 (Day 7 Retention)
+                </h2>
+                
+                <div class="detail-grid" style="margin-bottom: 2rem;">
+                    <div class="detail-item">
+                        <label>Taxa de Retorno D7</label>
+                        <div class="value" style="color: var(--success);">${data.taxa_retorno || 0}%</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Total Novos</label>
+                        <div class="value">${data.total_novos || 0}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding: 2rem; background: var(--bg-gray); border-radius: 8px;">
+                    <p style="color: var(--medium-gray);">
+                        📊 Nenhum dado disponível para o período selecionado
+                    </p>
+                </div>
+            `;
+            
+            renderizarConteudoModal(conteudo);
+            return;
+        }
+        
+        const retornaram = usuarios.filter(u => u.retornou_d7 === true);
+        
+        const retornaramHTML = retornaram.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username || 'N/A'}</strong></td>
+                <td>${u.email || 'N/A'}</td>
+                <td>${u.data_registro || 'N/A'}</td>
+                <td>${u.ultimo_acesso || 'N/A'}</td>
+                <td><span style="color: var(--success); font-weight: 600;">${u.dias_ate_retorno} dias</span></td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                📆 Retorno D7 (Day 7 Retention)
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Taxa de Retorno D7</label>
+                    <div class="value" style="color: var(--success);">${data.taxa_retorno || 0}%</div>
+                </div>
+                <div class="detail-item">
+                    <label>Retornaram (D1-D7)</label>
+                    <div class="value" style="color: var(--success);">${retornaram.length}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Total Novos</label>
+                    <div class="value">${data.total_novos || 0}</div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Registro</th>
+                            <th>Último Acesso</th>
+                            <th>Dias até Retorno</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${retornaramHTML || '<tr><td colspan="5" style="text-align: center;">Nenhum usuário retornou entre D1 e D7</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--bg-gray); border-radius: 8px;">
+                <strong>Fórmula D7:</strong> (Usuários que acessaram entre D+1 e D+7 ÷ Total novos) × 100
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        console.error('Erro detalhado:', error);
+        mostrarErroModal('Erro ao carregar retorno D7: ' + error.message);
+    }
+}
+
+// ============================================================
+// PRODUTO - TEMPO MÉDIO (CORRIGIDO)
+// ============================================================
+async function mostrarDetalhesTempoMedio() {
+    abrirModal('Carregando tempo médio de uso...');
+    
+    try {
+        const params = getDateParams();
+        const response = await fetch(`/dashboard-analytics/api/detalhes/tempo-medio?${params}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // VALIDAÇÃO: Verificar se dados existem
+        if (!data || data.erro) {
+            throw new Error(data?.erro || 'Dados não encontrados');
+        }
+        
+        // VALIDAÇÃO: Garantir que usuarios existe e é um array
+        const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+        
+        if (usuarios.length === 0) {
+            const conteudo = `
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    ⏱️ Tempo Médio de Uso por Usuário
+                </h2>
+                
+                <div class="detail-grid" style="margin-bottom: 2rem;">
+                    <div class="detail-item">
+                        <label>Período</label>
+                        <div class="value" style="font-size: 0.875rem;">
+                            ${data.periodo?.inicio || 'N/A'} - ${data.periodo?.fim || 'N/A'}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding: 2rem; background: var(--bg-gray); border-radius: 8px;">
+                    <p style="color: var(--medium-gray);">
+                        📊 Nenhum dado de tempo disponível para o período selecionado
+                    </p>
+                    <p style="color: var(--medium-gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                        Certifique-se que existem registros de tempo_estudo no banco de dados
+                    </p>
+                </div>
+            `;
+            
+            renderizarConteudoModal(conteudo);
+            return;
+        }
+        
+        const usuariosHTML = usuarios.map(u => {
+            const atividades = Array.isArray(u.atividades) ? u.atividades : [];
+            const atividadesHTML = atividades.map(a => 
+                `<span style="display: inline-block; padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px; margin: 0.25rem; font-size: 0.75rem;">
+                    ${a.atividade || 'Geral'}: ${a.minutos || 0}min
+                </span>`
+            ).join('');
+            
+            return `
+                <tr onclick="abrirDetalhesUsuario(${u.id || 0})">
+                    <td><strong>${u.username || 'N/A'}</strong></td>
+                    <td>${u.email || 'N/A'}</td>
+                    <td><strong>${u.total_horas || 0}h</strong> (${u.total_minutos || 0}min)</td>
+                    <td>${u.total_sessoes || 0}</td>
+                    <td>${u.media_por_sessao || 0} min</td>
+                    <td>${atividadesHTML || '<span style="color: var(--medium-gray);">Sem dados</span>'}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                ⏱️ Tempo Médio de Uso por Usuário
+            </h2>
+
+
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Total de Usuários</label>
+                    <div class="value">${usuarios.length}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Período</label>
+                    <div class="value" style="font-size: 0.875rem;">
+                        ${data.periodo?.inicio || 'N/A'} - ${data.periodo?.fim || 'N/A'}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Tempo Total</th>
+                            <th>Sessões</th>
+                            <th>Média/Sessão</th>
+                            <th>Atividades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 1rem; text-align: center; color: var(--medium-gray); font-size: 0.875rem;">
+                💡 Clique em qualquer usuário para ver detalhes completos
+            </p>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        console.error('Erro detalhado:', error);
+        mostrarErroModal('Erro ao carregar tempo médio: ' + error.message);
+    }
+}
+
+
+
+
+// ============================================================
+// PRODUTO - DAU
+// ============================================================
+async function mostrarDetalhesDAU() {
+    abrirModal('Carregando usuários ativos hoje...');
+    
+    try {
+        const response = await fetch('/dashboard-analytics/api/detalhes/dau');
+        const data = await response.json();
+        
+        const usuariosHTML = data.usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>
+                    <span class="badge badge-${u.plano === 'free' ? 'secondary' : 'success'}">
+                        ${u.plano.toUpperCase()}
+                    </span>
+                </td>
+                <td>${u.ultimo_acesso}</td>
+            </tr>
+        `).join('');
+
+
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                👤 DAU - Daily Active Users
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Usuários Ativos Hoje</label>
+                    <div class="value" style="color: var(--success);">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Data</label>
+                    <div class="value" style="font-size: 1rem;">${data.data}</div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Plano</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML || '<tr><td colspan="4" style="text-align: center;">Nenhum usuário ativo hoje</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar DAU: ' + error.message);
+    }
+}
+
+// ============================================================
+// PRODUTO - MAU
+// ============================================================
+async function mostrarDetalhesMAU() {
+    abrirModal('Carregando usuários ativos no mês...');
+    
+    try {
+        const response = await fetch('/dashboard-analytics/api/detalhes/mau');
+        const data = await response.json();
+        
+        const usuariosHTML = data.usuarios.slice(0, 100).map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>
+                    <span class="badge badge-${u.plano === 'free' ? 'secondary' : 'success'}">
+                        ${u.plano.toUpperCase()}
+                    </span>
+                </td>
+                <td>${u.ultimo_acesso}</td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                👥 MAU - Monthly Active Users
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Usuários Ativos no Mês</label>
+                    <div class="value" style="color: var(--primary-blue);">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Mês</label>
+                    <div class="value" style="font-size: 1rem;">${data.mes}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Período</label>
+                    <div class="value" style="font-size: 0.875rem;">${data.periodo.inicio} - ${data.periodo.fim}</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+                Primeiros 100 usuários
+            </h3>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Plano</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML || '<tr><td colspan="4" style="text-align: center;">Nenhum usuário ativo este mês</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar MAU: ' + error.message);
+    }
+}
+
+// ============================================================
+// FUNÇÕES AUXILIARES (MELHORADAS)
+// ============================================================
+function abrirModal(mensagemLoading) {
+    const modal = document.getElementById('modalUsuario');
+    const conteudo = document.getElementById('conteudoModalUsuario');
+    
+    if (!modal || !conteudo) {
+        console.error('Modal não encontrado no HTML');
+        return;
+    }
+    
+    modal.style.display = 'block';
+    conteudo.innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>${mensagemLoading}</p>
+        </div>
+    `;
+}
+
+function renderizarConteudoModal(html) {
+    const conteudo = document.getElementById('conteudoModalUsuario');
+    if (conteudo) {
+        conteudo.innerHTML = html;
+    }
+}
+
+function mostrarErroModal(mensagem) {
+    const conteudo = document.getElementById('conteudoModalUsuario');
+    if (conteudo) {
+        conteudo.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                <p style="font-size: 1.5rem; margin-bottom: 1rem;">❌</p>
+                <p style="font-weight: 600; margin-bottom: 0.5rem;">Erro ao carregar dados</p>
+                <p style="font-size: 0.875rem; color: var(--medium-gray);">${mensagem}</p>
+                <button 
+                    onclick="fecharModalUsuario()" 
+                    style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Fechar
+                </button>
+            </div>
+        `;
+    }
+}
+
+function fecharModalUsuario() {
+    const modal = document.getElementById('modalUsuario');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Fechar modal ao clicar fora
+window.onclick = function(event) {
+    const modal = document.getElementById('modalUsuario');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+
+
+// CSS adicional para badges
+const styleSheet = document.createElement("style");
+styleSheet.textContent = `
+    .badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }    
+
+        .badge-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+    .badge-primary {
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--primary-blue);
+    }
+    .badge-secondary {
+        background: rgba(203, 213, 225, 0.5);
+        color: var(--medium-gray);
+    }
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+`;
+document.head.appendChild(styleSheet);
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1019 @@
+{% extends "layout.html" %}
+{% block title %}Seu Perfil Vocacional — {{ resultado.perfil_primario }}{{ resultado.perfil_secundario }}{% endblock %}
+
+{% block content %}
+<style>
+/* ════════════════════════════════════════════════
+   RESULTADO VOCACIONAL v2
+════════════════════════════════════════════════ */
+:root {
+  --voc-purple: #8b5cf6;
+  --voc-purple-light: rgba(139,92,246,0.12);
+  --voc-border: #1a1a1a;
+  --voc-card: #0d0d0d;
+  --voc-text: #ffffff;
+  --voc-muted: #6b7280;
+  --cor-primaria: {{ perfil_primario_dados.cor }};
+  --cor-primaria-bg: {{ perfil_primario_dados.cor_bg }};
+  --cor-secundaria: {{ perfil_secundario_dados.cor }};
+}
+
+body { background: #000 !important; }
+.resultado-container { max-width: 800px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+/* ── HERO ── */
+.resultado-hero {
+  background: linear-gradient(135deg,
+    rgba(0,0,0,0.9) 0%,
+    {{ perfil_primario_dados.cor_bg }} 50%,
+    rgba(0,0,0,0.9) 100%);
+  border: 1px solid var(--cor-primaria-bg);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.resultado-hero::before {
+  content: '';
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at center, {{ perfil_primario_dados.cor_bg }}, transparent 70%);
+  pointer-events: none;
+}
+.perfil-emoji-hero {
+  font-size: 4rem; margin-bottom: 0.5rem; display: block;
+  filter: drop-shadow(0 0 20px var(--cor-primaria));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.perfil-titulo { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; color: var(--voc-text); margin-bottom: 0.3rem; }
+.perfil-combo { font-size: 1rem; color: #9ca3af; margin-bottom: 1.2rem; }
+.perfil-combo strong { color: var(--cor-primaria); }
+.perfil-combo .sec { color: var(--cor-secundaria); }
+.perfil-descricao { font-size: 0.95rem; color: #d1d5db; max-width: 520px; margin: 0 auto 1.5rem; line-height: 1.7; }
+.share-btn {
+  background: transparent; border: 1px solid #374151; border-radius: 10px;
+  padding: 6px 16px; font-size: 0.8rem; color: #6b7280;
+  cursor: pointer; transition: all 0.2s;
+}
+.share-btn:hover { border-color: var(--cor-primaria); color: var(--cor-primaria); }
+
+/* ── SEÇÃO ── */
+.secao { margin-bottom: 1.5rem; }
+.secao-titulo {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--voc-muted); margin-bottom: 0.8rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.secao-titulo::before, .secao-titulo::after {
+  content: ''; flex: 1; height: 1px; background: var(--voc-border);
+}
+
+/* ── RADAR CHART ── */
+.radar-card {
+  background: var(--voc-card); border: 1px solid var(--voc-border);
+  border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem;
+}
+.radar-titulo { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+.radar-subtitulo { font-size: 0.8rem; color: var(--voc-muted); margin-bottom: 1.2rem; }
+#radar-chart { max-width: 340px; margin: 0 auto; display: block; }
+.riasec-bars { margin-top: 1.2rem; }
+.riasec-bar-item { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+.riasec-bar-label { font-size: 0.8rem; font-weight: 600; min-width: 110px; color: #d1d5db; }
+.riasec-bar-label span { font-size: 0.7rem; font-weight: 400; color: var(--voc-muted); }
+.riasec-bar-track { flex: 1; background: #111; border-radius: 999px; height: 8px; overflow: hidden; }
+.riasec-bar-fill { height: 100%; border-radius: 999px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.riasec-bar-pct { font-size: 0.75rem; font-weight: 700; min-width: 36px; text-align: right; }
+
+/* ── PONTOS FORTES / AMBIENTES ── */
+.pontos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+.ponto-tag {
+  background: var(--cor-primaria-bg); border: 1px solid {{ perfil_primario_dados.cor_bg }};
+  border-radius: 10px; padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #e5e7eb;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.ponto-tag::before { content: '✓'; color: var(--cor-primaria); font-weight: 700; }
+.ambientes-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ambiente-chip {
+  background: #111; border: 1px solid var(--voc-border); border-radius: 999px;
+  padding: 4px 12px; font-size: 0.78rem; color: #9ca3af;
+}
+
+/* ── CARREIRAS ── */
+.carreira-card {
+  background: var(--voc-card); border: 1px solid var(--voc-border);
+  border-radius: 16px; padding: 1.4rem; margin-bottom: 0.9rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.carreira-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--voc-purple), transparent);
+  transition: width 0.3s;
+}
+.carreira-card:hover { border-color: rgba(139,92,246,0.4); }
+.carreira-card:hover::before { width: 6px; }
+
+.carreira-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 0.8rem; margin-bottom: 0.8rem;
+}
+.carreira-emoji-nome { display: flex; align-items: flex-start; gap: 0.7rem; }
+.carreira-emoji { font-size: 1.8rem; flex-shrink: 0; margin-top: 2px; }
+.carreira-nome { font-size: 1rem; font-weight: 700; color: var(--voc-text); margin-bottom: 2px; }
+.carreira-area { font-size: 0.72rem; color: var(--voc-muted); }
+
+.compatibilidade-badge {
+  font-size: 0.8rem; font-weight: 700; color: #8b5cf6;
+  background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0;
+}
+.compatibilidade-badge.excelente {
+  color: #22c55e; background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3);
+}
+
+.compat-bar {
+  background: #111; border-radius: 999px; height: 5px; overflow: hidden; margin-bottom: 1rem;
+}
+.compat-bar-fill { height: 100%; border-radius: 999px; }
+
+/* ── DESCRIÇÃO DA CARREIRA (visível por padrão, sem toggle) ── */
+.carreira-descricao-real {
+  font-size: 0.88rem; color: #9ca3af; line-height: 1.65;
+  margin-bottom: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  background: #111;
+  border-radius: 10px;
+  border-left: 3px solid #222;
+}
+
+/* ── META CHIPS ── */
+.carreira-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+.meta-chip {
+  background: #111; border: 1px solid #1f1f1f; border-radius: 8px;
+  padding: 3px 9px; font-size: 0.72rem; color: #6b7280;
+}
+
+/* ── DETALHES EXPANSÍVEIS ── */
+.carreira-detalhes {
+  display: none; margin-top: 0.9rem; padding-top: 0.9rem;
+  border-top: 1px solid var(--voc-border);
+}
+.carreira-card.expandida .carreira-detalhes { display: block; }
+.carreira-toggle {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.75rem; color: #4b5563; cursor: pointer;
+  background: none; border: none; padding: 0; margin-top: 0.5rem;
+  transition: color 0.2s;
+}
+.carreira-toggle:hover { color: var(--voc-purple); }
+.carreira-toggle .toggle-icon { font-size: 0.65rem; transition: transform 0.2s; }
+.carreira-card.expandida .carreira-toggle .toggle-icon { transform: rotate(180deg); }
+
+.detalhe-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.8rem;
+}
+.detalhe-item {
+  background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 10px; padding: 0.6rem;
+}
+.detalhe-item .label { font-size: 0.68rem; color: var(--voc-muted); margin-bottom: 2px; }
+.detalhe-item .valor { font-size: 0.82rem; font-weight: 600; color: var(--voc-text); }
+
+/* ── PERFIS DETALHADOS ── */
+.perfis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+@media (max-width: 480px) { .perfis-grid { grid-template-columns: 1fr; } }
+.perfil-detalhe {
+  background: var(--voc-card); border: 1px solid var(--voc-border); border-radius: 16px; padding: 1.2rem;
+}
+
+/* ── VALORES ── */
+.valores-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.valor-chip {
+  background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 999px; padding: 4px 12px; font-size: 0.78rem; color: #a78bfa;
+}
+
+/* ── INSIGHTS PERSONALIDADE ── */
+.insights-lista { display: flex; flex-direction: column; gap: 0.6rem; }
+.insight-item {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  background: var(--voc-card); border: 1px solid var(--voc-border);
+  border-radius: 12px; padding: 0.8rem;
+}
+.insight-icon { font-size: 1.3rem; flex-shrink: 0; }
+.insight-texto { font-size: 0.84rem; color: #d1d5db; line-height: 1.5; }
+
+/* ════════════════════════════════════════════════
+   SEÇÃO DE FAVORITAS — o coração do v2
+════════════════════════════════════════════════ */
+.favoritas-secao {
+  background: linear-gradient(135deg, #0a0a14 0%, #0d0d1a 100%);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 24px;
+  padding: 2rem 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.favoritas-secao::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(139,92,246,0.06), transparent 60%);
+  pointer-events: none;
+}
+
+.favoritas-titulo {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+.favoritas-sub {
+  font-size: 0.84rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Slots de seleção: mostra a posição escolhida */
+.favoritas-slots {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+  flex-wrap: wrap;
+}
+.fav-slot {
+  flex: 1; min-width: 90px;
+  background: #0d0d0d;
+  border: 2px dashed #1f1f1f;
+  border-radius: 14px;
+  padding: 0.9rem 0.6rem;
+  text-align: center;
+  transition: all 0.25s;
+  position: relative;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.fav-slot.preenchido {
+  border-style: solid;
+  background: rgba(139,92,246,0.08);
+}
+.fav-slot.slot-1.preenchido { border-color: #f59e0b; }
+.fav-slot.slot-2.preenchido { border-color: #9ca3af; }
+.fav-slot.slot-3.preenchido { border-color: #d97706; }
+
+.fav-posicao-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.slot-1 .fav-posicao-label { color: #f59e0b; }
+.slot-2 .fav-posicao-label { color: #9ca3af; }
+.slot-3 .fav-posicao-label { color: #d97706; }
+
+.fav-slot-emoji { font-size: 1.6rem; margin-bottom: 0.2rem; display: block; }
+.fav-slot-nome { font-size: 0.72rem; font-weight: 600; color: #e5e7eb; line-height: 1.2; }
+.fav-slot-placeholder { font-size: 0.75rem; color: #374151; }
+
+.fav-slot-remove {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(239,68,68,0.15); border: none; border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 0.7rem; color: #ef4444; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.fav-slot.preenchido .fav-slot-remove { display: flex; }
+.fav-slot-remove:hover { background: rgba(239,68,68,0.3); }
+
+/* Lista de carreiras selecionáveis */
+.favoritas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.fav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.fav-item:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.05); }
+.fav-item.selecionado-1 { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+.fav-item.selecionado-2 { border-color: #9ca3af; background: rgba(156,163,175,0.08); }
+.fav-item.selecionado-3 { border-color: #d97706; background: rgba(217,119,6,0.08); }
+
+.fav-item-emoji { font-size: 1.6rem; flex-shrink: 0; }
+.fav-item-info { flex: 1; }
+.fav-item-nome { font-size: 0.88rem; font-weight: 700; color: #e5e7eb; }
+.fav-item-area { font-size: 0.72rem; color: #4b5563; }
+
+.fav-item-badge {
+  font-size: 0.72rem; font-weight: 700;
+  border-radius: 999px; padding: 2px 10px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.fav-item.selecionado-1 .fav-item-badge { background: #f59e0b; color: #000; }
+.fav-item.selecionado-2 .fav-item-badge { background: #9ca3af; color: #000; }
+.fav-item.selecionado-3 .fav-item-badge { background: #d97706; color: #000; }
+.fav-item:not([class*="selecionado"]) .fav-item-badge {
+  background: #111; border: 1px solid #222; color: #4b5563;
+}
+.fav-item-pct { font-size: 0.72rem; color: #4b5563; flex-shrink: 0; }
+
+/* Botão salvar */
+.btn-salvar-favoritas {
+  width: 100%;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border: none; border-radius: 14px; padding: 0.9rem 1.5rem;
+  font-size: 0.95rem; font-weight: 700; color: white;
+  cursor: pointer; transition: all 0.25s;
+  box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.btn-salvar-favoritas:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139,92,246,0.5);
+}
+.btn-salvar-favoritas:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Estado salvo */
+.favoritas-salvas {
+  display: none;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 14px;
+}
+.favoritas-salvas .check { font-size: 2rem; margin-bottom: 0.3rem; display: block; }
+.favoritas-salvas p { font-size: 0.88rem; color: #22c55e; margin: 0; }
+
+/* ── CTA ── */
+.cta-plataforma {
+  background: var(--voc-card); border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 20px; padding: 2rem 1.5rem; text-align: center;
+}
+.cta-plataforma h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.7rem; }
+.cta-plataforma p { font-size: 0.88rem; color: #6b7280; line-height: 1.6; margin-bottom: 1.2rem; }
+.cta-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+.cta-btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  color: white; padding: 0.7rem 1.5rem; border-radius: 12px;
+  font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.2s;
+}
+.cta-btn-primary:hover { transform: translateY(-2px); color: white; }
+.cta-btn-secondary {
+  background: #111; border: 1px solid #1f1f1f; color: #9ca3af;
+  padding: 0.7rem 1.2rem; border-radius: 12px; font-size: 0.85rem;
+  text-decoration: none; transition: all 0.2s;
+}
+.cta-btn-secondary:hover { border-color: var(--voc-purple); color: var(--voc-purple); }
+</style>
+
+<div class="resultado-container">
+
+  <!-- ─── HERO ─── -->
+  <div class="resultado-hero">
+    <span class="perfil-emoji-hero">{{ perfil_primario_dados.emoji }}</span>
+    <h1 class="perfil-titulo">Perfil {{ resultado.combo_label or (resultado.perfil_primario + resultado.perfil_secundario) }}</h1>
+    <div class="perfil-combo">
+      <strong>{{ perfil_primario_dados.nome }}</strong>
+      <span style="color:#4b5563;"> + </span>
+      <span class="sec">{{ perfil_secundario_dados.nome }}</span>
+      {% if resultado.combo_label %}
+      <span style="color:#4b5563;"> · {{ resultado.combo_label }}</span>
+      {% endif %}
+    </div>
+    <p class="perfil-descricao">{{ perfil_primario_dados.descricao }}</p>
+    <button class="share-btn" onclick="compartilhar()">
+      📤 Compartilhar resultado
+    </button>
+  </div>
+
+  <!-- ─── RADAR / BARRAS ─── -->
+  <div class="radar-card secao">
+    <div class="radar-titulo">Seu Mapa de Perfis</div>
+    <div class="radar-subtitulo">Intensidade de cada dimensão RIASEC no seu perfil</div>
+    <canvas id="radar-chart" height="300"></canvas>
+    <div class="riasec-bars">
+      {% set cores_riasec = {'R': '#f97316', 'I': '#3b82f6', 'A': '#ec4899', 'S': '#22c55e', 'E': '#f59e0b', 'C': '#6366f1'} %}
+      {% for dim, score in ranking_riasec %}
+      <div class="riasec-bar-item">
+        <div class="riasec-bar-label">
+          {{ perfis_riasec[dim].emoji }} {{ perfis_riasec[dim].nome }}
+          <span>({{ dim }})</span>
+        </div>
+        <div class="riasec-bar-track">
+          <div class="riasec-bar-fill"
+               data-pct="{{ (score * 100)|int }}"
+               style="background: {{ cores_riasec[dim] }}; width:0%;"></div>
+        </div>
+        <div class="riasec-bar-pct" style="color:{{ cores_riasec[dim] }};">
+          {{ (score * 100)|int }}%
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── PERSONALIDADE ─── -->
+  {% if resultado.insights_personalidade %}
+  <div class="secao">
+    <div class="secao-titulo">Sobre Sua Personalidade</div>
+    <div class="insights-lista">
+      {% for insight in resultado.insights_personalidade %}
+      <div class="insight-item">
+        <span class="insight-icon">{{ insight.icon }}</span>
+        <span class="insight-texto">{{ insight.texto }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ─── PONTOS FORTES ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Seus Pontos Fortes</div>
+    <div class="pontos-grid">
+      {% for ponto in perfil_primario_dados.pontos_fortes %}
+      <div class="ponto-tag">{{ ponto }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── AMBIENTES IDEAIS ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Ambientes de Trabalho Ideais</div>
+    <div class="ambientes-grid">
+      {% for amb in perfil_primario_dados.ambientes_ideais %}
+      <span class="ambiente-chip">{{ amb }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── PERFIS DETALHADOS ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Seus Dois Perfis em Detalhe</div>
+    <div class="perfis-grid">
+      <div class="perfil-detalhe" style="border-color: rgba({{ perfil_primario_dados.cor }}, 0.25);">
+        <div style="margin-bottom:0.5rem;">
+          <span style="font-size:1.5rem;">{{ perfil_primario_dados.emoji }}</span>
+          {{ perfil_primario_dados.nome }}
+          <span style="font-size:0.72rem; color:{{ perfil_primario_dados.cor }}; font-weight:600;">({{ resultado.perfil_primario }}) Principal</span>
+        </div>
+        <p style="font-size:0.82rem; color:#9ca3af; margin:0; line-height:1.5;">
+          {{ perfil_primario_dados.descricao_curta }}. {{ perfil_primario_dados.descricao }}
+        </p>
+      </div>
+      <div class="perfil-detalhe">
+        <div style="margin-bottom:0.5rem;">
+          <span style="font-size:1.5rem;">{{ perfil_secundario_dados.emoji }}</span>
+          {{ perfil_secundario_dados.nome }}
+          <span style="font-size:0.72rem; color:{{ perfil_secundario_dados.cor }}; font-weight:600;">({{ resultado.perfil_secundario }})</span>
+        </div>
+        <p style="font-size:0.82rem; color:#9ca3af; margin:0; line-height:1.5;">
+          {{ perfil_secundario_dados.descricao_curta }}. {{ perfil_secundario_dados.descricao }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VALORES ─── -->
+  {% if resultado.valores_usuario %}
+  <div class="secao">
+    <div class="secao-titulo">Seus Valores de Trabalho</div>
+    <div class="valores-grid">
+      {% set valores_labels = {
+        'estabilidade': '🏠 Estabilidade',
+        'autonomia': '🦅 Autonomia',
+        'remuneracao': '💰 Alta remuneração',
+        'impacto_social': '🌍 Impacto social',
+        'reconhecimento': '🏆 Reconhecimento',
+        'equilibrio': '⚖️ Equilíbrio',
+        'desafio_intelectual': '🧠 Desafio intelectual',
+        'ajudar_pessoas': '🤝 Ajudar pessoas',
+        'inovacao': '💡 Inovação',
+        'melhoria': '🔧 Aperfeiçoamento',
+        'lideranca': '👑 Liderança',
+        'colaboracao': '👥 Colaboração',
+        'prestigio': '⭐ Prestígio',
+        'satisfacao_pessoal': '😊 Satisfação pessoal',
+        'tecnologia': '💻 Tecnologia',
+        'humanismo': '❤️ Humanismo',
+        'aprendizado_continuo': '📖 Aprendizado contínuo',
+        'especializacao': '🎯 Especialização',
+        'resultados': '📈 Resultados',
+        'proposito': '🌟 Propósito',
+        'empreendedorismo': '🚀 Empreendedorismo',
+        'concurso_empresa': '🏛️ Serviço público',
+        'variedade': '🎲 Variedade',
+        'pioneirismo': '🌋 Pioneirismo',
+        'alta_remuneracao_stress': '💵 Alta renda',
+        'qualidade_vida_paga_menos': '🌿 Qualidade de vida',
+        'profundidade_relacional': '🫂 Profundidade relacional',
+        'carreira_consolidada': '🗺️ Carreira consolidada',
+        'escala': '📡 Impacto em escala',
+      } %}
+      {% for valor in resultado.valores_usuario[:10] %}
+      <span class="valor-chip">{{ valores_labels.get(valor, valor) }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ─── CARREIRAS RECOMENDADAS ─── -->
+  <div class="secao">
+    <div class="secao-titulo">Carreiras Recomendadas Para Você</div>
+    <p style="font-size:0.83rem; color:#4b5563; margin-bottom:1rem; line-height:1.5;">
+      Calculadas com base no seu perfil <strong style="color:#a78bfa;">{{ perfil_primario_dados.nome }}</strong> +
+      <strong style="color:{{ perfil_secundario_dados.cor }};">{{ perfil_secundario_dados.nome }}</strong>, seus valores e contexto de vida.
+      Leia cada uma com calma — depois você vai escolher as 3 que mais fazem sentido.
+    </p>
+
+    {% for item in top_carreiras %}
+    <div class="carreira-card" id="card-{{ item.id }}">
+
+      <div class="carreira-header">
+        <div class="carreira-emoji-nome">
+          <span class="carreira-emoji">{{ item.emoji }}</span>
+          <div>
+            <div class="carreira-nome">{{ item.nome }}</div>
+            <div class="carreira-area">{{ item.area }}</div>
+          </div>
+        </div>
+        <span class="compatibilidade-badge {% if item.compatibilidade >= 75 %}excelente{% endif %}">
+          {{ item.compatibilidade }}% match
+        </span>
+      </div>
+
+      <div class="compat-bar">
+        <div class="compat-bar-fill" style="width: {{ item.compatibilidade }}%;
+          background: linear-gradient(90deg,
+            {% if item.compatibilidade >= 75 %}#16a34a, #22c55e{% else %}#7c3aed, #8b5cf6{% endif %});"></div>
+      </div>
+
+      {# Descrição sempre visível — texto real sobre o que a profissão faz #}
+      {% if item.descricao %}
+      <div class="carreira-descricao-real">
+        {{ item.descricao }}
+      </div>
+      {% endif %}
+
+      <div class="carreira-meta">
+        <span class="meta-chip">⏱️ {{ item.duracao_label }}</span>
+        <span class="meta-chip">
+          💰 R$ {{ '{:,.0f}'.format(item.salario_min).replace(',','.')}}&ndash;{{ '{:,.0f}'.format(item.salario_max).replace(',','.') }}
+        </span>
+        <span class="meta-chip">📈 {{ item.perspectiva_mercado }}</span>
+        {% if item.concurso_opcao %}<span class="meta-chip" style="color:#a78bfa;">🏛️ Concurso</span>{% endif %}
+        {% if item.remoto_opcao %}<span class="meta-chip" style="color:#22c55e;">💻 Remoto</span>{% endif %}
+      </div>
+
+      <button class="carreira-toggle" onclick="toggleCarreira(this.closest('.carreira-card'))">
+        <span>Ver detalhes completos</span>
+        <span class="toggle-icon">▼</span>
+      </button>
+
+      <div class="carreira-detalhes">
+        <div class="detalhe-grid">
+          <div class="detalhe-item">
+            <div class="label">Dificuldade ENEM</div>
+            <div class="valor">{{ item.dificuldade_enem }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Duração</div>
+            <div class="valor">{{ item.duracao_label }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Salário Inicial</div>
+            <div class="valor">R$ {{ '{:,.0f}'.format(item.salario_min).replace(',','.') }}</div>
+          </div>
+          <div class="detalhe-item">
+            <div class="label">Teto Salarial</div>
+            <div class="valor">R$ {{ '{:,.0f}'.format(item.salario_max).replace(',','.') }}</div>
+          </div>
+        </div>
+        {% if item.tags %}
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.6rem;">
+          {% for tag in item.tags %}
+          <span style="background:#111; border:1px solid #222; border-radius:999px;
+                       padding:2px 10px; font-size:0.7rem; color:#6b7280;">#{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <p style="font-size:0.72rem; color:#374151; margin:0; text-align:right;">
+          💡 Prepare-se para o ENEM com foco nas matérias desta área no seu plano de estudos.
+        </p>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       SEÇÃO DE FAVORITAS — Escolha suas 3 em ordem
+  ════════════════════════════════════════════════════ -->
+  <div class="favoritas-secao" id="secao-favoritas">
+    <h2 class="favoritas-titulo">🎯 Quais são suas 3 favoritas?</h2>
+    <p class="favoritas-sub">
+      Agora que você leu sobre cada carreira, escolha as <strong>3 que mais te chamaram atenção</strong>,
+      em ordem de preferência. Isso nos ajuda a personalizar seu plano de estudos e conteúdos.
+    </p>
+
+    <!-- Slots visuais de posição -->
+    <div class="favoritas-slots">
+      <div class="fav-slot slot-1" id="slot-1">
+        <div class="fav-posicao-label">🥇 1ª escolha</div>
+        <div class="fav-slot-placeholder" id="slot-1-placeholder">Clique em uma carreira</div>
+        <span class="fav-slot-emoji" id="slot-1-emoji" style="display:none;"></span>
+        <span class="fav-slot-nome" id="slot-1-nome"></span>
+        <button class="fav-slot-remove" onclick="removerFavorita(1)" title="Remover">✕</button>
+      </div>
+      <div class="fav-slot slot-2" id="slot-2">
+        <div class="fav-posicao-label">🥈 2ª escolha</div>
+        <div class="fav-slot-placeholder" id="slot-2-placeholder">Clique em uma carreira</div>
+        <span class="fav-slot-emoji" id="slot-2-emoji" style="display:none;"></span>
+        <span class="fav-slot-nome" id="slot-2-nome"></span>
+        <button class="fav-slot-remove" onclick="removerFavorita(2)" title="Remover">✕</button>
+      </div>
+      <div class="fav-slot slot-3" id="slot-3">
+        <div class="fav-posicao-label">🥉 3ª escolha</div>
+        <div class="fav-slot-placeholder" id="slot-3-placeholder">Clique em uma carreira</div>
+        <span class="fav-slot-emoji" id="slot-3-emoji" style="display:none;"></span>
+        <span class="fav-slot-nome" id="slot-3-nome"></span>
+        <button class="fav-slot-remove" onclick="removerFavorita(3)" title="Remover">✕</button>
+      </div>
+    </div>
+
+    <!-- Lista de carreiras para clicar e selecionar -->
+    <div class="favoritas-lista" id="lista-favoritas">
+      {% for item in top_carreiras %}
+      <div class="fav-item"
+           id="fav-{{ item.id }}"
+           data-id="{{ item.id }}"
+           data-nome="{{ item.nome }}"
+           data-emoji="{{ item.emoji }}"
+           data-area="{{ item.area }}"
+           data-pct="{{ item.compatibilidade }}"
+           onclick="selecionarFavorita(this)">
+        <span class="fav-item-emoji">{{ item.emoji }}</span>
+        <div class="fav-item-info">
+          <div class="fav-item-nome">{{ item.nome }}</div>
+          <div class="fav-item-area">{{ item.area }}</div>
+        </div>
+        <span class="fav-item-pct">{{ item.compatibilidade }}%</span>
+        <span class="fav-item-badge" id="badge-{{ item.id }}">Selecionar</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Botão de salvar -->
+    <div id="area-salvar">
+      <button class="btn-salvar-favoritas" id="btn-salvar-fav" onclick="salvarFavoritas()" disabled>
+        <span>✓ Salvar Minhas 3 Escolhas</span>
+      </button>
+    </div>
+
+    <!-- Estado: já salvo -->
+    {% if carreiras_favoritas %}
+    <div class="favoritas-salvas" id="favoritas-salvas" style="display:block;">
+      <span class="check">✅</span>
+      <p>Você já registrou suas preferências!</p>
+      <p style="font-size:0.78rem; color:#4b5563; margin-top:0.3rem;">
+        {% for fav in carreiras_favoritas %}
+        {{ fav.posicao }}º {{ fav.emoji }} {{ fav.nome }}{% if not loop.last %} · {% endif %}
+        {% endfor %}
+      </p>
+      <button onclick="reabilitarEscolha()" style="margin-top:0.6rem; background:none; border:1px solid #374151;
+              border-radius:8px; padding:4px 12px; font-size:0.75rem; color:#6b7280; cursor:pointer;">
+        ✏️ Alterar escolha
+      </button>
+    </div>
+    {% else %}
+    <div class="favoritas-salvas" id="favoritas-salvas" style="display:none;">
+      <span class="check">✅</span>
+      <p>Preferências salvas! Usaremos isso para personalizar sua experiência.</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ─── CTA ─── -->
+  <div class="cta-plataforma">
+    <h3>🎯 Agora que você conhece seu perfil...</h3>
+    <p>
+      Monte seu plano de estudos com foco nas matérias que mais importam para as carreiras do seu perfil
+      <strong style="color:#a78bfa;">{{ perfil_primario_dados.nome }}</strong>.
+    </p>
+    <div class="cta-btns">
+      <a href="{{ url_for('estudo.index') }}" class="cta-btn-primary">📚 Ir para meus Estudos</a>
+      <a href="{{ url_for('simulados.index') }}" class="cta-btn-secondary">📝 Fazer um Simulado</a>
+      <a href="{{ url_for('vocacional.index') }}" class="cta-btn-secondary">🔄 Refazer o Teste</a>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// ── RADAR CHART ───────────────────────────────────────────
+const radarData = {{ radar_data | tojson }};
+const ctx = document.getElementById('radar-chart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: [
+      ['🔧 Realista', '(prático)'],
+      ['🔬 Investigativo', '(analítico)'],
+      ['🎨 Artístico', '(criativo)'],
+      ['🤝 Social', '(empático)'],
+      ['🚀 Empreendedor', '(líder)'],
+      ['📋 Convencional', '(organizado)'],
+    ],
+    datasets: [{
+      label: 'Seu Perfil',
+      data: [radarData.R||0, radarData.I||0, radarData.A||0, radarData.S||0, radarData.E||0, radarData.C||0],
+      backgroundColor: 'rgba(139, 92, 246, 0.2)',
+      borderColor: '#8b5cf6',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#8b5cf6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 25, display: true, color: '#374151', font: { size: 9 }, backdropColor: 'transparent' },
+        grid: { color: '#1a1a1a' },
+        angleLines: { color: '#1a1a1a' },
+        pointLabels: { color: '#9ca3af', font: { size: 11, weight: '500' } }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111', borderColor: '#262626', borderWidth: 1,
+        titleColor: '#fff', bodyColor: '#9ca3af',
+        callbacks: { label: ctx => ` ${ctx.parsed.r}%` }
+      }
+    },
+    animation: { duration: 1500, easing: 'easeInOutQuart' }
+  }
+});
+
+// Anima barras RIASEC
+window.addEventListener('load', () => {
+  document.querySelectorAll('.riasec-bar-fill').forEach(bar => {
+    const pct = bar.getAttribute('data-pct');
+    setTimeout(() => { bar.style.width = pct + '%'; }, 300);
+  });
+  // Inicializa barras em 0
+  document.querySelectorAll('.riasec-bar-fill').forEach(b => { b.style.width = '0%'; });
+});
+
+// ── TOGGLE DETALHES CARREIRA ─────────────────────────────
+function toggleCarreira(card) {
+  card.classList.toggle('expandida');
+  const btn = card.querySelector('.carreira-toggle span:first-child');
+  btn.textContent = card.classList.contains('expandida') ? 'Fechar detalhes' : 'Ver detalhes completos';
+}
+
+// ── COMPARTILHAR ─────────────────────────────────────────
+async function compartilhar() {
+  const texto = `🧭 Fiz o Teste Vocacional Launcher e descobri que sou do perfil {{ perfil_primario_dados.nome }} + {{ perfil_secundario_dados.nome }}!\n\n{{ perfil_primario_dados.descricao_curta }}\n\nDescubra o seu também!`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Meu Perfil Vocacional — Launcher', text: texto, url: window.location.href }); }
+    catch(e) {}
+  } else {
+    navigator.clipboard.writeText(texto + '\n' + window.location.href)
+      .then(() => alert('Resultado copiado!'))
+      .catch(() => alert('Link: ' + window.location.href));
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SISTEMA DE FAVORITAS
+// ═══════════════════════════════════════════════════════
+
+const RESULTADO_ID = {{ resultado.id }};
+let favoritasSelecionadas = {}; // { 1: {id, nome, emoji, area}, 2: {...}, 3: {...} }
+
+// Restaura estado salvo (se já havia favoritas)
+{% if carreiras_favoritas %}
+const jaTemFavoritas = true;
+// Pré-preenche o estado interno com o que estava salvo
+{% for fav in carreiras_favoritas %}
+favoritasSelecionadas[{{ fav.posicao }}] = {
+  id: "{{ fav.id }}",
+  nome: "{{ fav.nome }}",
+  emoji: "{{ fav.emoji }}",
+  area: "{{ fav.area }}",
+};
+{% endfor %}
+// Atualiza UI para refletir estado salvo, mas deixa interação desabilitada
+// (usuário pode reabrir via botão "Alterar")
+aplicarEstadoSalvo();
+{% else %}
+const jaTemFavoritas = false;
+{% endif %}
+
+function selecionarFavorita(el) {
+  const id = el.dataset.id;
+  const nome = el.dataset.nome;
+  const emoji = el.dataset.emoji;
+  const area = el.dataset.area;
+
+  // Verifica se já está selecionada — se sim, remove
+  const posicaoAtual = encontrarPosicao(id);
+  if (posicaoAtual) {
+    removerFavorita(posicaoAtual);
+    return;
+  }
+
+  // Encontra próxima posição livre
+  const proximaLivre = [1, 2, 3].find(p => !favoritasSelecionadas[p]);
+  if (!proximaLivre) {
+    // Todas as 3 já preenchidas — pisca para indicar que é necessário remover primeiro
+    piscarSlots();
+    return;
+  }
+
+  favoritasSelecionadas[proximaLivre] = { id, nome, emoji, area };
+  atualizarUI();
+}
+
+function encontrarPosicao(id) {
+  return [1, 2, 3].find(p => favoritasSelecionadas[p]?.id === id) || null;
+}
+
+function removerFavorita(posicao) {
+  delete favoritasSelecionadas[posicao];
+  atualizarUI();
+}
+
+function atualizarUI() {
+  // Atualiza slots visuais
+  [1, 2, 3].forEach(pos => {
+    const slot = document.getElementById(`slot-${pos}`);
+    const placeholder = document.getElementById(`slot-${pos}-placeholder`);
+    const emojiEl = document.getElementById(`slot-${pos}-emoji`);
+    const nomeEl = document.getElementById(`slot-${pos}-nome`);
+
+    if (favoritasSelecionadas[pos]) {
+      const fav = favoritasSelecionadas[pos];
+      slot.classList.add('preenchido');
+      placeholder.style.display = 'none';
+      emojiEl.textContent = fav.emoji;
+      emojiEl.style.display = 'block';
+      nomeEl.textContent = fav.nome;
+    } else {
+      slot.classList.remove('preenchido');
+      placeholder.style.display = 'block';
+      emojiEl.style.display = 'none';
+      nomeEl.textContent = '';
+    }
+  });
+
+  // Atualiza badges nos items da lista
+  document.querySelectorAll('.fav-item').forEach(el => {
+    const id = el.dataset.id;
+    const badge = document.getElementById(`badge-${id}`);
+    const posicao = encontrarPosicao(id);
+
+    // Remove classes anteriores
+    el.className = el.className.replace(/selecionado-\d/, '').trim();
+
+    if (posicao) {
+      el.classList.add(`selecionado-${posicao}`);
+      const medalhas = {1: '🥇 1ª', 2: '🥈 2ª', 3: '🥉 3ª'};
+      badge.textContent = medalhas[posicao];
+    } else {
+      badge.textContent = 'Selecionar';
+    }
+  });
+
+  // Habilita/desabilita botão salvar
+  const btn = document.getElementById('btn-salvar-fav');
+  const completo = Object.keys(favoritasSelecionadas).length === 3;
+  btn.disabled = !completo;
+  btn.querySelector('span').textContent = completo
+    ? '✓ Salvar Minhas 3 Escolhas'
+    : `Selecione ainda ${3 - Object.keys(favoritasSelecionadas).length} carreira(s)`;
+}
+
+function piscarSlots() {
+  const slotsPreenchidos = [1,2,3].filter(p => favoritasSelecionadas[p]);
+  slotsPreenchidos.forEach(p => {
+    const slot = document.getElementById(`slot-${p}`);
+    slot.style.animation = 'none';
+    slot.style.outline = '2px solid #ef4444';
+    setTimeout(() => { slot.style.outline = ''; }, 800);
+  });
+}
+
+async function salvarFavoritas() {
+  const favoritas = [1, 2, 3].map(pos => ({
+    posicao: pos,
+    ...favoritasSelecionadas[pos],
+  }));
+
+  const btn = document.getElementById('btn-salvar-fav');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Salvando...';
+
+  try {
+    const resp = await fetch('{{ url_for("vocacional.salvar_carreiras_favoritas") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resultado_id: RESULTADO_ID, favoritas })
+    });
+    const dados = await resp.json();
+
+    if (dados.sucesso) {
+      // Mostra estado de sucesso
+      document.getElementById('area-salvar').style.display = 'none';
+      document.getElementById('lista-favoritas').style.opacity = '0.4';
+      document.getElementById('lista-favoritas').style.pointerEvents = 'none';
+
+      const el = document.getElementById('favoritas-salvas');
+      el.style.display = 'block';
+
+      // Scroll suave até o CTA
+      setTimeout(() => {
+        document.querySelector('.cta-plataforma').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 800);
+    } else {
+      alert('Erro ao salvar: ' + dados.erro);
+      btn.disabled = false;
+      btn.querySelector('span').textContent = '✓ Salvar Minhas 3 Escolhas';
+    }
+  } catch(e) {
+    alert('Erro de conexão. Tente novamente.');
+    btn.disabled = false;
+    btn.querySelector('span').textContent = '✓ Salvar Minhas 3 Escolhas';
+  }
+}
+
+function reabilitarEscolha() {
+  document.getElementById('favoritas-salvas').style.display = 'none';
+  document.getElementById('area-salvar').style.display = 'block';
+  document.getElementById('lista-favoritas').style.opacity = '1';
+  document.getElementById('lista-favoritas').style.pointerEvents = 'auto';
+  // Limpa seleção atual para re-escolha
+  favoritasSelecionadas = {};
+  atualizarUI();
+}
+
+function aplicarEstadoSalvo() {
+  // Aplica badges visuais nas carreiras já salvas mas não ativa interação
+  [1, 2, 3].forEach(pos => {
+    if (!favoritasSelecionadas[pos]) return;
+    const fav = favoritasSelecionadas[pos];
+    const el = document.getElementById(`fav-${fav.id}`);
+    if (!el) return;
+    el.classList.add(`selecionado-${pos}`);
+    const medalhas = {1: '🥇 1ª', 2: '🥈 2ª', 3: '🥉 3ª'};
+    const badge = document.getElementById(`badge-${fav.id}`);
+    if (badge) badge.textContent = medalhas[pos];
+  });
+
+  // Desabilita lista e botão (usuário já salvou)
+  document.getElementById('lista-favoritas').style.opacity = '0.4';
+  document.getElementById('lista-favoritas').style.pointerEvents = 'none';
+  document.getElementById('area-salvar').style.display = 'none';
+}
+</script>
+{% endblock %}
