@@ -6,9 +6,7 @@ Sistema completo de rede social focada em rotina de estudos
 
 from datetime import datetime
 from app import db
-from sqlalchemy import func, Index, event
-from urllib.parse import urlparse
-from typing import Optional
+from sqlalchemy import func, Index
 import re
 
 
@@ -16,22 +14,22 @@ import re
 class Post(db.Model):
     """
     Postagem no feed social
-    Pode ser texto, imagem ou vídeo (máx 20 segundos)
+    Pode ser texto, imagem ou vÃ­deo (mÃ¡x 20 segundos)
     """
     __tablename__ = 'post'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    # Conteúdo
-    texto = db.Column(db.Text)  # Texto da postagem (opcional se tiver mídia)
+    # ConteÃºdo
+    texto = db.Column(db.Text)  # Texto da postagem (opcional se tiver mÃ­dia)
     tipo_midia = db.Column(db.String(10))  # 'texto', 'imagem', 'video'
     
     # Timestamps
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Métricas (desnormalizadas para performance)
+    # MÃ©tricas (desnormalizadas para performance)
     total_likes = db.Column(db.Integer, default=0)
     total_dislikes = db.Column(db.Integer, default=0)
     total_comentarios = db.Column(db.Integer, default=0)
@@ -45,7 +43,7 @@ class Post(db.Model):
     likes = db.relationship('PostLike', backref='post', lazy='dynamic', cascade='all, delete-orphan')
     comentarios = db.relationship('PostComentario', backref='post', lazy='dynamic', cascade='all, delete-orphan')
     
-    # Índices para performance
+    # Ãndices para performance
     __table_args__ = (
         Index('idx_post_user_data', 'user_id', 'data_criacao'),
         Index('idx_post_data_likes', 'data_criacao', 'total_likes'),
@@ -59,7 +57,7 @@ class Post(db.Model):
         return self.total_likes - self.total_dislikes
     
     def user_liked(self, user_id):
-        """Verifica se o usuário deu like"""
+        """Verifica se o usuÃ¡rio deu like"""
         return PostLike.query.filter_by(
             post_id=self.id, 
             user_id=user_id, 
@@ -67,7 +65,7 @@ class Post(db.Model):
         ).first() is not None
     
     def user_disliked(self, user_id):
-        """Verifica se o usuário deu dislike"""
+        """Verifica se o usuÃ¡rio deu dislike"""
         return PostLike.query.filter_by(
             post_id=self.id, 
             user_id=user_id, 
@@ -79,7 +77,7 @@ class Post(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'username': self.user.nome if self.user else 'Anônimo',
+            'username': self.user.nome if self.user else 'AnÃ´nimo',
             'user_avatar': self.user.avatar_url if hasattr(self.user, 'avatar_url') else None,
             'texto': self.texto,
             'tipo_midia': self.tipo_midia,
@@ -94,7 +92,7 @@ class Post(db.Model):
     def processar_hashtags(self):
        '''
        Extrai e associa hashtags ao post
-       Deve ser chamado após criar/atualizar um post
+       Deve ser chamado apÃ³s criar/atualizar um post
        '''
        if not self.texto:
           return
@@ -113,12 +111,12 @@ class Post(db.Model):
        db.session.commit()
 
 
-    # --- NOVO MÉTODO ---
+    # --- NOVO MÃ‰TODO ---
     def user_saved(self, user_id):
-        """Verifica se o usuário salvou este post"""
+        """Verifica se o usuÃ¡rio salvou este post"""
         return PostSalvo.query.filter_by(post_id=self.id, user_id=user_id).first() is not None
     
-    # ... (Mantenha os outros métodos: get_score, user_liked, etc.)
+    # ... (Mantenha os outros mÃ©todos: get_score, user_liked, etc.)
     def user_liked(self, user_id):
         return PostLike.query.filter_by(post_id=self.id, user_id=user_id, tipo='like').first() is not None
     
@@ -137,7 +135,7 @@ post_hashtags = db.Table('post_hashtags',
 
 class Hashtag(db.Model):
     """
-    Hashtags extraídas dos posts
+    Hashtags extraÃ­das dos posts
     Rastreia popularidade e uso ao longo do tempo
     """
     __tablename__ = 'hashtag'
@@ -145,9 +143,9 @@ class Hashtag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(100), nullable=False, unique=True, index=True)  # Ex: "matematica"
     
-    # Métricas de popularidade
+    # MÃ©tricas de popularidade
     total_uso = db.Column(db.Integer, default=0)  # Quantas vezes foi usada
-    uso_ultima_semana = db.Column(db.Integer, default=0)  # Uso nos últimos 7 dias
+    uso_ultima_semana = db.Column(db.Integer, default=0)  # Uso nos Ãºltimos 7 dias
     ultimo_uso = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Timestamps
@@ -159,7 +157,7 @@ class Hashtag(db.Model):
                            secondary=post_hashtags,
                            backref=db.backref('hashtags', lazy='dynamic'))
     
-    # Índices para performance
+    # Ãndices para performance
     __table_args__ = (
         Index('idx_hashtag_uso_semana', 'uso_ultima_semana', 'total_uso'),
         Index('idx_hashtag_ultimo_uso', 'ultimo_uso'),
@@ -178,8 +176,8 @@ class Hashtag(db.Model):
         if not texto:
             return []
         
-        # Regex para capturar hashtags (letras, números, acentuadas)
-        pattern = r'#([a-záéíóúàâêôãõçA-ZÁÉÍÓÚÀÂÊÔÃÕÇ0-9_]+)'
+        # Regex para capturar hashtags (letras, nÃºmeros, acentuadas)
+        pattern = r'#([a-zÃ¡Ã©Ã­Ã³ÃºÃ Ã¢ÃªÃ´Ã£ÃµÃ§A-ZÃÃ‰ÃÃ“ÃšÃ€Ã‚ÃŠÃ”ÃƒÃ•Ã‡0-9_]+)'
         hashtags = re.findall(pattern, texto)
         
         # Normalizar (lowercase)
@@ -196,7 +194,7 @@ class Hashtag(db.Model):
     @staticmethod
     def obter_ou_criar(tag_nome):
         """
-        Obtém uma hashtag existente ou cria uma nova
+        ObtÃ©m uma hashtag existente ou cria uma nova
         """
         tag_nome = tag_nome.lower().strip()
         
@@ -206,7 +204,7 @@ class Hashtag(db.Model):
             hashtag = Hashtag(tag=tag_nome)
             db.session.add(hashtag)
         
-        # Atualizar métricas
+        # Atualizar mÃ©tricas
         hashtag.total_uso += 1
         hashtag.ultimo_uso = datetime.utcnow()
         
@@ -222,7 +220,7 @@ class Hashtag(db.Model):
         
         data_limite = datetime.utcnow() - timedelta(days=7)
         
-        # Para cada hashtag, contar posts dos últimos 7 dias
+        # Para cada hashtag, contar posts dos Ãºltimos 7 dias
         hashtags = Hashtag.query.all()
         
         for hashtag in hashtags:
@@ -242,7 +240,7 @@ class Hashtag(db.Model):
     @staticmethod
     def obter_em_alta(limite=10):
         """
-        Retorna hashtags mais usadas nos últimos 7 dias
+        Retorna hashtags mais usadas nos Ãºltimos 7 dias
         """
         return Hashtag.query\
             .filter(Hashtag.uso_ultima_semana > 0)\
@@ -256,10 +254,10 @@ class Hashtag(db.Model):
 
 
 
-# ==================== MÍDIA ====================
+# ==================== MÃDIA ====================
 class PostMidia(db.Model):
     """
-    Arquivos de mídia anexados a posts (imagem ou vídeo)
+    Arquivos de mÃ­dia anexados a posts (imagem ou vÃ­deo)
     """
     __tablename__ = 'post_midia'
     
@@ -269,16 +267,16 @@ class PostMidia(db.Model):
     # Arquivo
     tipo = db.Column(db.String(10), nullable=False)  # 'imagem' ou 'video'
     url = db.Column(db.String(500), nullable=False)  # Caminho do arquivo
-    url_thumbnail = db.Column(db.String(500))  # Thumbnail do vídeo
+    url_thumbnail = db.Column(db.String(500))  # Thumbnail do vÃ­deo
     
     # Metadados
     tamanho_bytes = db.Column(db.Integer)  # Tamanho do arquivo
-    duracao_segundos = db.Column(db.Integer)  # Duração do vídeo (máx 20)
-    largura = db.Column(db.Integer)  # Dimensões
+    duracao_segundos = db.Column(db.Integer)  # DuraÃ§Ã£o do vÃ­deo (mÃ¡x 20)
+    largura = db.Column(db.Integer)  # DimensÃµes
     altura = db.Column(db.Integer)
     
     # Processamento
-    processado = db.Column(db.Boolean, default=False)  # Se passou por otimização
+    processado = db.Column(db.Boolean, default=False)  # Se passou por otimizaÃ§Ã£o
     
     data_upload = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -289,7 +287,7 @@ class PostMidia(db.Model):
 # --- NOVO MODELO: POSTS SALVOS ---
 class PostSalvo(db.Model):
     """
-    Posts salvos pelo usuário (Bookmarks)
+    Posts salvos pelo usuÃ¡rio (Bookmarks)
     """
     __tablename__ = 'post_salvo'
     
@@ -312,7 +310,7 @@ class PostSalvo(db.Model):
 # ==================== LIKES/DISLIKES ====================
 class PostLike(db.Model):
     """
-    Reações em posts (like ou dislike)
+    ReaÃ§Ãµes em posts (like ou dislike)
     """
     __tablename__ = 'post_like'
     
@@ -326,7 +324,7 @@ class PostLike(db.Model):
     # Relacionamentos
     user = db.relationship('User', backref='post_likes')
     
-    # Garantir uma reação por usuário por post
+    # Garantir uma reaÃ§Ã£o por usuÃ¡rio por post
     __table_args__ = (
         db.UniqueConstraint('post_id', 'user_id', name='unique_post_like_user'),
         Index('idx_like_post', 'post_id'),
@@ -337,10 +335,10 @@ class PostLike(db.Model):
         return f'<PostLike {self.tipo} on Post {self.post_id} by User {self.user_id}>'
 
 
-# ==================== COMENTÁRIOS ====================
+# ==================== COMENTÃRIOS ====================
 class PostComentario(db.Model):
     """
-    Comentários em posts (funcionalidade futura)
+    ComentÃ¡rios em posts (funcionalidade futura)
     """
     __tablename__ = 'post_comentario'
     
@@ -375,7 +373,7 @@ class Seguidor(db.Model):
     # Quem segue
     seguidor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    # Quem é seguido
+    # Quem Ã© seguido
     seguido_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     data_inicio = db.Column(db.DateTime, default=datetime.utcnow)
@@ -388,7 +386,7 @@ class Seguidor(db.Model):
                               foreign_keys=[seguido_id], 
                               backref=db.backref('seguidores', lazy='dynamic'))
     
-    # Garantir um único follow por par de usuários
+    # Garantir um Ãºnico follow por par de usuÃ¡rios
     __table_args__ = (
         db.UniqueConstraint('seguidor_id', 'seguido_id', name='unique_follow'),
         db.CheckConstraint('seguidor_id != seguido_id', name='no_self_follow'),
@@ -400,23 +398,23 @@ class Seguidor(db.Model):
         return f'<Seguidor {self.seguidor_id} -> {self.seguido_id}>'
 
 
-# ==================== NOTIFICAÇÕES SOCIAIS ====================
+# ==================== NOTIFICAÃ‡Ã•ES SOCIAIS ====================
 class NotificacaoSocial(db.Model):
     """
-    Notificações de interações sociais
+    NotificaÃ§Ãµes de interaÃ§Ãµes sociais
     """
     __tablename__ = 'notificacao_social'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    # Quem gerou a notificação
+    # Quem gerou a notificaÃ§Ã£o
     origem_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
-    # Tipo de notificação
+    # Tipo de notificaÃ§Ã£o
     tipo = db.Column(db.String(20), nullable=False)  # 'like', 'follow', 'comentario'
     
-    # Referência ao conteúdo
+    # ReferÃªncia ao conteÃºdo
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     
     # Mensagem
@@ -426,6 +424,7 @@ class NotificacaoSocial(db.Model):
     lida = db.Column(db.Boolean, default=False)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     
+
     # Relacionamentos
     user = db.relationship('User', foreign_keys=[user_id], backref='notificacoes_sociais')
     origem_user = db.relationship('User', foreign_keys=[origem_user_id])
@@ -459,7 +458,7 @@ class Desafio(db.Model):
     meta_quantidade = db.Column(db.Integer)
     meta_descricao = db.Column(db.String(200))
     
-    # Período
+    # PerÃ­odo
     data_inicio = db.Column(db.DateTime, nullable=False)
     data_fim = db.Column(db.DateTime, nullable=False)
     
@@ -489,7 +488,7 @@ class Desafio(db.Model):
 # ==================== PERFIL SOCIAL (ATUALIZAR ESTA CLASSE) ====================
 class PerfilSocial(db.Model):
     """
-    Estatísticas sociais do usuário (cache/desnormalização)
+    EstatÃ­sticas sociais do usuÃ¡rio (cache/desnormalizaÃ§Ã£o)
     """
     __tablename__ = 'perfil_social'
     
@@ -589,43 +588,3 @@ class StoryVisualizacao(db.Model):
         db.UniqueConstraint('story_id', 'user_id', name='unique_story_view'),
     )
 
-
-def _extract_s3_key(url: str) -> Optional[str]:
-    parsed = urlparse(url)
-    if not parsed.netloc or "amazonaws.com" not in parsed.netloc:
-        return None
-    path = parsed.path.lstrip("/")
-    return path or None
-
-
-@event.listens_for(PostMidia, "before_insert")
-@event.listens_for(PostMidia, "before_update")
-def _normalize_post_midia_url(mapper, connection, target):
-    if not target.url or not isinstance(target.url, str):
-        return
-    if target.url.startswith("http://") or target.url.startswith("https://"):
-        key = _extract_s3_key(target.url)
-        if key:
-            target.url = key
-
-
-@event.listens_for(Story, "before_insert")
-@event.listens_for(Story, "before_update")
-def _normalize_story_url(mapper, connection, target):
-    if not target.url_midia or not isinstance(target.url_midia, str):
-        return
-    if target.url_midia.startswith("http://") or target.url_midia.startswith("https://"):
-        key = _extract_s3_key(target.url_midia)
-        if key:
-            target.url_midia = key
-
-
-@event.listens_for(PerfilSocial, "before_insert")
-@event.listens_for(PerfilSocial, "before_update")
-def _normalize_avatar_url(mapper, connection, target):
-    if not target.foto_perfil or not isinstance(target.foto_perfil, str):
-        return
-    if target.foto_perfil.startswith("http://") or target.foto_perfil.startswith("https://"):
-        key = _extract_s3_key(target.foto_perfil)
-        if key:
-            target.foto_perfil = key

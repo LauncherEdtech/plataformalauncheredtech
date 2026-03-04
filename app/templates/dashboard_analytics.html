@@ -562,7 +562,6 @@
                 </select>
             </div>
 
-
             <div class="control-group">
                 <label for="dataInicio">Data Início:</label>
                 <input type="date" id="dataInicio" class="date-input">
@@ -801,6 +800,39 @@
             return params.toString();
         }
 
+
+function garantirArray(valor, padrao = []) {
+    if (!valor) return padrao;
+    if (!Array.isArray(valor)) return padrao;
+    return valor;
+}
+
+function renderizarListaSegura(array, renderFunc, mensagemVazia = 'Nenhum dado disponível') {
+    const arraySeguro = garantirArray(array);
+    
+    if (arraySeguro.length === 0) {
+        return `<tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--medium-gray);">${mensagemVazia}</td></tr>`;
+    }
+    
+    return arraySeguro.map(renderFunc).join('');
+}
+
+function formatarTempoAtividades(atividades) {
+    const atividadesSeguras = garantirArray(atividades);
+    
+    if (atividadesSeguras.length === 0) {
+        return '<span style="color: var(--medium-gray);">Sem dados</span>';
+    }
+    
+    return atividadesSeguras.map(a => 
+        `<span style="display: inline-block; padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px; margin: 0.25rem; font-size: 0.75rem;">
+            ${a.atividade || 'Geral'}: ${a.tempo_horas || 0}h
+        </span>`
+    ).join('');
+}
+
+
+
         function updateLastUpdate() {
             const now = new Date();
             document.getElementById('lastUpdate').textContent = 
@@ -885,6 +917,8 @@ container.innerHTML = `
             <div>
                 <div class="kpi-label">Total de Usuários</div>
                 <div class="kpi-value">${data.total_usuarios.toLocaleString('pt-BR')}</div>
+
+
             </div>
             <div class="kpi-icon blue">👥</div>
         </div>
@@ -950,6 +984,7 @@ container.innerHTML = `
         <div class="kpi-change neutral">MRR + ARR/12</div>
     </div>
 
+
     <!-- CHURN RATE - CLICÁVEL -->
     <div class="kpi-card clickable" onclick="mostrarDetalhesChurn()">
         <div class="kpi-header">
@@ -1008,6 +1043,11 @@ container.innerHTML = `
                 const params = getDateParams();
                 const response = await fetch(`/dashboard-analytics/api/kpis-produto?${params}`);
                 const data = await response.json();
+
+
+
+
+
 
 
 const container = document.getElementById('kpisProduto');
@@ -1077,7 +1117,7 @@ container.innerHTML = `
         <div class="kpi-header">
             <div>
                 <div class="kpi-label">DAU</div>
-                <div class="kpi-value">${data.dau.toLocaleString('pt-BR')}</div>
+                <div class="kpi-value">${(data.dau || 0).toLocaleString('pt-BR')}</div>
             </div>
             <div class="kpi-icon green">👤</div>
         </div>
@@ -1092,7 +1132,7 @@ container.innerHTML = `
         <div class="kpi-header">
             <div>
                 <div class="kpi-label">MAU</div>
-                <div class="kpi-value">${data.mau.toLocaleString('pt-BR')}</div>
+                <div class="kpi-value">${(data.mau || 0).toLocaleString('pt-BR')}</div>
             </div>
             <div class="kpi-icon blue">👥</div>
         </div>
@@ -1122,6 +1162,11 @@ container.innerHTML = `
                 console.error('Erro ao carregar KPIs de produto:', error);
             }
         }
+
+
+
+
+
 
         // ============================================================
         // GRÁFICOS - NEGÓCIO
@@ -1325,6 +1370,7 @@ container.innerHTML = `
                 console.error('Erro ao carregar engajamento:', error);
             }
         }
+
 
 
         async function carregarPerformance() {
@@ -1605,49 +1651,53 @@ container.innerHTML = `
         // ============================================================
         // ANÁLISE AVANÇADA - SEGMENTAÇÃO
         // ============================================================
-        async function carregarSegmentacao() {
-            try {
-                const response = await fetch('/dashboard-analytics/api/analise-segmentacao');
-                const data = await response.json();
-                
-                const container = document.getElementById('segmentacaoUsuarios');
-                
-                const segmentosHTML = Object.entries(data.segmentos).map(([nome, valor]) => {
-                    const nomeFormatado = {
-                        'super_engajados': 'Super Engajados (>10h)',
-                        'engajados': 'Engajados (5-10h)',
-                        'moderados': 'Moderados (1-5h)',
-                        'baixo_engajamento': 'Baixo Engajamento (<1h)',
-                        'inativos': 'Inativos (0h)'
-                    }[nome];
-                    
-                    const percentual = data.segmentos_percentual[nome];
-                    
-                    return `
-                        <div class="segmento-item">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <span style="font-weight: 600;">${nomeFormatado}</span>
-                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-blue);">
-                                    ${percentual}%
-                                </span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--medium-gray);">
-                                <span>${valor} usuários</span>
-                                <span>${valor} / ${data.total_usuarios}</span>
-                            </div>
-                            <div style="height: 8px; background: var(--bg-gray); border-radius: 4px; margin-top: 0.5rem; overflow: hidden;">
-                                <div style="height: 100%; width: ${percentual}%; background: var(--primary-blue);"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                container.innerHTML = segmentosHTML;
-                
-            } catch (error) {
-                console.error('Erro ao carregar segmentação:', error);
-            }
-        }
+                async function carregarSegmentacao() {
+                        try {
+                                const response = await fetch('/dashboard-analytics/api/analise-segmentacao');
+                                const data = await response.json();
+
+                                const container = document.getElementById('segmentacaoUsuarios');
+
+                                const segmentosHTML = Object.entries(data.segmentos).map(([nome, valor]) => {
+                                        const nomeFormatado = {
+                                                'super_engajados': 'Super Engajados (>10h)',
+                                                'engajados': 'Engajados (5-10h)',
+                                                'moderados': 'Moderados (1-5h)',
+                                                'baixo_engajamento': 'Baixo Engajamento (<1h)',
+                                                'inativos': 'Inativos (0h)'
+                                        }[nome];
+
+                                        const percentual = data.segmentos_percentual[nome];
+
+                                        // ✅ ADICIONADO: onclick e cursor pointer
+                                        return `
+                                                <div class="segmento-item" style="cursor: pointer;" onclick="mostrarUsuariosSegmento('${nome}')">
+                                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                                                <span style="font-weight: 600;">${nomeFormatado}</span>
+                                                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-blue);">
+                                                                        ${percentual}%
+                                                                </span>
+                                                        </div>
+                                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--medium-gray);">
+                                                                <span>${valor} usuários</span>
+                                                                <span>${valor} / ${data.total_usuarios}</span>
+                                                        </div>
+                                                        <div style="height: 8px; background: var(--bg-gray); border-radius: 4px; margin-top: 0.5rem; overflow: hidden;">
+                                                                <div style="height: 100%; width: ${percentual}%; background: var(--primary-blue);"></div>
+                                                        </div>
+                                                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary-blue); text-align: center;">
+                                                                👉 Clique para ver usuários
+                                                        </div>
+                                                </div>
+                                        `;
+                                }).join('');
+
+                                container.innerHTML = segmentosHTML;
+
+                        } catch (error) {
+                                console.error('Erro ao carregar segmentação:', error);
+                        }
+                }
 
 
 
@@ -1755,21 +1805,22 @@ container.innerHTML = `
                 const response = await fetch(`/dashboard-analytics/api/usuarios-ativados?${params}`);
                 const data = await response.json();
                 
-                const usuariosHTML = data.usuarios.map(u => `
-                    <tr onclick="abrirDetalhesUsuario(${u.id})">
-                        <td><strong>${u.username}</strong></td>
-                        <td>${u.email}</td>
-                        <td>${u.ultimo_acesso}</td>
-                        <td>
-                            <span style="padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px;">
-                                ${u.plano}
-                            </span>
-                        </td>
-                        <td><strong>${u.tempo_total_horas}h</strong></td>
-                        <td>${u.total_simulados}</td>
-                        <td>${u.total_redacoes}</td>
-                    </tr>
-                `).join('');
+                                const usuariosHTML = data.usuarios.map(u => `
+                                        <tr onclick="abrirDetalhesUsuario(${u.id})">
+                                                <td><strong>${u.nome_completo}</strong></td>
+                                                <td>${u.telefone}</td>
+                                                <td>${u.ultimo_acesso}</td>
+                                                <td>
+                                                        <span style="padding: 0.25rem 0.5rem; background: var(--bg-gray); border-radius: 4px;">
+                                                                ${u.plano}
+                                                        </span>
+                                                </td>
+                                                <td><strong>${u.tempo_total_horas}h</strong></td>
+                                                <td>${u.total_simulados}</td>
+                                                <td>${u.total_redacoes}</td>
+                                                <td>${u.total_aulas || 0}</td> <!-- ✅ NOVA COLUNA -->
+                                        </tr>
+                                `).join('');
                 
                 conteudo.innerHTML = `
                     <div>
@@ -1784,13 +1835,14 @@ container.innerHTML = `
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
-                                        <th>Email</th>
+                                        <th>NOME COMPLETO</th>
+                                        <th>TELEFONE</th>
                                         <th>Último Acesso</th>
                                         <th>Plano</th>
                                         <th>Tempo Total</th>
                                         <th>Simulados</th>
                                         <th>Redações</th>
+                                                                                <th>Aulas</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1883,6 +1935,11 @@ container.innerHTML = `
                         <div class="detail-item">
                             <label>Email</label>
                             <div class="value" style="font-size: 0.875rem;">${data.dados_basicos.email}</div>
+                        </div>
+
+                         <div class="detail-item">
+                            <label>Telefone</label>
+                            <div class="value" style="font-size: 0.875rem;">${data.dados_basicos.telefone || 'Não informado'}</div>
                         </div>
                         <div class="detail-item">
                             <label>Plano</label>
@@ -2025,8 +2082,8 @@ async function mostrarDetalhesTotalUsuarios() {
         
         const novosHTML = data.novos_usuarios.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.data_registro}</td>
                 <td><span class="badge badge-success">NOVO</span></td>
             </tr>
@@ -2034,8 +2091,8 @@ async function mostrarDetalhesTotalUsuarios() {
         
         const todosHTML = data.todos_usuarios.slice(0, 50).map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.data_registro}</td>
                 <td>${u.ultimo_acesso}</td>
                 <td>
@@ -2073,8 +2130,8 @@ async function mostrarDetalhesTotalUsuarios() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Data de Registro</th>
                             <th>Status</th>
                         </tr>
@@ -2092,8 +2149,8 @@ async function mostrarDetalhesTotalUsuarios() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Registro</th>
                             <th>Último Acesso</th>
                             <th>Status</th>
@@ -2129,8 +2186,8 @@ async function mostrarDetalhesUsuariosPremium() {
         
         const usuariosHTML = data.usuarios.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>
                     <span class="badge badge-${u.plano === 'mensal' ? 'primary' : 'success'}">
                         ${u.plano.toUpperCase()}
@@ -2170,8 +2227,8 @@ async function mostrarDetalhesUsuariosPremium() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Plano</th>
                             <th>Expira em</th>
                             <th>Dias Restantes</th>
@@ -2208,8 +2265,8 @@ async function mostrarDetalhesMRR() {
         
         const usuariosHTML = data.usuarios.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>R$ ${u.valor.toFixed(2)}</td>
                 <td>${u.proxima_cobranca}</td>
             </tr>
@@ -2242,8 +2299,8 @@ async function mostrarDetalhesMRR() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Valor Mensal</th>
                             <th>Próxima Cobrança</th>
                         </tr>
@@ -2281,8 +2338,8 @@ async function mostrarDetalhesChurn() {
         
         const usuariosHTML = data.usuarios.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.expirou_em}</td>
                 <td>${u.tempo_como_cliente} dias</td>
             </tr>
@@ -2308,8 +2365,8 @@ async function mostrarDetalhesChurn() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Data de Cancelamento</th>
                             <th>Tempo como Cliente</th>
                         </tr>
@@ -2393,24 +2450,27 @@ async function mostrarDetalhesRetornoD1() {
         const retornaram = data.usuarios.filter(u => u.retornou_d1);
         
         const naoRetornaram = usuarios.filter(u => u.retornou_d1 !== true);
-        
+
+
         const retornaramHTML = retornaram.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username || 'N/A'}</strong></td>
-                <td>${u.email || 'N/A'}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.data_registro || 'N/A'}</td>
                 <td>${u.ultimo_acesso || 'N/A'}</td>
                 <td><span style="color: var(--success); font-weight: 600;">${u.dias_ate_retorno} dias</span></td>
+                                <td>${formatarTempoAtividades(u.tempo_por_atividade)}</td>
             </tr>
         `).join('');
         
         const naoRetornaramHTML = naoRetornaram.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username || 'N/A'}</strong></td>
-                <td>${u.email || 'N/A'}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.data_registro || 'N/A'}</td>
                 <td>${u.ultimo_acesso || 'N/A'}</td>
                 <td><span style="color: var(--danger);">Não retornou</span></td>
+                                <td>${formatarTempoAtividades(u.tempo_por_atividade)}</td>
             </tr>
         `).join('');
         
@@ -2441,11 +2501,12 @@ async function mostrarDetalhesRetornoD1() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Registro</th>
                             <th>Último Acesso</th>
                             <th>Tempo até Retorno</th>
+                                                        <th>Tempo por Atividade</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2461,8 +2522,8 @@ async function mostrarDetalhesRetornoD1() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Registro</th>
                             <th>Último Acesso</th>
                             <th>Status</th>
@@ -2543,8 +2604,8 @@ async function mostrarDetalhesRetornoD7() {
         
         const retornaramHTML = retornaram.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username || 'N/A'}</strong></td>
-                <td>${u.email || 'N/A'}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>${u.data_registro || 'N/A'}</td>
                 <td>${u.ultimo_acesso || 'N/A'}</td>
                 <td><span style="color: var(--success); font-weight: 600;">${u.dias_ate_retorno} dias</span></td>
@@ -2575,8 +2636,8 @@ async function mostrarDetalhesRetornoD7() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Registro</th>
                             <th>Último Acesso</th>
                             <th>Dias até Retorno</th>
@@ -2664,8 +2725,8 @@ async function mostrarDetalhesTempoMedio() {
             
             return `
                 <tr onclick="abrirDetalhesUsuario(${u.id || 0})">
-                    <td><strong>${u.username || 'N/A'}</strong></td>
-                    <td>${u.email || 'N/A'}</td>
+                    <td><strong>${u.nome_completo}</strong></td>
+                    <td>${u.telefone}</td>
                     <td><strong>${u.total_horas || 0}h</strong> (${u.total_minutos || 0}min)</td>
                     <td>${u.total_sessoes || 0}</td>
                     <td>${u.media_por_sessao || 0} min</td>
@@ -2697,8 +2758,8 @@ async function mostrarDetalhesTempoMedio() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Tempo Total</th>
                             <th>Sessões</th>
                             <th>Média/Sessão</th>
@@ -2739,8 +2800,8 @@ async function mostrarDetalhesDAU() {
         
         const usuariosHTML = data.usuarios.map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>
                     <span class="badge badge-${u.plano === 'free' ? 'secondary' : 'success'}">
                         ${u.plano.toUpperCase()}
@@ -2771,8 +2832,8 @@ async function mostrarDetalhesDAU() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Plano</th>
                             <th>Último Acesso</th>
                         </tr>
@@ -2803,8 +2864,8 @@ async function mostrarDetalhesMAU() {
         
         const usuariosHTML = data.usuarios.slice(0, 100).map(u => `
             <tr onclick="abrirDetalhesUsuario(${u.id})">
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
                 <td>
                     <span class="badge badge-${u.plano === 'free' ? 'secondary' : 'success'}">
                         ${u.plano.toUpperCase()}
@@ -2841,8 +2902,8 @@ async function mostrarDetalhesMAU() {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
                             <th>Plano</th>
                             <th>Último Acesso</th>
                         </tr>
@@ -2954,6 +3015,88 @@ styleSheet.textContent = `
     }
 `;
 document.head.appendChild(styleSheet);
+
+
+async function mostrarUsuariosSegmento(segmento) {
+    const nomeSegmento = {
+        'super_engajados': 'Super Engajados (>10h)',
+        'engajados': 'Engajados (5-10h)',
+        'moderados': 'Moderados (1-5h)',
+        'baixo_engajamento': 'Baixo Engajamento (<1h)',
+        'inativos': 'Inativos (0h)'
+    }[segmento];
+    
+    abrirModal(`Carregando ${nomeSegmento}...`);
+    
+    try {
+        const response = await fetch(`/dashboard-analytics/api/analise-segmentacao/${segmento}`);
+        const data = await response.json();
+        
+        if (data.erro) {
+            throw new Error(data.erro);
+        }
+        
+        const usuariosHTML = data.usuarios.map(u => `
+            <tr onclick="abrirDetalhesUsuario(${u.id})">
+                <td><strong>${u.nome_completo}</strong></td>
+                <td>${u.telefone}</td>
+                <td>
+                    <span class="badge badge-${u.plano === 'free' ? 'secondary' : 'success'}">
+                        ${u.plano.toUpperCase()}
+                    </span>
+                </td>
+                <td><strong>${u.tempo_total_horas}h</strong> (${u.tempo_total_minutos}min)</td>
+                <td>${u.ultimo_acesso}</td>
+            </tr>
+        `).join('');
+        
+        const conteudo = `
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                ${nomeSegmento}
+            </h2>
+            
+            <div class="detail-grid" style="margin-bottom: 2rem;">
+                <div class="detail-item">
+                    <label>Total de Usuários</label>
+                    <div class="value">${data.total}</div>
+                </div>
+                <div class="detail-item">
+                    <label>Segmento</label>
+                    <div class="value" style="font-size: 1rem;">${nomeSegmento}</div>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>NOME COMPLETO</th>
+                            <th>TELEFONE</th>
+                            <th>Plano</th>
+                            <th>Tempo Total</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${usuariosHTML || '<tr><td colspan="5" style="text-align: center;">Nenhum usuário neste segmento</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 1rem; text-align: center; color: var(--medium-gray); font-size: 0.875rem;">
+                💡 Clique em qualquer usuário para ver detalhes completos
+            </p>
+        `;
+        
+        renderizarConteudoModal(conteudo);
+        
+    } catch (error) {
+        mostrarErroModal('Erro ao carregar segmento: ' + error.message);
+    }
+}
+
+
+
 
 
     </script>

@@ -9,9 +9,18 @@
     <title>{% block title %}Plataforma Launcher{% endblock %}</title>
 
     <!-- ✨ FAVICONS ✨ -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <!-- PWA -->
+    <link rel="manifest" href="/pwa/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Launcher">
+    <meta name="csrf-token" content="">
+
+
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,6 +31,10 @@
     
     <!-- 📱 BOTTOM NAVIGATION CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bottom-nav.css') }}">
+
+    <!-- Onboarding CSS --> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/onboarding.css') }}">
+
 
     {% if request.blueprint == 'helpzone' %} 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
@@ -223,7 +236,7 @@
     {% block styles %}{% endblock %}
 </head>
 
-<body class="bg-black text-white">
+<body class="bg-black text-white" data-logged-in="{{ 'true' if current_user.is_authenticated else 'false' }}">
 <!-- SCRIPT DE TRACKING DE ESTUDO -->
 <script>
 (function() {
@@ -373,7 +386,8 @@
             });
             
             const data = await response.json();
-            
+
+
             if (data.sucesso) {
                 isActive = false;
                 sessionId = null;
@@ -677,6 +691,7 @@
         {% block content %}{% endblock %}
     </main>
 
+
     <!-- 🚀 RODAPÉ ATUALIZADO (Estrutura Completa) -->
     <!-- Borda do rodapé ajustada para var(--border-color) -->
     <footer class="bg-black text-white pt-5 pb-3 mt-5" style="border-top: 1px solid var(--border-color);">
@@ -929,5 +944,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Indicadores de scroll da bottom nav ativados');
 });
 </script>
+<!-- Onboarding JavaScript -->
+<!-- <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script> -->
+<script src="{{ url_for('static', filename='js/onboarding.js') }}?v=1770661900"></script>
+<!-- PWA Script -->
+<script src="{{ url_for('static', filename='js/pwa.js') }}" defer></script>
+
 </body>
 </html>

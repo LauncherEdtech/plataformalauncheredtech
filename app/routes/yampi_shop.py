@@ -94,7 +94,20 @@ def desbloquear_desconto(produto_id):
         
         if not desbloqueio:
             return jsonify({'success': False, 'message': msg}), 400
+ 
+        # ==================== HOOK ONBOARDING ====================
+        try:
+            from app.services.onboarding_service import verificar_onboarding_ativo, avancar_etapa
+            if verificar_onboarding_ativo(current_user.id):
+                logger.info(f"🎓 Onboarding: usuário {current_user.id} desbloqueou produto {produto_id}")
+                resultado_onb = avancar_etapa(current_user.id, 'desbloquear_produto')
+                if resultado_onb.get('status') == 'ativo':
+                    logger.info(f"✅ Onboarding avançado para etapa {resultado_onb.get('etapa')}")
+        except Exception as e:
+            logger.error(f"❌ Erro no hook de onboarding (shop): {e}")
+        # =========================================================
         
+ 
         return jsonify({
             'success': True,
             'message': 'Desconto desbloqueado!',
