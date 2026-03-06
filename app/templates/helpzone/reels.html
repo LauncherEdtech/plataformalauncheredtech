@@ -3,78 +3,82 @@
 
 {% block styles %}
 <style>
-body{background:#080b12;color:#edf2ff}
-.reels-wrap{max-width:680px;margin:0 auto;padding:16px 0 90px}
-.reels-header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(8,11,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.08)}
-.reels-title{font-weight:800;letter-spacing:.2px}
-.reels-sub{font-size:12px;color:#9fb0d0}
-.reel-card{margin:14px 10px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#101726}
-.reel-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.av{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#5eead4,#60a5fa);color:#051016;font-weight:800}
-.reel-video{width:100%;max-height:78vh;border-radius:14px;background:#000}
-.reel-actions{display:flex;gap:8px;margin-top:10px}
-.reel-btn{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:#dbe8ff;padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer}
-.reel-btn:hover{background:rgba(255,255,255,.09)}
-.empty{padding:48px 16px;text-align:center;color:#9fb0d0}
+body{background:#0a0d14;color:#fff}
+.ev-wrap{max-width:520px;margin:0 auto;padding:18px 12px 90px}
+.ev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ev-title{font-weight:800;font-size:1.2rem}
+.ev-sub{font-size:.84rem;color:#9aa4ba}
+.ev-card{border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;background:#121826;margin-bottom:18px}
+.ev-video{width:100%;max-height:70vh;background:#000}
+.ev-body{padding:12px}
+.ev-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.ev-user{font-weight:700}
+.ev-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ev-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:6px 12px;font-size:.82rem}
+.ev-empty{padding:50px 20px;text-align:center;color:#9aa4ba}
+.ev-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,13,20,.95);backdrop-filter:blur(8px);padding:10px;display:flex;justify-content:center;gap:10px}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="reels-wrap">
-  <div class="reels-header">
+<div class="ev-wrap">
+  <div class="ev-head">
     <div>
-      <div class="reels-title">🎬 EstudeVideos</div>
-      <div class="reels-sub">Vídeos curtos de rotina, resolução e progresso</div>
+      <div class="ev-title">🎬 EstudeVideos</div>
+      <div class="ev-sub">Vídeos curtos de rotina, resolução e progresso</div>
     </div>
-    <a href="{{ url_for('helpzone.feed') }}" class="reel-btn">Voltar ao Feed</a>
+    <a class="ev-btn" href="{{ url_for('helpzone.feed') }}">Voltar ao feed</a>
   </div>
 
   {% if reels.items %}
-    {% for p in reels.items %}
-      <article class="reel-card">
-        <div class="reel-meta">
-          <div class="av">{{ p.user.nome_completo[0].upper() }}</div>
-          <div>
-            <strong>{{ p.user.nome_completo }}</strong>
-            <div class="reels-sub">{{ p.data_criacao.strftime('%d/%m às %H:%M') }}</div>
-          </div>
+    {% for post in reels.items %}
+    <article class="ev-card">
+      {% if post.midia and post.midia.url %}
+      <video class="ev-video" src="{{ post.midia.url }}" controls preload="metadata" playsinline></video>
+      {% endif %}
+      <div class="ev-body">
+        <div class="ev-meta">
+          <div class="ev-user">{{ post.user.nome_completo }}</div>
+          <small>{{ post.data_criacao.strftime('%d/%m %H:%M') }}</small>
         </div>
-
-        {% if p.midia and p.midia.url %}
-          <video class="reel-video" src="{{ p.midia.url }}" controls preload="metadata" playsinline></video>
-        {% endif %}
-
-        {% if p.texto %}<p style="margin:10px 2px 0">{{ p.texto }}</p>{% endif %}
-
-        <div class="reel-actions">
-          <button class="reel-btn" onclick="interagir('like', {{ p.id }})">❤️ {{ p.total_likes or 0 }}</button>
-          <button class="reel-btn" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=p.id) }}'">💬 {{ p.total_comentarios or 0 }}</button>
-          <button class="reel-btn" onclick="interagir('save', {{ p.id }})">🔖 Salvar</button>
-          <button class="reel-btn" onclick="compartilhar({{ p.id }})">🔗 Compartilhar</button>
+        {% if post.texto %}<p>{{ post.texto }}</p>{% endif %}
+        <div class="ev-actions">
+          <button class="ev-btn" onclick="likeVideo({{ post.id }})">❤️ {{ post.total_likes or 0 }}</button>
+          <a class="ev-btn" href="{{ url_for('helpzone.detalhes_post', post_id=post.id) }}">💬 {{ post.total_comentarios or 0 }}</a>
+          <button class="ev-btn" onclick="saveVideo({{ post.id }})">🔖 Salvar</button>
+          <button class="ev-btn" onclick="shareVideo({{ post.id }})">🔗 Compartilhar</button>
         </div>
-      </article>
+      </div>
+    </article>
     {% endfor %}
   {% else %}
-    <div class="empty">
-      <h3>Nenhum EstudeVideo ainda</h3>
-      <p>Publique um vídeo curto no feed para aparecer aqui.</p>
+    <div class="ev-empty">
+      <h3>Sem vídeos ainda</h3>
+      <p>Publique um vídeo no feed para aparecer aqui.</p>
     </div>
   {% endif %}
+</div>
+
+<div class="ev-nav">
+  <a class="ev-btn" href="{{ url_for('helpzone.feed') }}">Feed</a>
+  <a class="ev-btn" href="{{ url_for('helpzone.criar_post') }}">Criar post</a>
+  <a class="ev-btn" href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">Perfil</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-async function interagir(tipo, postId){
-  const endpoint = tipo === 'like' ? `/helpzone/api/post/${postId}/like` : `/helpzone/api/post/${postId}/save`;
-  const payload = tipo === 'like' ? {tipo:'like'} : {};
-  await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+async function likeVideo(id){
+  await fetch(`/helpzone/api/post/${id}/like`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'like'})});
   location.reload();
 }
-function compartilhar(postId){
-  const url = `${location.origin}/helpzone/post/${postId}`;
-  if (navigator.share) navigator.share({title:'EstudeVideos', url});
-  else navigator.clipboard.writeText(url);
+async function saveVideo(id){
+  await fetch(`/helpzone/api/post/${id}/save`,{method:'POST',headers:{'Content-Type':'application/json'}});
+}
+function shareVideo(id){
+  const url = `${location.origin}/helpzone/post/${id}`;
+  if(navigator.share){ navigator.share({title:'EstudeVideos',url}); return; }
+  navigator.clipboard.writeText(url);
 }
 </script>
 {% endblock %}

@@ -24,6 +24,12 @@ class Post(db.Model):
     # ConteÃºdo
     texto = db.Column(db.Text)  # Texto da postagem (opcional se tiver mÃ­dia)
     tipo_midia = db.Column(db.String(10))  # 'texto', 'imagem', 'video'
+    tipo_post = db.Column(db.String(30), default='geral')  # rotina, meta_dia, progresso, duvida
+    materia = db.Column(db.String(80))
+    link_url = db.Column(db.String(500))
+    origem_automatica = db.Column(db.Boolean, default=False)
+    fixado_no_perfil = db.Column(db.Boolean, default=False)
+    editado = db.Column(db.Boolean, default=False)
     
     # Timestamps
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, index=True)
@@ -345,6 +351,7 @@ class PostComentario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('post_comentario.id'))
     
     texto = db.Column(db.Text, nullable=False)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
@@ -352,6 +359,11 @@ class PostComentario(db.Model):
     
     # Relacionamentos
     user = db.relationship('User', backref='comentarios')
+    respostas = db.relationship(
+        'PostComentario',
+        backref=db.backref('parent', remote_side=[id]),
+        lazy='dynamic'
+    )
     
     __table_args__ = (
         Index('idx_comentario_post', 'post_id', 'data_criacao'),
@@ -500,6 +512,8 @@ class PerfilSocial(db.Model):
     ocupacao = db.Column(db.String(100))
     link_externo = db.Column(db.String(200))
     foto_perfil = db.Column(db.String(500))  # <--- ESSENCIAL PARA SALVAR A FOTO
+    objetivo_estudo = db.Column(db.String(200))
+    prova_alvo = db.Column(db.String(100))
     
     # Contadores
     total_posts = db.Column(db.Integer, default=0)
@@ -564,6 +578,9 @@ class Story(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tipo = db.Column(db.String(10), nullable=False)  # 'imagem' ou 'video'
     url_midia = db.Column(db.String(500), nullable=False)
+    texto_curto = db.Column(db.String(220))
+    meta_dia = db.Column(db.String(180))
+    checkin_rapido = db.Column(db.Boolean, default=False)
     visualizacoes = db.Column(db.Integer, default=0)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     expira_em = db.Column(db.DateTime, nullable=False, index=True)
@@ -587,4 +604,3 @@ class StoryVisualizacao(db.Model):
     __table_args__ = (
         db.UniqueConstraint('story_id', 'user_id', name='unique_story_view'),
     )
-
