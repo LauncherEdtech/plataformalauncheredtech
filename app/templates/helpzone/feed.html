@@ -425,6 +425,7 @@ img{display:block}
         <button class="sbitem" onclick="openExp()"><span class="sbico">🔍</span>Explorar</button>
         <button class="sbitem" onclick="openNot()"><span class="sbico">🔔</span>Notificações<span class="sbdot" id="sbDot" style="display:none"></span></button>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sbitem"><span class="sbico">👤</span>Meu Perfil</a>
+        <a href="{{ url_for('helpzone.reels') }}" class="sbitem"><span class="sbico">🎬</span>EstudeVideos</a>
         <a href="{{ url_for('ranking.index') }}" class="sbitem"><span class="sbico">🏅</span>Ranking</a>
         <div class="sbsec">Estudar</div>
         <a href="{{ url_for('dashboard.index') }}" class="sbitem"><span class="sbico">📊</span>Dashboard</a>
@@ -438,7 +439,7 @@ img{display:block}
   <main class="cm">
     <!-- Stories -->
     <div class="card">
-      <div class="chd"><h3>Stories</h3><span class="tg">📸 seu dia de estudos</span></div>
+      <div class="chd"><h3>Sprint do Dia</h3><span class="tg">📸 metas rápidas em 24h</span></div>
       <div class="strow">
         <div class="st" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
           <div class="stri mine">
@@ -619,6 +620,7 @@ img{display:block}
   <button class="bn" onclick="openExp()"><i class="fas fa-search"></i></button>
   <button class="bnplus" onclick="openCp()"><i class="fas fa-plus"></i></button>
   <button class="bn" onclick="openNot()"><i class="far fa-bell"></i></button>
+  <button class="bn" onclick="location.href='{{ url_for('helpzone.reels') }}'"><i class="fas fa-film"></i></button>
   <button class="bn" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'"><i class="fas fa-user"></i></button>
 </nav>
 
@@ -629,6 +631,7 @@ img{display:block}
     <div class="cpbd">
       <form id="cpForm" action="{{ url_for('helpzone.criar_post') }}" method="POST" enctype="multipart/form-data">
         <input type="hidden" id="cpTipo" name="tipo_midia" value="texto">
+        <input type="hidden" name="origem_automatica" value="false">
         <input type="file" id="cpFile" name="midia" accept="image/*,video/*" style="display:none">
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
           <button type="button" class="chip on" onclick="selT(this,'texto')">📝 Post</button>
@@ -643,6 +646,17 @@ img{display:block}
           </div>
           <textarea name="texto" id="cpTxt" class="inp ta" style="flex:1;min-height:96px" placeholder="O que você estudou? Use #tags para categorizar.&#10;Ex: Revisei funções quadráticas. #matematica #enem" maxlength="2000" oninput="cpUpd()"></textarea>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0">
+          <select class="inp" name="tipo_post">
+            <option value="geral">Post geral</option>
+            <option value="rotina">Rotina de estudos</option>
+            <option value="meta_dia">Meta do dia</option>
+            <option value="progresso">Progresso</option>
+            <option value="duvida">Dúvida</option>
+          </select>
+          <input class="inp" type="text" name="materia" placeholder="Matéria (opcional)">
+        </div>
+        <input class="inp" type="url" name="link_url" placeholder="Link de apoio (opcional)" style="margin-bottom:10px">
         <div class="cpprev" id="cpPrev">
           <button type="button" class="rmmed" onclick="cpRm()"><i class="fas fa-times"></i></button>
           <img id="cpImg" style="display:none" alt=""><video id="cpVid" style="display:none" controls></video>
