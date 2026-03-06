@@ -30,12 +30,17 @@ class GeradorQuestoes:
     ]
     
     def __init__(self):
-        pass  # credenciais via DATABASE_URL
+        self.conn_params = {
+            'host': '34.63.141.69',
+            'port': '5432',
+            'database': 'plataforma',
+            'user': 'postgres',
+            'password': '22092021Dd$'
+        }
     
     def _get_connection(self):
         """Cria conexão direta com PostgreSQL"""
-        from app.services.db_utils import get_connection
-        return get_connection()
+        return psycopg2.connect(**self.conn_params)
     
     # ==================== MÉTODOS EXISTENTES (mantidos) ====================
     

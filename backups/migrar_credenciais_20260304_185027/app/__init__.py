@@ -115,11 +115,11 @@ def create_app(config_name=None):
     # Banco: prioriza DATABASE_URL; senão, compõe com ENV (mantém fallback compatível)
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        db_host = os.environ.get("DB_HOST", "")
+        db_host = os.environ.get("DB_HOST", "34.63.141.69")
         db_port = os.environ.get("DB_PORT", "5432")
-        db_name = os.environ.get("DB_NAME", "")
-        db_user = os.environ.get("DB_USER", "")
-        db_password = os.environ.get("DB_PASSWORD", "")
+        db_name = os.environ.get("DB_NAME", "plataforma")
+        db_user = os.environ.get("DB_USER", "postgres")
+        db_password = os.environ.get("DB_PASSWORD", "22092021Dd$")
         database_url = (
             f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
             f"?sslmode=prefer&connect_timeout=10&application_name=launcher_app"

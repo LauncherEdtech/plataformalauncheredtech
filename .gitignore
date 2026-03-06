@@ -9,7 +9,8 @@ venv/
 .venv/
 env/
 .env
-
+app/static/uploads/
+app/static/images/
 # Flask
 instance/
 logs/

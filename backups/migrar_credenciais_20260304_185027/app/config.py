@@ -9,11 +9,11 @@ class Config:
     # Chave secreta
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'sua-chave-secreta-super-segura'
     # Configurações do banco PostgreSQL com tratamento SSL
-    DB_HOST = os.environ.get('DB_HOST', '')
-    DB_PORT = os.environ.get('DB_PORT', '5432')
-    DB_NAME = os.environ.get('DB_NAME', '')
-    DB_USER = os.environ.get('DB_USER', '')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+    DB_HOST = '34.63.141.69'
+    DB_PORT = '5432'
+    DB_NAME = 'plataforma'
+    DB_USER = 'postgres'
+    DB_PASSWORD = '22092021Dd$'
     
     # URL do banco com configurações SSL otimizadas
     SQLALCHEMY_DATABASE_URI = (

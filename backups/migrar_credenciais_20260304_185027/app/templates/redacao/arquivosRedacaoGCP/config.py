@@ -6,7 +6,7 @@ class Config:
     # Exemplo de string de conexão com PostgreSQL local
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL',
-        os.environ.get('DATABASE_URL')
+        'postgresql://postgres:22092021Dd$@34.63.141.69:5432/plataforma'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
