@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block title %}EstudeVideos{% endblock %}
+
+{% block styles %}
+<style>
+body{background:#0a0d14;color:#fff}
+.ev-wrap{max-width:520px;margin:0 auto;padding:18px 12px 90px}
+.ev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ev-title{font-weight:800;font-size:1.2rem}
+.ev-sub{font-size:.84rem;color:#9aa4ba}
+.ev-card{border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;background:#121826;margin-bottom:18px}
+.ev-video{width:100%;max-height:70vh;background:#000}
+.ev-body{padding:12px}
+.ev-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.ev-user{font-weight:700}
+.ev-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ev-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:6px 12px;font-size:.82rem}
+.ev-empty{padding:50px 20px;text-align:center;color:#9aa4ba}
+.ev-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,13,20,.95);backdrop-filter:blur(8px);padding:10px;display:flex;justify-content:center;gap:10px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ev-wrap">
+  <div class="ev-head">
+    <div>
+      <div class="ev-title">🎬 EstudeVideos</div>
+      <div class="ev-sub">Vídeos curtos de rotina, resolução e progresso</div>
+    </div>
+    <a class="ev-btn" href="{{ url_for('helpzone.feed') }}">Voltar ao feed</a>
+  </div>
+
+  {% if reels.items %}
+    {% for post in reels.items %}
+    <article class="ev-card">
+      {% if post.midia and post.midia.url %}
+      <video class="ev-video" src="{{ post.midia.url }}" controls preload="metadata" playsinline></video>
+      {% endif %}
+      <div class="ev-body">
+        <div class="ev-meta">
+          <div class="ev-user">{{ post.user.nome_completo }}</div>
+          <small>{{ post.data_criacao.strftime('%d/%m %H:%M') }}</small>
+        </div>
+        {% if post.texto %}<p>{{ post.texto }}</p>{% endif %}
+        <div class="ev-actions">
+          <button class="ev-btn" onclick="likeVideo({{ post.id }})">❤️ {{ post.total_likes or 0 }}</button>
+          <a class="ev-btn" href="{{ url_for('helpzone.detalhes_post', post_id=post.id) }}">💬 {{ post.total_comentarios or 0 }}</a>
+          <button class="ev-btn" onclick="saveVideo({{ post.id }})">🔖 Salvar</button>
+          <button class="ev-btn" onclick="shareVideo({{ post.id }})">🔗 Compartilhar</button>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  {% else %}
+    <div class="ev-empty">
+      <h3>Sem vídeos ainda</h3>
+      <p>Publique um vídeo no feed para aparecer aqui.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="ev-nav">
+  <a class="ev-btn" href="{{ url_for('helpzone.feed') }}">Feed</a>
+  <a class="ev-btn" href="{{ url_for('helpzone.criar_post') }}">Criar post</a>
+  <a class="ev-btn" href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">Perfil</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function likeVideo(id){
+  await fetch(`/helpzone/api/post/${id}/like`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'like'})});
+  location.reload();
+}
+async function saveVideo(id){
+  await fetch(`/helpzone/api/post/${id}/save`,{method:'POST',headers:{'Content-Type':'application/json'}});
+}
+function shareVideo(id){
+  const url = `${location.origin}/helpzone/post/${id}`;
+  if(navigator.share){ navigator.share({title:'EstudeVideos',url}); return; }
+  navigator.clipboard.writeText(url);
+}
+</script>
+{% endblock %}
