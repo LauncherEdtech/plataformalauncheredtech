@@ -30,6 +30,27 @@ MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
 MAX_VIDEO_DURATION = 20  # 20 segundos
 
 
+XP_SOCIAL_REWARD = {
+    'criar_post': 15,
+    'criar_story': 8,
+    'comentar': 5,
+    'receber_like': 2,
+    'seguir_usuario': 3,
+    'postar_progresso': 12,
+}
+
+
+def conceder_xp_social(acao, descricao=''):
+    """Concede XP social aproveitando a infraestrutura já existente da Launcher."""
+    quantidade = XP_SOCIAL_REWARD.get(acao, 0)
+    if quantidade <= 0:
+        return
+    try:
+        current_user.adicionar_xp(quantidade, atividade='helpzone_social', descricao=descricao or acao)
+    except Exception as e:
+        current_app.logger.warning(f"[HelpZone] Falha ao conceder XP social ({acao}): {e}")
+
+
 def allowed_file(filename, allowed_extensions):
     """Verifica se a extensão do arquivo é permitida"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
@@ -145,6 +166,7 @@ def criar_post():
             perfil.ultima_postagem = datetime.utcnow()
 
         db.session.commit()
+        conceder_xp_social('criar_post', 'Publicação criada no feed de estudos')
 
         # Hook onboarding
         try:
@@ -293,6 +315,9 @@ def like_post(post_id):
 
     db.session.commit()
 
+    if tipo == 'like' and post.user_id == current_user.id:
+        conceder_xp_social('receber_like', 'Post recebeu curtida')
+
     return jsonify({
         'success': True,
         'action': 'added',
@@ -340,6 +365,7 @@ def comentar_post(post_id):
         db.session.add(notif)
 
     db.session.commit()
+    conceder_xp_social('comentar', 'Comentário construtivo no feed')
 
     if request.is_json:
         return jsonify({
@@ -576,6 +602,198 @@ def notificacoes():
     db.session.commit()
 
     return render_template('helpzone/notificacoes.html', notificacoes=notifs)
+
+
+# ==================== APIs DE COMPATIBILIDADE (FEED SPA) ====================
+@helpzone_bp.route('/api/notificacoes', methods=['GET'])
+@login_required
+def api_notificacoes():
+    notificacoes = NotificacaoSocial.query.filter_by(user_id=current_user.id)\
+        .order_by(desc(NotificacaoSocial.data_criacao))\
+        .limit(50).all()
+
+    return jsonify({
+        'success': True,
+        'notificacoes': [{
+            'id': n.id,
+            'tipo': n.tipo,
+            'mensagem': n.mensagem,
+            'lida': n.lida,
+            'post_id': n.post_id,
+            'criada_em': n.data_criacao.isoformat(),
+            'origem': {
+                'id': n.origem_user.id if n.origem_user else None,
+                'nome': n.origem_user.nome_completo if n.origem_user else 'Sistema'
+            }
+        } for n in notificacoes]
+    })
+
+
+@helpzone_bp.route('/api/notificacao/<int:notif_id>/lida', methods=['POST'])
+@helpzone_bp.route('/api/notificacao/<int:notif_id>/ler', methods=['POST'])
+@helpzone_bp.route('/api/notificacao/<int:notif_id>/marcar-lida', methods=['POST'])
+@login_required
+def marcar_notificacao_lida(notif_id):
+    notif = NotificacaoSocial.query.filter_by(id=notif_id, user_id=current_user.id).first_or_404()
+    notif.lida = True
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@helpzone_bp.route('/api/notificacoes/marcar-todas-lidas', methods=['POST'])
+@login_required
+def marcar_todas_notificacoes_lidas():
+    NotificacaoSocial.query.filter_by(user_id=current_user.id, lida=False).update({'lida': True})
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@helpzone_bp.route('/api/seguir/<int:user_id>', methods=['POST'])
+@login_required
+def follow_user_compat(user_id):
+    if user_id == current_user.id:
+        return jsonify({'success': False, 'error': 'Você não pode seguir a si mesmo'}), 400
+
+    seguindo = Seguidor.query.filter_by(seguidor_id=current_user.id, seguido_id=user_id).first()
+    if seguindo:
+        db.session.delete(seguindo)
+        perfil_seguidor = PerfilSocial.query.filter_by(user_id=current_user.id).first()
+        perfil_seguido = PerfilSocial.query.filter_by(user_id=user_id).first()
+        if perfil_seguidor:
+            perfil_seguidor.total_seguindo = max(0, perfil_seguidor.total_seguindo - 1)
+        if perfil_seguido:
+            perfil_seguido.total_seguidores = max(0, perfil_seguido.total_seguidores - 1)
+        db.session.commit()
+        return jsonify({'success': True, 'action': 'deixou_de_seguir', 'seguindo': False})
+
+    novo_seguidor = Seguidor(seguidor_id=current_user.id, seguido_id=user_id)
+    db.session.add(novo_seguidor)
+    perfil_seguidor = PerfilSocial.query.filter_by(user_id=current_user.id).first()
+    perfil_seguido = PerfilSocial.query.filter_by(user_id=user_id).first()
+    if perfil_seguidor:
+        perfil_seguidor.total_seguindo += 1
+    if perfil_seguido:
+        perfil_seguido.total_seguidores += 1
+
+    notif = NotificacaoSocial(
+        user_id=user_id,
+        origem_user_id=current_user.id,
+        tipo='follow',
+        mensagem=f'{current_user.nome_completo} começou a seguir você'
+    )
+    db.session.add(notif)
+    db.session.commit()
+    conceder_xp_social('seguir_usuario', 'Nova conexão de estudos no HelpZone')
+    return jsonify({'success': True, 'action': 'seguiu', 'seguindo': True})
+
+
+@helpzone_bp.route('/api/buscar', methods=['GET'])
+@login_required
+def api_buscar():
+    from app.models.user import User
+
+    query = request.args.get('q', '').strip()
+    tipo = request.args.get('tipo', 'pessoas')
+
+    if tipo == 'pessoas':
+        users_q = User.query.filter(User.id != current_user.id, User.is_active == True)
+        if query:
+            users_q = users_q.filter(User.nome_completo.ilike(f'%{query}%'))
+        usuarios = users_q.limit(12).all()
+        seguindo_ids = {s.seguido_id for s in current_user.seguindo.all()}
+        return jsonify({'success': True, 'usuarios': [{
+            'id': u.id,
+            'nome': u.nome_completo,
+            'foto_perfil': u.perfil_social.foto_perfil if u.perfil_social else None,
+            'seguidores': u.perfil_social.total_seguidores if u.perfil_social else 0,
+            'nivel': (u.xp_total or 0) // 1000 + 1,
+            'seguindo': u.id in seguindo_ids
+        } for u in usuarios]})
+
+    if tipo == 'hashtags':
+        tag_query = query[1:] if query.startswith('#') else query
+        tags_q = Hashtag.query
+        if tag_query:
+            tags_q = tags_q.filter(Hashtag.tag.ilike(f'%{tag_query.lower()}%'))
+        tags = tags_q.order_by(Hashtag.uso_ultima_semana.desc(), Hashtag.total_uso.desc()).limit(15).all()
+        return jsonify({'success': True, 'hashtags': [{
+            'id': h.id,
+            'tag': h.tag,
+            'total': h.total_uso
+        } for h in tags]})
+
+    posts_q = Post.query.filter_by(ativo=True)
+    if query:
+        posts_q = posts_q.filter(Post.texto.ilike(f'%{query}%'))
+    posts = posts_q.order_by(desc(Post.data_criacao)).limit(20).all()
+    return jsonify({'success': True, 'posts': [p.to_dict() for p in posts]})
+
+
+@helpzone_bp.route('/api/ranking-seguidores', methods=['GET'])
+@login_required
+def ranking_seguidores():
+    from app.models.user import User
+
+    users = User.query.join(PerfilSocial).filter(User.id != current_user.id).order_by(
+        desc(PerfilSocial.total_seguidores),
+        desc(User.xp_total)
+    ).limit(15).all()
+
+    seguindo_ids = {s.seguido_id for s in current_user.seguindo.all()}
+    return jsonify({'success': True, 'ranking': [{
+        'id': u.id,
+        'nome': u.nome_completo,
+        'foto_perfil': u.perfil_social.foto_perfil if u.perfil_social else None,
+        'seguidores': u.perfil_social.total_seguidores if u.perfil_social else 0,
+        'xp': u.xp_total or 0,
+        'nivel': (u.xp_total or 0) // 1000 + 1,
+        'seguindo': u.id in seguindo_ids
+    } for u in users]})
+
+
+@helpzone_bp.route('/api/comentario/<int:comentario_id>/deletar', methods=['DELETE'])
+@login_required
+def deletar_comentario(comentario_id):
+    comentario = PostComentario.query.get_or_404(comentario_id)
+    if comentario.user_id != current_user.id and comentario.post.user_id != current_user.id:
+        return jsonify({'success': False, 'error': 'Sem permissão'}), 403
+
+    if comentario.ativo:
+        comentario.ativo = False
+        comentario.post.total_comentarios = max(0, (comentario.post.total_comentarios or 0) - 1)
+        db.session.commit()
+
+    return jsonify({'success': True})
+
+
+@helpzone_bp.route('/api/postar-progresso', methods=['POST'])
+@login_required
+def postar_progresso_automatico():
+    payload = request.get_json(silent=True) or {}
+    tipo = payload.get('tipo', 'rotina')
+    titulo = payload.get('titulo', 'Atualização de estudos')
+    detalhes = payload.get('detalhes', '')
+
+    texto = f"📌 {titulo}\n{detalhes}".strip()
+    if tipo == 'simulado':
+        texto += "\n#simulado #evolucao"
+    elif tipo == 'redacao':
+        texto += "\n#redacao #constancia"
+    else:
+        texto += "\n#rotinadeestudos #focododia"
+
+    post = Post(user_id=current_user.id, texto=texto, tipo_midia='texto')
+    db.session.add(post)
+
+    perfil = PerfilSocial.query.filter_by(user_id=current_user.id).first()
+    if perfil:
+        perfil.total_posts = (perfil.total_posts or 0) + 1
+        perfil.ultima_postagem = datetime.utcnow()
+
+    db.session.commit()
+    conceder_xp_social('postar_progresso', 'Post automático de progresso')
+
+    return jsonify({'success': True, 'post_id': post.id})
 
 
 # ==================== API - FEED JSON ====================
@@ -999,6 +1217,7 @@ def criar_story():
         )
         db.session.add(story)
         db.session.commit()
+        conceder_xp_social('criar_story', 'Publicação de Sprint do Dia')
 
         current_app.logger.info(f"Story {story.id} criado por usuário {current_user.id} → {midia_url}")
 
@@ -1170,7 +1389,7 @@ def api_comentarios_post(post_id):
     })
 
 
-@helpzone_bp.route('/api/post/<int:post_id>/comentar', methods=['POST'])
+@helpzone_bp.route('/api/post/<int:post_id>/comentar-json', methods=['POST'])
 @login_required
 def api_comentar_post(post_id):
     post = Post.query.get_or_404(post_id)

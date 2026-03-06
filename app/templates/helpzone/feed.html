@@ -426,6 +426,7 @@ img{display:block}
         <button class="sbitem" onclick="openNot()"><span class="sbico">🔔</span>Notificações<span class="sbdot" id="sbDot" style="display:none"></span></button>
         <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sbitem"><span class="sbico">👤</span>Meu Perfil</a>
         <a href="{{ url_for('ranking.index') }}" class="sbitem"><span class="sbico">🏅</span>Ranking</a>
+        <a href="{{ url_for('helpzone.reels') }}" class="sbitem"><span class="sbico">🎬</span>EstudeVideos</a>
         <div class="sbsec">Estudar</div>
         <a href="{{ url_for('dashboard.index') }}" class="sbitem"><span class="sbico">📊</span>Dashboard</a>
         <a href="{{ url_for('simulados.index') }}" class="sbitem"><span class="sbico">📝</span>Simulados</a>
@@ -436,9 +437,9 @@ img{display:block}
 
   <!-- MAIN FEED -->
   <main class="cm">
-    <!-- Stories -->
+    <!-- Sprint do Dia (Stories) -->
     <div class="card">
-      <div class="chd"><h3>Stories</h3><span class="tg">📸 seu dia de estudos</span></div>
+      <div class="chd"><h3>Sprint do Dia</h3><span class="tg">📸 check-ins de foco (24h)</span></div>
       <div class="strow">
         <div class="st" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
           <div class="stri mine">
@@ -447,7 +448,7 @@ img{display:block}
               <div class="stplus"><i class="fas fa-plus"></i></div>
             </div>
           </div>
-          <div class="stnm">Meu story</div>
+          <div class="stnm">Meu sprint</div>
         </div>
         {% if stories is defined %}{% for s in stories %}
         <div class="st">
@@ -618,6 +619,7 @@ img{display:block}
   <button class="bn on" onclick="location.href='{{ url_for('helpzone.feed') }}'"><i class="fas fa-home"></i></button>
   <button class="bn" onclick="openExp()"><i class="fas fa-search"></i></button>
   <button class="bnplus" onclick="openCp()"><i class="fas fa-plus"></i></button>
+  <button class="bn" onclick="location.href='{{ url_for('helpzone.reels') }}'"><i class="fas fa-film"></i></button>
   <button class="bn" onclick="openNot()"><i class="far fa-bell"></i></button>
   <button class="bn" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'"><i class="fas fa-user"></i></button>
 </nav>
