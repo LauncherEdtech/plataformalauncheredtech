@@ -1,290 +1,638 @@
-<!-- ================================================================
-     HELPZONE OVERLAYS - HTML COMPONENTS
-     Modals e painéis laterais estilo Instagram
-     ================================================================ -->
+<!-- ==================== OVERLAYS DO HELPZONE ==================== -->
 
-<!-- ==============================================
-     MODAL DE CRIAR POST (CENTRO)
-     ============================================== -->
-<div class="hz-overlay hz-create-modal" id="hzCreatePostOverlay" onclick="if(event.target === this) closeCreatePostModal()">
-    <div class="hz-create-modal-container">
-        <!-- Header -->
+<!-- MODAL: CRIAR POST -->
+<div class="hz-overlay" id="createPostOverlay">
+    <div class="hz-overlay-backdrop" onclick="closeCreatePostModal()"></div>
+    <div class="hz-modal hz-modal-create">
         <div class="hz-modal-header">
-            <button type="button" class="hz-modal-back-btn" onclick="closeCreatePostModal()" aria-label="Voltar">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h2 class="hz-modal-title">Criar publicação</h2>
-            <button type="button" class="hz-modal-publish-btn" id="hzPublishBtn" onclick="submitCreatePost()" disabled>
-                Publicar
+            <h3>Criar Post</h3>
+            <button class="hz-modal-close" onclick="closeCreatePostModal()">
+                <i class="fas fa-times"></i>
             </button>
         </div>
-
-        <!-- Body -->
+        
         <div class="hz-modal-body">
-            <div class="hz-compose-area">
-                <!-- Avatar -->
-                <div class="hz-compose-avatar">
-                    {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                        <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="{{ current_user.nome_completo }}">
-                    {% else %}
-                        {{ current_user.nome_completo[0].upper() }}
-                    {% endif %}
-                </div>
-
-                <!-- Content -->
-                <div class="hz-compose-content">
+            <form id="createPostForm" enctype="multipart/form-data">
+                <!-- Área de Texto -->
+                <div class="form-group">
                     <textarea 
-                        id="hzPostText" 
-                        class="hz-compose-textarea" 
-                        placeholder="O que você está estudando hoje?"
-                        maxlength="2000"
-                        aria-label="Texto da publicação"
+                        id="postTexto" 
+                        name="texto" 
+                        class="hz-textarea" 
+                        placeholder="No que você está pensando?"
+                        rows="4"
+                        maxlength="500"
                     ></textarea>
-
-                    <!-- Preview de Mídia -->
-                    <div class="hz-media-preview" id="hzMediaPreview">
-                        <img id="hzMediaPreviewImg" alt="Preview" style="display: none;">
-                        <video id="hzMediaPreviewVid" controls style="display: none;"></video>
-                        <button type="button" class="hz-media-remove-btn" onclick="clearCreatePostMedia()" aria-label="Remover mídia">
+                    <div class="char-counter">
+                        <span id="charCount">0</span>/500
+                    </div>
+                </div>
+                
+                <!-- Preview de Mídia -->
+                <div class="media-preview" id="mediaPreview" style="display: none;">
+                    <div class="media-preview-container">
+                        <img id="imagePreview" style="display: none;" alt="Preview">
+                        <video id="videoPreview" style="display: none;" controls></video>
+                        <button type="button" class="media-remove" onclick="removeMedia()">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Toolbar -->
-        <div class="hz-modal-toolbar">
-            <button type="button" class="hz-tool-btn" onclick="triggerMediaUpload('image')" title="Adicionar foto" aria-label="Adicionar foto">
-                <i class="far fa-image"></i>
-            </button>
-            <button type="button" class="hz-tool-btn" onclick="triggerMediaUpload('video')" title="Adicionar vídeo" aria-label="Adicionar vídeo">
-                <i class="fas fa-video"></i>
-            </button>
-            <button type="button" class="hz-tool-btn disabled" title="Em breve" aria-label="GIF (em breve)">
-                <i class="fas fa-file-image"></i>
-            </button>
-            <button type="button" class="hz-tool-btn disabled" title="Em breve" aria-label="Enquete (em breve)">
-                <i class="fas fa-poll"></i>
-            </button>
-        </div>
-
-        <!-- Input de arquivo oculto -->
-        <input type="file" id="hzMediaInput" style="display: none;" aria-hidden="true">
-    </div>
-</div>
-
-<!-- ==============================================
-     OVERLAY PARA PAINEL DE NOTIFICAÇÕES
-     ============================================== -->
-<div class="hz-overlay" id="hzNotificationsOverlay" onclick="closeNotificationsPanel()" style="background: rgba(0,0,0,0.5);"></div>
-
-<!-- ==============================================
-     PAINEL LATERAL DE NOTIFICAÇÕES
-     ============================================== -->
-<div class="hz-notifications-panel" id="hzNotificationsPanel">
-    <!-- Header -->
-    <div class="hz-panel-header">
-        <h2 class="hz-panel-title">Notificações</h2>
-        <button type="button" class="hz-modal-close-btn" onclick="closeNotificationsPanel()" aria-label="Fechar">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-
-    <!-- Tabs -->
-    <div class="hz-notifications-tabs">
-        <button type="button" class="hz-notification-tab active" onclick="switchNotificationTab('all')">
-            Todas
-        </button>
-        <button type="button" class="hz-notification-tab" onclick="switchNotificationTab('mentions')">
-            Menções
-        </button>
-        <button type="button" class="hz-notification-tab" onclick="switchNotificationTab('follows')">
-            Seguidores
-        </button>
-    </div>
-
-    <!-- Body -->
-    <div class="hz-panel-body">
-        <div id="hzNotificationsList" class="hz-notifications-list">
-            <div class="hz-loading">
-                <div class="hz-spinner"></div>
-            </div>
+                
+                <!-- Ações -->
+                <div class="hz-modal-actions">
+                    <div class="media-options">
+                        <label class="media-btn" title="Adicionar imagem">
+                            <i class="fas fa-image"></i>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+                        </label>
+                        <label class="media-btn" title="Adicionar vídeo">
+                            <i class="fas fa-video"></i>
+                            <input type="file" id="videoInput" accept="video/*" style="display: none;" onchange="handleVideoSelect(event)">
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="submitPostBtn">
+                        <span class="btn-text">Publicar</span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Publicando...
+                        </span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- ==============================================
-     MODAL DE BUSCA (CENTRO)
-     ============================================== -->
-<div class="hz-overlay hz-search-modal" id="hzSearchOverlay" onclick="if(event.target === this) closeSearchModal()">
-    <div class="hz-search-modal-container">
-        <!-- Header com Input de Busca -->
-        <div class="hz-search-input-wrapper">
-            <div class="hz-search-input-group">
-                <span class="hz-search-icon">
-                    <i class="fas fa-search"></i>
-                </span>
+<!-- MODAL: EXPLORAR / BUSCA -->
+<div class="hz-overlay" id="searchOverlay">
+    <div class="hz-overlay-backdrop" onclick="closeSearchModal()"></div>
+    <div class="hz-modal hz-modal-search">
+        <div class="hz-modal-header">
+            <div class="search-input-container">
+                <i class="fas fa-search"></i>
                 <input 
                     type="text" 
-                    id="hzSearchInput" 
-                    class="hz-search-input" 
-                    placeholder="Buscar pessoas, posts ou #hashtags..."
+                    id="searchInput" 
+                    placeholder="Buscar pessoas, posts ou hashtags..."
                     autocomplete="off"
-                    aria-label="Campo de busca"
                 >
-                <button type="button" class="hz-search-clear-btn" id="hzSearchClearBtn" onclick="clearSearchInput()" aria-label="Limpar busca">
-                    <i class="fas fa-times-circle"></i>
+                <button class="search-clear" onclick="clearSearch()" style="display: none;">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </div>
-
-        <!-- Tabs de Busca -->
-        <div class="hz-search-tabs">
-            <button type="button" class="hz-search-tab active" onclick="switchSearchTab('all')">
-                Tudo
-            </button>
-            <button type="button" class="hz-search-tab" onclick="switchSearchTab('people')">
-                Pessoas
-            </button>
-            <button type="button" class="hz-search-tab" onclick="switchSearchTab('posts')">
-                Posts
-            </button>
-            <button type="button" class="hz-search-tab" onclick="switchSearchTab('hashtags')">
-                Hashtags
+            <button class="hz-modal-close" onclick="closeSearchModal()">
+                <i class="fas fa-times"></i>
             </button>
         </div>
-
-        <!-- Resultados -->
-        <div class="hz-search-results" id="hzSearchResults">
-            <div class="hz-empty-state">
-                <i class="fas fa-search"></i>
-                <h3>Buscar na HelpZone</h3>
-                <p>Encontre pessoas, posts e hashtags</p>
+        
+        <!-- Tabs -->
+        <div class="search-tabs">
+            <button class="search-tab active" data-tab="pessoas" onclick="switchSearchTab('pessoas')">
+                <i class="fas fa-users"></i> Pessoas
+            </button>
+            <button class="search-tab" data-tab="posts" onclick="switchSearchTab('posts')">
+                <i class="fas fa-images"></i> Posts
+            </button>
+            <button class="search-tab" data-tab="hashtags" onclick="switchSearchTab('hashtags')">
+                <i class="fas fa-hashtag"></i> Hashtags
+            </button>
+        </div>
+        
+        <div class="hz-modal-body">
+            <!-- Conteúdo de Busca -->
+            <div id="searchResults">
+                <div class="search-empty">
+                    <i class="fas fa-search" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p>Digite algo para buscar</p>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="searchLoading" style="display: none;">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Buscando...</p>
+                </div>
             </div>
         </div>
-
-        <!-- Botão Fechar (Mobile) -->
-        <button type="button" class="hz-modal-close-btn" onclick="closeSearchModal()" aria-label="Fechar" style="position: absolute; top: 24px; right: 24px; display: none;">
-            <i class="fas fa-times"></i>
-        </button>
     </div>
 </div>
 
-<!-- ==============================================
-     ESTILOS INLINE ADICIONAIS (OPCIONAL)
-     ============================================== -->
-<style>
-    /* Ajustes finos para integração */
-    @media (max-width: 768px) {
-        .hz-search-modal-container .hz-modal-close-btn {
-            display: flex !important;
-        }
-    }
-
-    /* Garantir que overlays fiquem acima de tudo */
-    .hz-overlay {
-        z-index: 9999;
-    }
-
-    .hz-notifications-panel {
-        z-index: 10001;
-    }
-
-    /* Transições suaves */
-    .hz-overlay,
-    .hz-overlay * {
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Prevenir seleção de texto em botões */
-    .hz-modal-close-btn,
-    .hz-modal-back-btn,
-    .hz-modal-publish-btn,
-    .hz-tool-btn,
-    .hz-notification-tab,
-    .hz-search-tab {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    /* Loading spinner melhorado */
-    .hz-spinner {
-        border-width: 2px;
-    }
-
-    /* Ajuste para botão publish quando loading */
-    .hz-modal-publish-btn .fa-spinner {
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* Smooth scroll para resultados */
-    .hz-search-results,
-    .hz-panel-body,
-    .hz-modal-body {
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Highlight de foco acessível */
-    .hz-search-input:focus {
-        outline: none;
-    }
-
-    /* Prevenir bounce no iOS */
-    .hz-modal-body,
-    .hz-panel-body,
-    .hz-search-results {
-        overscroll-behavior: contain;
-    }
-
-    /* Badge de notificação não lida */
-    .hz-notification-item.unread::after {
-        content: '';
-        position: absolute;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 8px;
-        height: 8px;
-        background: var(--primary);
-        border-radius: 50%;
-    }
-
-    /* Posição relativa para indicador */
-    .hz-notification-item {
-        position: relative;
-    }
-</style>
-
-<!-- ==============================================
-     SCRIPTS INLINE (OPCIONAL)
-     ============================================== -->
-<script>
-    // Garantir que elementos estejam disponíveis ao carregar
-    document.addEventListener('DOMContentLoaded', function() {
-        // Log para debug
-        console.log('🎨 HelpZone Overlays HTML carregado');
+<!-- MODAL: NOTIFICAÇÕES -->
+<div class="hz-overlay" id="notificationsOverlay">
+    <div class="hz-overlay-backdrop" onclick="closeNotificationsPanel()"></div>
+    <div class="hz-panel hz-panel-notifications">
+        <div class="hz-panel-header">
+            <h3>Notificações</h3>
+            <button class="hz-modal-close" onclick="closeNotificationsPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
         
-        // Verificar se todos os elementos necessários existem
-        const requiredElements = [
-            'hzCreatePostOverlay',
-            'hzNotificationsPanel',
-            'hzNotificationsOverlay',
-            'hzSearchOverlay'
-        ];
+        <div class="hz-panel-body">
+            <!-- Lista de Notificações -->
+            <div id="notificationsList">
+                <div class="notifications-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Carregando notificações...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        requiredElements.forEach(id => {
-            const element = document.getElementById(id);
-            if (!element) {
-                console.warn(`⚠️ Elemento ${id} não encontrado`);
-            }
-        });
-    });
-</script>
+<style>
+/* ==================== OVERLAY BASE ==================== */
+.hz-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hz-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.hz-overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+/* ==================== MODAL BASE ==================== */
+.hz-modal {
+    position: relative;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.hz-overlay.active .hz-modal {
+    transform: scale(1);
+}
+
+.hz-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hz-modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.hz-modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.hz-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.hz-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ==================== CRIAR POST ==================== */
+.hz-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 1rem;
+    resize: vertical;
+    transition: all 0.2s;
+}
+
+.hz-textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.char-counter {
+    text-align: right;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #737373;
+}
+
+.media-preview {
+    margin: 16px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.media-preview-container {
+    position: relative;
+}
+
+.media-preview img,
+.media-preview video {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.media-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.media-remove:hover {
+    background: #ef4444;
+    transform: scale(1.1);
+}
+
+.hz-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.media-options {
+    display: flex;
+    gap: 12px;
+}
+
+.media-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.media-btn:hover {
+    background: #8b5cf6;
+    transform: scale(1.05);
+}
+
+.btn-primary {
+    padding: 12px 32px;
+    background: #8b5cf6;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+    background: rgba(139, 92, 246, 0.5);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==================== BUSCA ==================== */
+.hz-modal-search {
+    max-width: 700px;
+    max-height: 85vh;
+}
+
+.search-input-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-right: 12px;
+}
+
+.search-input-container i {
+    color: #737373;
+    font-size: 1.1rem;
+}
+
+.search-input-container input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-clear {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.search-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #737373;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-tab:hover {
+    color: #ffffff;
+}
+
+.search-tab.active {
+    color: #8b5cf6;
+    border-bottom-color: #8b5cf6;
+}
+
+.search-empty,
+.loading-spinner {
+    text-align: center;
+    padding: 60px 20px;
+    color: #737373;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+}
+
+.search-result-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.result-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1.2rem;
+    overflow: hidden;
+}
+
+.result-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.result-info {
+    flex: 1;
+}
+
+.result-name {
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.result-meta {
+    font-size: 0.85rem;
+    color: #737373;
+    margin-top: 2px;
+}
+
+.result-action {
+    padding: 8px 16px;
+    background: #8b5cf6;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.result-action:hover {
+    background: #7c3aed;
+}
+
+.result-action.following {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #a3a3a3;
+}
+
+/* ==================== NOTIFICAÇÕES ==================== */
+.hz-panel {
+    position: relative;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px 0 0 16px;
+    width: 90%;
+    max-width: 400px;
+    height: 100vh;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+}
+
+.hz-overlay.active .hz-panel {
+    transform: translateX(0);
+}
+
+.hz-panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hz-panel-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.notification-item.unread {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.notif-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.notif-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-text {
+    color: #ffffff;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.notif-time {
+    color: #737373;
+    font-size: 0.8rem;
+}
+
+.notifications-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #737373;
+}
+
+.notifications-empty i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+    opacity: 0.3;
+}
+
+/* ==================== RESPONSIVO ==================== */
+@media (max-width: 768px) {
+    .hz-modal {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .hz-panel-notifications {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+    }
+    
+    .media-preview img,
+    .media-preview video {
+        max-height: 300px;
+    }
+}
+</style>

@@ -221,7 +221,7 @@
                 formData.append('tipo_midia', 'texto');
             }
 
-            const response = await fetch('/helpzone/criar_post', {
+            const response = await fetch('/helpzone/criar-post', {
                 method: 'POST',
                 body: formData
             });

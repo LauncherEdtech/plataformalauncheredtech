@@ -1,2095 +1,999 @@
 {% extends "layout.html" %}
-
-{% block title %}Feed - HelpZone{% endblock %}
+{% block title %}HelpZone — Feed{% endblock %}
 
 {% block styles %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-/* ================================================
-   VARIÁVEIS GLOBAIS
-   ================================================ */
-:root {
-    --bg-body: #000000;
-    --bg-surface-1: #0a0a0a;
-    --bg-surface-2: #141414;
-    --bg-surface-3: #1f1f1f;
-    --border-subtle: #1a1a1a;
-    --border-medium: #2a2a2a;
-    --primary: #8b5cf6;
-    --primary-hover: #7c3aed;
-    --primary-dark: #6d28d9;
-    --text-primary: #ffffff;
-    --text-secondary: #a3a3a3;
-    --text-tertiary: #737373;
-    --success: #10b981;
-    --error: #ef4444;
-    --warning: #f59e0b;
-    --info: #3b82f6;
-    --xp-gold: #fbbf24;
-    --streak-orange: #fb923c;
-    --diamond-cyan: #06b6d4;
-    --like-red: #ef4444;
-    --save-yellow: #fbbf24;
-    --transition-fast: 0.2s ease;
-    --sidebar-width: 240px;
-    --mobile-nav-height: 56px;
-}
-
-
-
-
-/* ================================================
-   ESCONDER NAVBAR DO LAYOUT.HTML APENAS NO MOBILE
-   ================================================ */
-@media (max-width: 768px) {
-    /* Esconder apenas a navbar PRINCIPAL do layout.html no mobile */
-    body > nav.navbar,
-    header > nav.navbar,
-    .navbar.navbar-expand-lg.bg-black {
-        display: none !important;
-    }
-    
-    /* Remover padding-top do body no mobile */
-    body {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-    
-    /* Remover padding do main no mobile */
-    main {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-}
-
-
-/* ================================================
-   MODAL DE COMENTÁRIOS (ESTILO INSTAGRAM/TIKTOK)
-   ================================================ */
-.comments-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.comments-modal-overlay.active {
-    display: flex;
-    opacity: 1;
-}
-
-.comments-modal-container {
-    width: 100%;
-    height: 100%;
-    max-width: 1200px;
-    max-height: 90vh;
-    background: var(--bg-body);
-    border-radius: 0;
-    overflow: hidden;
-    display: flex;
-    position: relative;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-}
-
-.comments-modal-overlay.active .comments-modal-container {
-    transform: scale(1);
-}
-
-/* Desktop Layout */
-@media (min-width: 769px) {
-    .comments-modal-container {
-        border-radius: 12px;
-        max-height: 85vh;
-    }
-    
-    .modal-media-section {
-        flex: 1.3;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-    
-    .modal-comments-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        border-left: 1px solid var(--border-subtle);
-    }
-}
-
-/* Mobile Layout */
-@media (max-width: 768px) {
-    .comments-modal-container {
-        flex-direction: column;
-        border-radius: 20px 20px 0 0;
-        max-height: 90vh;
-        align-self: flex-end;
-        transform: translateY(100%);
-    }
-    
-    .comments-modal-overlay.active .comments-modal-container {
-        transform: translateY(0);
-    }
-    
-    .modal-media-section {
-        display: none; /* Esconde mídia no mobile */
-    }
-    
-    .modal-comments-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-}
-
-/* Botão Fechar */
-.modal-close-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.7);
-    border: none;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.modal-close-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
-    transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-    .modal-close-btn {
-        display: none;
-    }
-}
-
-/* Mídia */
-.modal-media-section img,
-.modal-media-section video {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-/* Cabeçalho do Post */
-.modal-post-header {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.modal-user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 1rem;
-    overflow: hidden;
-}
-
-.modal-user-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.modal-username {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-}
-
-/* Mobile: Handle de arrasto */
-.modal-drag-handle {
-    width: 40px;
-    height: 4px;
-    background: var(--border-medium);
-    border-radius: 2px;
-    margin: 8px auto 12px;
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .modal-drag-handle {
-        display: block;
-    }
-}
-
-/* Área de Comentários */
-.modal-comments-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    background: var(--bg-body);
-}
-
-.modal-comment-item {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.modal-comment-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 0.85rem;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.modal-comment-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.modal-comment-content {
-    flex: 1;
-}
-
-.modal-comment-username {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    margin-right: 6px;
-}
-
-.modal-comment-text {
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.modal-comment-meta {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-    font-size: 0.75rem;
-    color: var(--text-tertiary);
-}
-
-.modal-comment-meta span {
-    cursor: pointer;
-}
-
-.modal-comment-meta span:hover {
-    color: var(--text-secondary);
-}
-
-/* Input de Comentário */
-.modal-comment-input-section {
-    padding: 14px 16px;
-    border-top: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--bg-body);
-}
-
-.modal-comment-emoji {
-    font-size: 1.4rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-}
-
-.modal-comment-field {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    outline: none;
-}
-
-.modal-comment-field::placeholder {
-    color: var(--text-tertiary);
-}
-
-.modal-comment-submit {
-    color: var(--primary);
-    font-weight: 700;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-}
-
-.modal-comment-submit:hover {
-    color: var(--primary-hover);
-}
-
-.modal-comment-submit:disabled {
-    color: var(--text-tertiary);
-    cursor: not-allowed;
-}
-
-/* Loading */
-.modal-comments-loading {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-tertiary);
-}
-
-/* Empty State */
-.modal-comments-empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-tertiary);
-}
-
-.modal-comments-empty i {
-    font-size: 3rem;
-    margin-bottom: 16px;
-    display: block;
-    opacity: 0.5;
-}
-
-
-
-
-/* ================================================
-   NAVBAR MOBILE
-   ================================================ */
-.helpzone-navbar-mobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: #000000;
-    border-bottom: 1px solid var(--border-subtle);
-    z-index: 90;
-    display: none;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-}
-
-@media (max-width: 768px) {
-    .helpzone-navbar-mobile {
-        display: flex;
-    }
-}
-
-.helpzone-navbar-mobile .mobile-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 1.1rem;
-}
-
-.helpzone-navbar-mobile .mobile-logo img {
-    height: 24px;
-}
-
-.helpzone-navbar-mobile .hamburger-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 1.4rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.helpzone-navbar-mobile .hamburger-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-
-/*============================== 
-XP e Moedas
-================================*/
-/* Badges XP e Launcher Coins - Padrão Layout */
-.currency-badges {
-    display: flex !important;
-    gap: 0.5rem !important;
-    margin-left: auto;
-}
-
-.xp-badge {
-    background: linear-gradient(45deg, #ffc107, #fd7e14) !important;
-    color: #000 !important;
-    font-weight: 700 !important;
-    padding: 0.5rem 0.75rem !important;
-    border-radius: 20px !important;
-    text-decoration: none !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.3rem !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3) !important;
-}
-
-.xp-badge:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5) !important;
-    color: #000 !important;
-}
-
-.diamond-badge {
-    background: linear-gradient(45deg, #ffd700, #f59e0b) !important;
-    color: #1a1a1a !important;
-    font-weight: 700 !important;
-    padding: 0.5rem 0.75rem !important;
-    border-radius: 20px !important;
-    text-decoration: none !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.3rem !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
-}
-
-.diamond-badge:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5) !important;
-    color: #1a1a1a !important;
-}
-
-@media (max-width: 768px) {
-    .xp-badge, .diamond-badge {
-        font-size: 0.85rem !important;
-        padding: 0.45rem 0.7rem !important;
-    }
-    
-    .xp-badge i, .diamond-badge i {
-        font-size: 1rem !important;
-    }
-}
-/* ================================================
-   SIDEBAR DESKTOP
-   ================================================ */
-.helpzone-sidebar {
-    width: var(--sidebar-width);
-    height: calc(100vh - 60px);
-    position: fixed;
-    left: 0;
-    top: 60px;
-    background: var(--bg-body);
-    border-right: 1px solid var(--border-subtle);
-    padding: 20px 12px;
-    display: none;
-    flex-direction: column;
-    overflow-y: auto;
-    z-index: 90;
-}
-
-@media (min-width: 769px) {
-    .helpzone-sidebar {
-        display: flex;
-    }
-}
-
-/* Perfil compacto */
-.sidebar-profile {
-    padding: 16px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    border-radius: 12px;
-    transition: background 0.2s;
-}
-
-.sidebar-profile:hover {
-    background: var(--bg-surface-1);
-}
-
-.sidebar-profile-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.sidebar-profile-avatar {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 1.2rem;
-    overflow: hidden;
-}
-
-.sidebar-profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.sidebar-profile-avatar .level-badge {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background: var(--primary);
-    border: 2px solid var(--bg-body);
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 800;
-}
-
-.sidebar-profile-info {
-    flex: 1;
-}
-
-.sidebar-profile-title {
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-tertiary);
-    margin-bottom: 4px;
-}
-
-.sidebar-profile-streak {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.sidebar-profile-streak i {
-    color: var(--streak-orange);
-}
-
-/* Links de navegação */
-.sidebar-nav-links {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 16px;
-}
-
-.sidebar-nav-link {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    border-radius: 10px;
-    color: var(--text-primary);
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    position: relative;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-}
-
-.sidebar-nav-link:hover {
-    background: var(--bg-surface-1);
-}
-
-.sidebar-nav-link.active {
-    font-weight: 700;
-}
-
-.sidebar-nav-link.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 24px;
-    background: var(--primary);
-    border-radius: 0 3px 3px 0;
-}
-
-.sidebar-nav-link i {
-    font-size: 1.4rem;
-    width: 24px;
-    text-align: center;
-}
-
-/* Botão Criar Post */
-.sidebar-create-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-.sidebar-create-btn:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-}
-
-/* Ranking */
-.sidebar-ranking {
-    margin-top: auto;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-subtle);
-}
-
-.sidebar-ranking-title {
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-tertiary);
-    margin-bottom: 12px;
-}
-
-.sidebar-ranking-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sidebar-ranking-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px;
-    border-radius: 8px;
-    transition: background 0.2s;
-    cursor: pointer;
-}
-
-.sidebar-ranking-item:hover {
-    background: var(--bg-surface-1);
-}
-
-.sidebar-ranking-position {
-    font-weight: 800;
-    font-size: 0.85rem;
-    color: var(--text-tertiary);
-    width: 20px;
-    text-align: center;
-}
-
-.sidebar-ranking-position.top {
-    color: var(--xp-gold);
-}
-
-.sidebar-ranking-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 0.8rem;
-    overflow: hidden;
-}
-
-.sidebar-ranking-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.sidebar-ranking-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.sidebar-ranking-name {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-ranking-xp {
-    font-size: 0.75rem;
-    color: var(--text-tertiary);
-}
-
-/* ================================================
-   SIDEBAR MOBILE (OVERLAY) - IGUAL AO PRINT
-   ================================================ */
-.mobile-sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.60);
-    z-index: 150;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    backdrop-filter: blur(2px);
-}
-
-.mobile-sidebar-overlay.active {
-    display: block;
-    opacity: 1;
-}
-
-.mobile-sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: min(320px, 86vw);
-    height: 100vh;
-
-    /* efeito "vidro" */
-    background: rgba(0,0,0,0.78);
-    backdrop-filter: blur(18px);
-
-    border-left: 1px solid rgba(255,255,255,0.08);
-    z-index: 200;
-
-    transform: translateX(110%);
-    transition: transform 0.28s ease;
-
-    overflow-y: auto;
-    padding: 18px 16px 24px;
-
-    /* deixa a borda mais premium */
-    box-shadow: -16px 0 40px rgba(0,0,0,0.55);
-}
-
-.mobile-sidebar.active {
-    transform: translateX(0);
-}
-
-/* header minimalista: só X no canto (igual foto) */
-.mobile-sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 12px;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.mobile-sidebar-close {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.10);
-    border: 1px solid rgba(255,255,255,0.10);
-    color: var(--text-primary);
-    font-size: 1.05rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mobile-sidebar-close:hover {
-    background: rgba(255,255,255,0.16);
-}
-
-/* card do perfil no topo */
-.mobile-sidebar-profile {
-    margin: 10px 0 14px;
-}
-
-.mobile-sidebar-profile .sidebar-profile {
-    padding: 12px 12px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-}
-
-/* avatar menor, estilo foto */
-.mobile-sidebar-profile .sidebar-profile-avatar {
-    width: 44px;
-    height: 44px;
-}
-
-/* título "FOGUINHO" mais evidente */
-.mobile-sidebar-profile .sidebar-profile-title {
-    font-size: 0.65rem;
-    font-weight: 900;
-    letter-spacing: 0.8px;
-    color: rgba(255,255,255,0.55);
-    margin-bottom: 6px;
-}
-
-/* streak (🔥 4 dias) no estilo da foto */
-.mobile-sidebar-profile .sidebar-profile-streak {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: var(--text-primary);
-}
-
-.mobile-sidebar-profile .sidebar-profile-streak i {
-    color: var(--streak-orange);
-}
-
-/* itens do menu */
-.mobile-sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 10px;
-}
-
-.mobile-sidebar-nav a {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 650;
-    font-size: 1rem;
-    transition: background 0.2s ease;
-}
-
-.mobile-sidebar-nav button {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 650;
-    font-size: 1rem;
-    transition: background 0.2s ease;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-}
-
-.mobile-sidebar-nav a:hover,
-.mobile-sidebar-nav a.active,
-.mobile-sidebar-nav button:hover,
-.mobile-sidebar-nav button.active {
-    background: rgba(255,255,255,0.08);
-}
-
-.mobile-sidebar-nav a i {
-    font-size: 1.25rem;
-    width: 22px;
-    text-align: center;
-    opacity: 0.95;
-}
-
-/* ranking no fundo (opcional) */
-.mobile-sidebar .sidebar-ranking {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-/* ================================================
-   MAIN CONTENT
-   ================================================ */
-.helpzone-main-content {
-    margin-left: 0;
-    margin-top: 56px;
-    padding: 16px;
-    min-height: calc(100vh - 56px);
-}
-
-@media (min-width: 769px) {
-    .helpzone-main-content {
-        margin-left: var(--sidebar-width);
-        margin-top: 60px;
-        padding: 24px;
-        min-height: calc(100vh - 60px);
-    }
-}
-
-.helpzone-feed-container {
-    max-width: 680px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-/* ================================================
-   STORIES
-   ================================================ */
-.feed-stories {
-    margin-bottom: 24px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.stories-scroll {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    padding: 5px 0 15px;
-    scrollbar-width: none;
-}
-
-.stories-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.story-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    min-width: 72px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.story-item:hover {
-    transform: scale(1.05);
-}
-
-.story-ring {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-    position: relative;
-}
-
-.story-ring.no-story {
-    background: var(--border-medium);
-}
-
-.story-avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 3px solid var(--bg-body);
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 1.6rem;
-    overflow: hidden;
-}
-
-.story-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.story-add-icon {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 24px;
-    height: 24px;
-    background: var(--primary);
-    border-radius: 50%;
-    border: 3px solid var(--bg-body);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.9rem;
-}
-
-.story-username {
-    font-size: 0.75rem;
-    color: var(--text-primary);
-    max-width: 72px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-}
-
-/* ================================================
-   POST CARD
-   ================================================ */
-.post-card {
-    background: var(--bg-surface-1);
-    border: 1px solid var(--border-medium);
-    border-radius: 12px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
-}
-
-@media (max-width: 768px) {
-    .post-card {
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-}
-
-.post-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-}
-
-.post-user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.post-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.post-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.post-user-details {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.post-username {
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    text-decoration: none;
-}
-
-.post-username:hover {
-    color: var(--primary);
-}
-
-.post-time {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-}
-
-.post-options-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-}
-
-.post-content {
-    padding: 0 16px 12px;
-}
-
-.post-text {
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-.post-media {
-    margin: 12px 0;
-    background: var(--bg-surface-1);
-}
-
-.post-media img,
-.post-media video {
-    width: 100%;
-    display: block;
-    max-height: 520px;
-    object-fit: cover;
-}
-
-.post-stats {
-    display: flex;
-    padding: 12px 16px 8px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.post-likes {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.post-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 16px;
-    border-top: 1px solid var(--border-subtle);
-}
-
-.post-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.post-action-btn:hover {
-    background: var(--bg-surface-1);
-}
-
-.post-action-btn i {
-    font-size: 1.3rem;
-}
-
-.post-action-btn.liked {
-    color: var(--like-red);
-}
-
-.post-action-btn.saved {
-    color: var(--save-yellow);
-}
-
-/* ================================================
-   TOAST
-   ================================================ */
-.toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 20px;
-    background: var(--bg-surface-3);
-    color: var(--text-primary);
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    z-index: 3000;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
-.toast.success {
-    background: var(--success);
-    color: white;
-}
-
-
-@media (max-width: 768px) {
-  .mobile-sidebar-profile {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    margin: 10px 0 14px !important;
-  }
-
-  .mobile-sidebar-profile .sidebar-profile {
-    display: block !important;
-  }
-}
-
-
-
+/* HelpZone Feed v5 — Glass Study Network */
+:root{
+  --bg:#0b0c10; --pan:#10131a; --pan2:#0f1117;
+  --tx:#e9eefb; --mu:#8b96b0;
+  --tl:#5eead4; --bl:#60a5fa; --vl:#a78bfa;
+  --rd:#fb7185; --gn:#34d399; --gd:#fbbf24; --or:#fb923c;
+  --li:rgba(255,255,255,.075); --li2:rgba(255,255,255,.13);
+  --sh:0 14px 42px rgba(0,0,0,.55);
+  --R:18px; --R2:14px; --R3:10px; --RF:999px;
+  --SB:270px; --RS:294px;
+  --f:'Plus Jakarta Sans',ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--f);
+  background:
+    radial-gradient(1200px 600px at 18% -8%,rgba(94,234,212,.14),transparent 60%),
+    radial-gradient(1000px 650px at 92% 2%,rgba(96,165,250,.14),transparent 60%),
+    radial-gradient(900px 700px at 50% 108%,rgba(167,139,250,.09),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased;
+}
+body>nav.navbar,.navbar.navbar-expand-lg,.bottom-nav{display:none!important}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+img{display:block}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:4px}
+
+/* CARD */
+.card{background:linear-gradient(175deg,rgba(255,255,255,.034),rgba(255,255,255,.016));border:1px solid var(--li);border-radius:var(--R);box-shadow:var(--sh);overflow:hidden}
+.chd{padding:13px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--li);background:rgba(255,255,255,.012)}
+.chd h3{margin:0;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);font-weight:700}
+.cbd{padding:14px}
+
+/* BUTTONS */
+.btn{border:1px solid var(--li);background:rgba(255,255,255,.025);border-radius:var(--R2);padding:9px 13px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;white-space:nowrap;transition:transform .06s,background .14s,border-color .14s}
+.btn:hover{background:rgba(255,255,255,.05);border-color:var(--li2)}
+.btn:active{transform:translateY(1px)}
+.btnt{border-color:rgba(94,234,212,.32);background:linear-gradient(135deg,rgba(94,234,212,.14),rgba(96,165,250,.08))}
+.btnt:hover{border-color:rgba(94,234,212,.55);background:linear-gradient(135deg,rgba(94,234,212,.22),rgba(96,165,250,.14))}
+.btnsl{background:linear-gradient(135deg,rgba(94,234,212,.95),rgba(96,165,250,.9));color:#0b0c10;border:none;font-weight:800}
+.btnsl:hover{filter:brightness(1.1)}
+.btnsm{padding:6px 11px;font-size:12px;border-radius:var(--R3)}
+.btnic{padding:6px;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex-shrink:0}
+
+/* CHIPS */
+.chip{padding:5px 11px;border-radius:var(--RF);border:1px solid var(--li);background:rgba(255,255,255,.022);font-size:11px;font-weight:700;color:var(--mu);cursor:pointer;transition:all .14s;text-transform:uppercase;letter-spacing:.3px}
+.chip:hover{border-color:var(--li2);color:var(--tx)}
+.chip.on{border-color:rgba(94,234,212,.38);background:rgba(94,234,212,.09);color:var(--tl)}
+
+/* TAGS */
+.tg{font-size:12px;padding:4px 10px;border-radius:var(--RF);border:1px solid var(--li);background:rgba(255,255,255,.022);color:var(--mu);white-space:nowrap}
+.tg b{color:var(--tx)}
+.tgt{border-color:rgba(94,234,212,.28);background:rgba(94,234,212,.07);color:var(--tl)}
+.tgb{border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.07);color:var(--bl)}
+.tgg{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.07);color:var(--gd)}
+.tgn{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.07);color:var(--gn)}
+.tgr{border-color:rgba(251,113,133,.28);background:rgba(251,113,133,.07);color:var(--rd)}
+
+/* PILL */
+.pill{padding:6px 10px;border-radius:var(--RF);border:1px solid var(--li);background:rgba(255,255,255,.02);font-size:12px;color:var(--mu);display:flex;gap:6px;align-items:center}
+.pill b{color:var(--tx)}
+
+/* AVATAR */
+.av{border-radius:14px;border:1px solid var(--li);display:grid;place-items:center;font-weight:900;overflow:hidden;flex-shrink:0}
+.av img{width:100%;height:100%;object-fit:cover}
+.avxs{width:26px;height:26px;border-radius:8px;font-size:10px}
+.avsm{width:34px;height:34px;border-radius:12px;font-size:12px}
+.avmd{width:42px;height:42px;border-radius:14px;font-size:15px}
+.avlg{width:48px;height:48px;border-radius:16px;font-size:17px}
+.g0{background:linear-gradient(135deg,rgba(94,234,212,.85),rgba(96,165,250,.85))}
+.g1{background:linear-gradient(135deg,rgba(96,165,250,.85),rgba(167,139,250,.85))}
+.g2{background:linear-gradient(135deg,rgba(167,139,250,.85),rgba(251,113,133,.7))}
+.g3{background:linear-gradient(135deg,rgba(52,211,153,.85),rgba(94,234,212,.85))}
+.g4{background:linear-gradient(135deg,rgba(251,191,36,.8),rgba(251,113,133,.7))}
+
+/* INPUTS */
+.inp{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--li);border-radius:var(--R2);padding:10px 13px;outline:none;font-size:13px;transition:border-color .17s;color:var(--tx)}
+.inp:focus{border-color:rgba(94,234,212,.42)}
+.inp::placeholder{color:var(--mu)}
+.ta{resize:none;line-height:1.55}
+.fsl{background:rgba(255,255,255,.025);border:1px solid var(--li);border-radius:var(--R3);padding:7px 28px 7px 11px;font-size:12px;font-weight:600;color:var(--mu);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b96b0' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.fsl option{background:var(--pan)}
+.divider{height:1px;background:var(--li);margin:12px 0}
+.hint{color:var(--mu);font-size:12px;line-height:1.5}
+
+/* ── APP LAYOUT ── */
+.app{display:grid;grid-template-columns:var(--SB) minmax(0,1fr) var(--RS);gap:14px;padding:16px;max-width:1380px;margin:0 auto}
+@media(max-width:1180px){.app{grid-template-columns:var(--SB) minmax(0,1fr)}.cr{display:none}}
+@media(max-width:820px){.app{grid-template-columns:1fr;gap:10px;padding:10px;padding-top:66px;padding-bottom:72px}.cl{display:none}}
+
+/* ── MOBILE TOPBAR ── */
+.top{display:none;position:fixed;top:0;left:0;right:0;z-index:500;height:58px;align-items:center;justify-content:space-between;padding:0 14px;gap:10px;background:rgba(11,12,16,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--li)}
+@media(max-width:820px){.top{display:flex}}
+.logo-w{display:flex;align-items:center;gap:9px;font-weight:900;font-size:15px}
+.logo-ic{width:32px;height:32px;border-radius:11px;flex-shrink:0;position:relative;background:linear-gradient(135deg,rgba(94,234,212,.95),rgba(96,165,250,.95));box-shadow:0 6px 18px rgba(94,234,212,.2)}
+.logo-ic::after{content:"";position:absolute;inset:8px;border-radius:7px;background:rgba(11,12,16,.75)}
+.top-btns{display:flex;gap:4px;align-items:center}
+.topbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--li);background:rgba(255,255,255,.02);display:grid;place-items:center;font-size:1rem;cursor:pointer;position:relative;transition:background .14s}
+.topbtn:hover{background:rgba(255,255,255,.05)}
+.pip{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--rd);box-shadow:0 0 0 2px var(--bg);display:none}
+
+/* ── MOBILE BOTTOM NAV ── */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;height:64px;background:rgba(11,12,16,.93);backdrop-filter:blur(16px);border-top:1px solid var(--li);align-items:center;justify-content:space-around;padding:0 6px}
+@media(max-width:820px){.bnav{display:flex}}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--mu);padding:8px 10px;border-radius:12px;cursor:pointer;transition:color .14s;min-width:44px;font-size:.7rem}
+.bn i{font-size:1.25rem}
+.bn.on{color:var(--tl)}
+.bnplus{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(94,234,212,.9),rgba(96,165,250,.9));color:#0b0c10;border:none;font-size:1.35rem;display:grid;place-items:center;box-shadow:0 4px 18px rgba(94,234,212,.22);cursor:pointer;transition:filter .18s}
+.bnplus:active{filter:brightness(.85)}
+
+/* ── LEFT SIDEBAR ── */
+.cl{position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.cl::-webkit-scrollbar{width:0}
+.sbp{padding:16px;display:flex;gap:12px;align-items:flex-start}
+.sbname{font-weight:800;font-size:14px;line-height:1.2}
+.sbtag{color:var(--mu);font-size:12px;margin-top:3px}
+.sbpills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sbxp{padding:0 14px 14px}
+.sbxpl{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:5px}
+.sbxpt{height:6px;background:rgba(255,255,255,.06);border:1px solid var(--li);border-radius:var(--RF);overflow:hidden}
+.sbxpf{height:100%;background:linear-gradient(90deg,rgba(94,234,212,.9),rgba(96,165,250,.9));border-radius:var(--RF);transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.sbnav{padding:10px;display:flex;flex-direction:column;gap:6px}
+.sbitem{display:flex;gap:10px;align-items:center;padding:10px 11px;border-radius:var(--R2);border:1px solid transparent;color:var(--mu);cursor:pointer;font-size:13px;font-weight:600;text-decoration:none;transition:all .14s;background:none;width:100%;text-align:left}
+.sbitem:hover{background:rgba(255,255,255,.03);border-color:var(--li);color:var(--tx)}
+.sbitem.on{background:rgba(94,234,212,.075);border-color:rgba(94,234,212,.22);color:var(--tx)}
+.sbitem.on .sbico{background:rgba(94,234,212,.13);border-color:rgba(94,234,212,.28)}
+.sbico{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;background:rgba(255,255,255,.03);border:1px solid var(--li);font-size:14px}
+.sbdot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--rd)}
+.sbsec{padding:3px 11px 2px;font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);font-weight:700;margin-top:4px}
+
+/* ── MAIN FEED ── */
+.cm{display:flex;flex-direction:column;gap:12px;min-width:0}
+
+/* stories */
+.strow{display:flex;gap:12px;overflow-x:auto;padding:14px;scrollbar-width:none}
+.strow::-webkit-scrollbar{display:none}
+.st{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;transition:transform .18s}
+.st:hover{transform:translateY(-2px)}
+.stri{width:62px;height:62px;padding:2.5px;border-radius:20px;background:linear-gradient(145deg,var(--or),var(--rd),var(--vl))}
+.stri.mine{background:rgba(255,255,255,.06);border:1.5px solid var(--li2)}
+.stav{width:100%;height:100%;border-radius:17px;border:2.5px solid var(--bg);display:grid;place-items:center;font-weight:900;font-size:18px;overflow:hidden;position:relative}
+.stav img{width:100%;height:100%;object-fit:cover}
+.stplus{position:absolute;bottom:-1px;right:-1px;width:18px;height:18px;border-radius:50%;background:var(--bl);border:2px solid var(--bg);display:grid;place-items:center;font-size:.55rem;color:#fff}
+.stnm{font-size:11px;color:var(--mu);max-width:62px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+
+/* composer */
+.compc{padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer;transition:background .14s}
+.compc:hover{background:rgba(255,255,255,.012)}
+.compf{flex:1;background:rgba(255,255,255,.025);border:1px solid var(--li);border-radius:var(--R2);padding:11px 14px;color:var(--mu);font-size:13px;transition:border-color .17s}
+.compc:hover .compf{border-color:rgba(94,234,212,.32)}
+.compacts{display:flex;gap:8px;padding:0 14px 12px;border-bottom:1px solid var(--li);flex-wrap:wrap}
+
+/* filters */
+.filt{padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.srchb{flex:1;min-width:120px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.025);border:1px solid var(--li);border-radius:var(--R3);padding:8px 12px;transition:border-color .17s}
+.srchb:focus-within{border-color:rgba(94,234,212,.38)}
+.srchb i{color:var(--mu);font-size:.8rem;flex-shrink:0}
+.srchb input{flex:1;background:none;border:none;outline:none;font-size:12px;color:var(--tx)}
+.srchb input::placeholder{color:var(--mu)}
+
+/* post */
+.post{padding:14px;border-bottom:1px solid var(--li);transition:background .1s}
+.post:hover{background:rgba(255,255,255,.007)}
+.post:last-child{border-bottom:none}
+.ptop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.pwho{display:flex;gap:10px;align-items:center}
+.pnm{font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.2}
+.pnm a{color:var(--tx);transition:color .14s}
+.pnm a:hover{color:var(--tl)}
+.pmt{font-size:11px;color:var(--mu);margin-top:3px;display:flex;align-items:center;gap:6px}
+.plv{font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--RF);border:1px solid var(--li);background:rgba(255,255,255,.03);color:var(--mu)}
+.inf{font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--RF);text-transform:uppercase;letter-spacing:.3px}
+.infd{background:linear-gradient(135deg,rgba(251,191,36,.9),rgba(251,191,36,.7));color:#0b0c10}
+.infi{border:1px solid rgba(94,234,212,.28);background:rgba(94,234,212,.07);color:var(--tl)}
+.infa{border:1px solid rgba(52,211,153,.28);background:rgba(52,211,153,.07);color:var(--gn)}
+.pbody{font-size:14px;line-height:1.55;word-break:break-word;margin-bottom:8px}
+.pbody .ht{color:var(--bl);cursor:pointer;font-weight:600}
+.pbody .ht:hover{text-decoration:underline}
+.pmedia{border-radius:var(--R2);overflow:hidden;background:rgba(255,255,255,.02);border:1px solid var(--li);margin-bottom:10px}
+.pmedia img,.pmedia video{width:100%;max-height:500px;object-fit:cover;display:block}
+.pacts{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.act{display:flex;gap:6px;align-items:center;padding:7px 10px;border-radius:var(--R3);border:1px solid var(--li);background:rgba(255,255,255,.02);cursor:pointer;font-size:12px;font-weight:600;color:var(--mu);transition:all .14s}
+.act i{font-size:.95rem}
+.act:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.act.liked{border-color:rgba(251,113,133,.28);background:rgba(251,113,133,.09);color:var(--rd)}
+.act.liked i{animation:hpop .35s cubic-bezier(.4,0,.2,1)}
+.act.saved{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.07);color:var(--gd)}
+.acte{margin-left:auto}
+@keyframes hpop{0%,100%{transform:scale(1)}45%{transform:scale(1.65)}75%{transform:scale(.88)}}
+.femp{text-align:center;padding:60px 20px}
+.fempi{width:68px;height:68px;border-radius:22px;background:rgba(255,255,255,.025);border:1px solid var(--li);display:grid;place-items:center;font-size:1.9rem;margin:0 auto 16px}
+.femp h3{font-size:16px;font-weight:800;margin-bottom:8px}
+.femp p{color:var(--mu);font-size:13px;max-width:260px;margin:0 auto;line-height:1.5}
+
+/* ── RIGHT SIDEBAR ── */
+.cr{position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.cr::-webkit-scrollbar{width:0}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{padding:11px;border-radius:var(--R2);border:1px solid var(--li);background:rgba(255,255,255,.02)}
+.stat .k{font-size:11px;color:var(--mu);font-weight:600}
+.stat .v{font-size:20px;font-weight:900;margin-top:3px;line-height:1}
+.stat .v small{font-size:11px;color:var(--mu);font-weight:600}
+.vtl{color:var(--tl)}.vbl{color:var(--bl)}.vgd{color:var(--gd)}.vgn{color:var(--gn)}
+.trendl{display:flex;flex-direction:column}
+.trendi{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--li);cursor:pointer;transition:all .14s}
+.trendi:last-child{border-bottom:none;padding-bottom:0}
+.trendi:first-child{padding-top:0}
+.trendi:hover .trnm{color:var(--tl)}
+.trn{width:20px;height:20px;border-radius:7px;background:rgba(255,255,255,.025);border:1px solid var(--li);display:grid;place-items:center;font-size:10px;font-weight:900;color:var(--mu);flex-shrink:0}
+.trn.n1{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.25);color:var(--gd)}
+.trn.n2{background:rgba(255,255,255,.06);color:var(--tx)}
+.trn.n3{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.2);color:var(--rd)}
+.trnm{font-size:13px;font-weight:700;transition:color .14s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trct{font-size:11px;color:var(--mu);margin-top:1px}
+.ppll{display:flex;flex-direction:column}
+.pprs{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--li)}
+.pprs:last-child{border-bottom:none;padding-bottom:0}
+.pprs:first-child{padding-top:0}
+.ppri{flex:1;min-width:0;cursor:pointer}
+.pprn{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pprs2{font-size:11px;color:var(--mu);margin-top:1px}
+.fbtn{padding:5px 13px;border-radius:var(--RF);font-size:12px;font-weight:700;border:1px solid rgba(94,234,212,.28);background:rgba(94,234,212,.06);color:var(--tl);cursor:pointer;transition:all .14s;white-space:nowrap}
+.fbtn:hover{background:rgba(94,234,212,.14);border-color:rgba(94,234,212,.5)}
+.fbtn.fol{border-color:var(--li);background:rgba(255,255,255,.02);color:var(--mu)}
+.lbl{display:flex;flex-direction:column}
+.lbr{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--li)}
+.lbr:last-child{border-bottom:none;padding-bottom:0}
+.lbr:first-child{padding-top:0}
+.lbrk{width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:900;flex-shrink:0;background:rgba(255,255,255,.025);border:1px solid var(--li);color:var(--mu)}
+.r1{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.25);color:var(--gd)}
+.r2{background:rgba(255,255,255,.06);color:var(--tx)}
+.r3{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.2);color:var(--rd)}
+.lbname{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbxp{font-size:12px;color:var(--tl);font-weight:700}
+.chal{padding:14px;border-radius:var(--R2);background:linear-gradient(135deg,rgba(94,234,212,.055),rgba(96,165,250,.035));border:1px solid rgba(94,234,212,.14)}
+.chalh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chall{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--tl);display:flex;align-items:center;gap:5px}
+.chalt{font-size:14px;font-weight:800;margin-bottom:3px}
+.chald{font-size:12px;color:var(--mu);margin-bottom:10px;line-height:1.5}
+.chalb{height:6px;background:rgba(255,255,255,.06);border-radius:var(--RF);overflow:hidden;border:1px solid var(--li);margin-bottom:6px}
+.chalf{height:100%;background:linear-gradient(90deg,rgba(94,234,212,.9),rgba(96,165,250,.9));border-radius:var(--RF)}
+.chalft{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--mu)}
+
+/* ── EXPLORE PANEL ── */
+.exppanel{position:fixed;inset:0;z-index:800;background:radial-gradient(1200px 600px at 18% -8%,rgba(94,234,212,.09),transparent 60%),radial-gradient(1000px 650px at 92% 2%,rgba(96,165,250,.09),transparent 60%),var(--bg);display:none;flex-direction:column;opacity:0;transition:opacity .22s}
+.exppanel.on{display:flex}
+.exppanel.vis{opacity:1}
+.exptop{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--li);background:rgba(11,12,16,.88);backdrop-filter:blur(14px);flex-shrink:0}
+.expsb{flex:1;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.03);border:1px solid var(--li);border-radius:var(--R2);padding:11px 14px;transition:border-color .17s}
+.expsb:focus-within{border-color:rgba(94,234,212,.42)}
+.expsb i{color:var(--mu);font-size:.85rem}
+.expsb input{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--tx)}
+.expsb input::placeholder{color:var(--mu)}
+.expcan{background:none;border:none;color:var(--mu);font-size:13px;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap;transition:color .14s}
+.expcan:hover{color:var(--tx)}
+.exptabs{display:flex;border-bottom:1px solid var(--li);padding:0 18px;flex-shrink:0}
+.exptab{padding:12px 16px;font-size:13px;font-weight:700;color:var(--mu);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .18s;position:relative;bottom:-1px}
+.exptab.on{color:var(--tx);border-bottom-color:var(--tl)}
+.expbody{flex:1;overflow-y:auto;max-width:640px;width:100%;margin:0 auto}
+.exphint{text-align:center;padding:80px 20px;color:var(--mu)}
+.exphint i{font-size:2.2rem;display:block;margin-bottom:14px;opacity:.18}
+.exphint p{font-size:13px}
+.expper{display:flex;align-items:center;gap:11px;padding:13px 18px;border-bottom:1px solid var(--li);cursor:pointer;transition:background .14s}
+.expper:hover{background:rgba(255,255,255,.018)}
+.expav{width:44px;height:44px;border-radius:15px;border:1px solid var(--li);background:rgba(255,255,255,.03);display:grid;place-items:center;font-weight:900;font-size:16px;overflow:hidden;flex-shrink:0}
+.expav img{width:100%;height:100%;object-fit:cover}
+.exppi{flex:1;min-width:0}
+.exppn{font-size:14px;font-weight:800}
+.exppm{font-size:12px;color:var(--mu);margin-top:2px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.gcell{aspect-ratio:1;background:rgba(255,255,255,.02);overflow:hidden;cursor:pointer;position:relative}
+.gcell img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
+.gcell:hover img{transform:scale(1.07)}
+.gtxt{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:10px;font-size:12px;color:var(--mu);text-align:center;line-height:1.4}
+.exph{display:flex;align-items:center;gap:11px;padding:13px 18px;border-bottom:1px solid var(--li);cursor:pointer;transition:background .14s}
+.exph:hover{background:rgba(255,255,255,.018)}
+.exphic{width:44px;height:44px;border-radius:15px;background:rgba(94,234,212,.06);border:1px solid rgba(94,234,212,.18);display:grid;place-items:center;font-size:1.35rem;font-weight:900;color:var(--tl);flex-shrink:0}
+
+/* ── NOTIF PANEL ── */
+.nbg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:700;display:none;opacity:0;transition:opacity .24s}
+.nbg.on{display:block}
+.nbg.vis{opacity:1}
+.npanel{position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:var(--pan);border-left:1px solid var(--li);z-index:710;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-20px 0 60px rgba(0,0,0,.65)}
+.npanel.vis{transform:translateX(0)}
+.nhd{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid var(--li);flex-shrink:0}
+.nhd h3{font-size:15px;font-weight:800}
+.nbody{flex:1;overflow-y:auto}
+.ngrp{padding:12px 16px 4px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--mu)}
+.nitem{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;transition:background .14s;position:relative}
+.nitem:hover{background:rgba(255,255,255,.02)}
+.nitem.unrd::before{content:'';position:absolute;left:6px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--bl)}
+.navw{position:relative;flex-shrink:0}
+.nav2{width:40px;height:40px;border-radius:14px;border:1px solid var(--li);background:rgba(255,255,255,.03);display:grid;place-items:center;font-weight:900;overflow:hidden}
+.nav2 img{width:100%;height:100%;object-fit:cover}
+.nbadge{position:absolute;bottom:-2px;right:-2px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font-size:.52rem;border:2px solid var(--pan)}
+.nbl{background:var(--rd)}.nbc{background:var(--bl)}.nbf{background:var(--gn)}.nbx{background:var(--gd)}
+.nct{flex:1;min-width:0}
+.ntxt{font-size:13px;line-height:1.4}
+.ntxt strong{font-weight:700}
+.ntime{font-size:11px;color:var(--mu);margin-top:2px}
+.nthumb{width:38px;height:38px;border-radius:9px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,.02);border:1px solid var(--li)}
+.nthumb img{width:100%;height:100%;object-fit:cover}
+.nemp{text-align:center;padding:70px 16px;color:var(--mu)}
+.nemp i{font-size:2rem;display:block;margin-bottom:12px;opacity:.18}
+
+/* ── COMMENTS ── */
+.cmov{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(12px);z-index:900;display:none;opacity:0;align-items:flex-end;justify-content:center;transition:opacity .24s}
+@media(min-width:600px){.cmov{align-items:center}}
+.cmov.on{display:flex}
+.cmov.vis{opacity:1}
+.cmbox{background:var(--pan);width:100%;max-width:540px;height:72vh;border-radius:var(--R) var(--R) 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -16px 60px rgba(0,0,0,.65);border:1px solid var(--li);border-bottom:none}
+@media(min-width:600px){.cmbox{border-radius:var(--R);height:76vh;border-bottom:1px solid var(--li)}}
+.cmov.vis .cmbox{transform:translateY(0)}
+.cmgrip{width:34px;height:4px;background:rgba(255,255,255,.08);border-radius:4px;margin:9px auto 0}
+@media(min-width:600px){.cmgrip{display:none}}
+.cmhd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--li);flex-shrink:0}
+.cmhd span{font-size:14px;font-weight:800}
+.cmlist{flex:1;overflow-y:auto;padding:4px 0}
+.cmcmt{display:flex;gap:10px;padding:10px 16px}
+.cmcav{width:28px;height:28px;border-radius:10px;border:1px solid var(--li);background:rgba(255,255,255,.03);display:grid;place-items:center;font-weight:900;font-size:10px;overflow:hidden;flex-shrink:0}
+.cmcav img{width:100%;height:100%;object-fit:cover}
+.cmbody{flex:1}
+.cmname{font-size:12px;font-weight:800}
+.cmtxt{font-size:13px;line-height:1.45;margin-top:2px}
+.cmmeta{display:flex;gap:10px;margin-top:4px;font-size:11px;color:var(--mu)}
+.cmmeta span{cursor:pointer}
+.cmmeta span:hover{color:var(--tx)}
+.cmemp{text-align:center;padding:40px 16px;color:var(--mu);font-size:13px}
+.cminp-r{display:flex;align-items:center;gap:9px;padding:10px 14px;border-top:1px solid var(--li);flex-shrink:0}
+.cminp{flex:1;background:rgba(255,255,255,.025);border:1px solid var(--li);border-radius:var(--R2);padding:9px 13px;outline:none;font-size:13px;color:var(--tx);transition:border-color .17s}
+.cminp:focus{border-color:rgba(94,234,212,.42)}
+.cmsend{background:none;border:none;color:var(--tl);font-weight:800;font-size:13px;cursor:pointer;padding:4px 6px;transition:opacity .14s}
+.cmsend:hover{opacity:.7}
+
+/* ── CREATE POST ── */
+.cpov{position:fixed;inset:0;background:rgba(0,0,0,.87);backdrop-filter:blur(16px);z-index:900;display:none;opacity:0;align-items:center;justify-content:center;padding:16px;transition:opacity .24s}
+.cpov.on{display:flex}
+.cpov.vis{opacity:1}
+.cpbox{background:var(--pan);border:1px solid var(--li);border-radius:var(--R);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;transform:scale(.95) translateY(10px);transition:transform .26s cubic-bezier(.4,0,.2,1);box-shadow:0 40px 100px rgba(0,0,0,.8)}
+.cpov.vis .cpbox{transform:scale(1) translateY(0)}
+.cphd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 13px;border-bottom:1px solid var(--li);position:sticky;top:0;background:var(--pan);z-index:2;border-radius:var(--R) var(--R) 0 0}
+.cphd span{font-size:14px;font-weight:800}
+.cpbd{padding:16px 18px 20px}
+.cpwho{display:flex;gap:11px;align-items:flex-start;margin-bottom:12px}
+.cpavat{width:36px;height:36px;border-radius:12px;border:1px solid var(--li);background:rgba(255,255,255,.03);display:grid;place-items:center;font-weight:900;font-size:13px;overflow:hidden;flex-shrink:0}
+.cpavat img{width:100%;height:100%;object-fit:cover}
+.cpprev{display:none;border-radius:var(--R2);overflow:hidden;border:1px solid var(--li);position:relative;max-height:260px;margin-top:10px}
+.cpprev.on{display:block}
+.cpprev img,.cpprev video{width:100%;max-height:260px;object-fit:cover;display:block}
+.rmmed{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.72);border:none;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:.7rem}
+.cpft{display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid var(--li);margin-top:12px;flex-wrap:wrap}
+.cpch{margin-left:auto;font-size:11px;color:var(--mu)}
+
+/* CLOSE BTN */
+.xbtn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--li);display:grid;place-items:center;cursor:pointer;font-size:.75rem;color:var(--mu);transition:all .14s}
+.xbtn:hover{background:rgba(255,255,255,.08);color:var(--tx)}
+
+/* TOAST */
+.toast{position:fixed;top:16px;right:16px;z-index:9999;min-width:260px;max-width:340px;padding:12px 14px;border-radius:var(--R2);border:1px solid var(--li);background:rgba(16,19,26,.94);backdrop-filter:blur(10px);box-shadow:var(--sh);display:flex;gap:10px;align-items:flex-start;transform:translateX(14px);opacity:0;transition:all .22s ease;pointer-events:none}
+.toast.on{transform:translateX(0);opacity:1;pointer-events:auto}
+.toastd{width:9px;height:9px;border-radius:50%;margin-top:3px;background:var(--tl);box-shadow:0 0 0 5px rgba(94,234,212,.12);flex-shrink:0}
+.toastt{font-size:13px;color:var(--tx);line-height:1.35}
+.toastt small{color:var(--mu);display:block;margin-top:2px;font-size:12px}
+
+/* SPIN */
+.spin{display:flex;align-items:center;justify-content:center;padding:32px;color:var(--mu)}
+.spin i{animation:_sp 1s linear infinite}
+@keyframes _sp{to{transform:rotate(360deg)}}
 </style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/helpzone-overlays.css') }}">
-
 {% endblock %}
 
 {% block content %}
-
-<!-- Navbar Desktop (substitui a padrão) -->
-    
-
-<!-- Navbar Mobile -->
-<nav class="helpzone-navbar-mobile">
-    <a href="{{ url_for('helpzone.feed') }}" class="mobile-logo">
-        <img src="{{ url_for('static', filename='img/logo_launcher.png') }}" alt="Launcher">
-    </a>
-    
-    <div class="d-flex currency-badges gap-2">
-        <a href="{{ url_for('progresso.index') }}" class="xp-badge" title="Experiência Total">
-            <i class="bi bi-lightning-fill"></i>
-            <span>{{ current_user.xp_total or 0 }}</span>
-        </a>
-        <a href="{{ url_for('yampi.listar_produtos') }}" class="diamond-badge" title="Launcher Coins">
-            <i class="bi bi-coin"></i>
-            <span>{{ current_user.diamantes or 0 }}</span>
-        </a>
-    </div>
-    
-    <button class="hamburger-btn" onclick="toggleMobileSidebar()">
-        <i class="fas fa-bars"></i>
+<!-- MOBILE TOPBAR -->
+<nav class="top">
+  <div class="logo-w"><span class="logo-ic"></span>HelpZone</div>
+  <div class="top-btns">
+    <button class="topbtn" onclick="openExp()"><i class="fas fa-search"></i></button>
+    <button class="topbtn" onclick="openNot()">
+      <i class="far fa-bell"></i><span class="pip" id="mobPip"></span>
     </button>
+    <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="topbtn">
+      <div class="av avxs g{{ current_user.id % 5 }}" style="width:24px;height:24px;border-radius:8px;border:none">
+        {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}<img src="{{ current_user.perfil_social.foto_perfil }}" alt="">{% else %}{{ current_user.nome_completo[0].upper() }}{% endif %}
+      </div>
+    </a>
+  </div>
 </nav>
 
-<!-- Sidebar Desktop -->
-<div class="helpzone-sidebar">
-    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-        <div class="sidebar-profile-header">
-            <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
-                {% else %}
-                {{ current_user.nome_completo[0].upper() }}
-                {% endif %}
-                <div class="level-badge">{{ current_user.nivel or 1 }}</div>
-            </div>
-            <div class="sidebar-profile-info">
-                <div class="sidebar-profile-title">FOGUINHO</div>
-
-
-<div class="sidebar-profile-streak">
-    <i class="fas fa-fire" style="color: {{ 'var(--streak-orange)' if current_user.sequencia_dias > 0 else 'var(--text-tertiary)' }}"></i>
-    <span>
-        {% if current_user.sequencia_dias > 0 %}
-            {{ current_user.sequencia_dias }} dia{{ 's' if current_user.sequencia_dias != 1 else '' }} 
-        {% else %}
-            Comece sua sequência!
-        {% endif %}
-    </span>
-</div>
-
-
-            </div>
+<div class="app">
+  <!-- LEFT SIDEBAR -->
+  <aside class="cl">
+    <div class="card">
+      <div class="sbp">
+        <div class="av avlg g{{ current_user.id % 5 }}">
+          {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}<img src="{{ current_user.perfil_social.foto_perfil }}" alt="">{% else %}{{ current_user.nome_completo[0].upper() }}{% endif %}
         </div>
-    </div>
-    
-    <nav class="sidebar-nav-links">
-        <a href="{{ url_for('helpzone.feed') }}" class="sidebar-nav-link active">
-            <i class="fas fa-home"></i>
-            <span>Feed</span>
-        </a>
-        <button type="button" class="sidebar-nav-link" onclick="openSearchModal()">
-            <i class="fas fa-search"></i>
-            <span>Explorar</span>
-        </button>
-        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </a>
-        <a href="#" class="sidebar-nav-link">
-            <i class="fas fa-bookmark"></i>
-            <span>Salvos</span>
-        </a>
-        <button type="button" class="sidebar-nav-link" onclick="openNotificationsPanel()">
-            <i class="far fa-bell"></i>
-            <span>Notificações</span>
-        </button>
-    </nav>
-    
-    <button class="sidebar-create-btn" onclick="openCreatePostModal()">
-        <i class="fas fa-plus"></i>
-        <span>Criar Post</span>
-    </button>
-    
-    <div class="sidebar-ranking">
-        <div class="sidebar-ranking-title">RANKING ENTRE SEGUIDORES</div>
-        <div class="sidebar-ranking-list" id="rankingList">
-            <div style="text-align: center; padding: 20px; color: var(--text-tertiary); font-size: 0.85rem;">
-                <i class="fas fa-trophy" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
-                Carregando...
-            </div>
+        <div>
+          <div class="sbname">{{ current_user.nome_completo.split()[0] }}</div>
+          <div class="sbtag">@{{ current_user.username or current_user.nome_completo.split()[0].lower() }} · ENEM</div>
+          <div class="sbpills">
+            <div class="pill">🔥 <b>{{ current_user.sequencia_dias or 0 }}</b> dias</div>
+            <div class="pill">✨ <b>{{ current_user.xp_total or 0 }}</b> XP</div>
+            <div class="pill">🏆 <b>Nv{{ current_user.nivel or 1 }}</b></div>
+          </div>
         </div>
+      </div>
+      <div class="sbxp">
+        <div class="sbxpl"><span>Nível {{ current_user.nivel or 1 }}</span><span>{{ (current_user.xp_total or 0) % 1000 }}/1000</span></div>
+        <div class="sbxpt"><div class="sbxpf" style="width:{{ [((current_user.xp_total or 0) % 1000) / 10, 100]|min|int }}%"></div></div>
+      </div>
+      <nav class="sbnav">
+        <a href="{{ url_for('helpzone.feed') }}" class="sbitem on"><span class="sbico">📰</span>Feed</a>
+        <button class="sbitem" onclick="openExp()"><span class="sbico">🔍</span>Explorar</button>
+        <button class="sbitem" onclick="openNot()"><span class="sbico">🔔</span>Notificações<span class="sbdot" id="sbDot" style="display:none"></span></button>
+        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sbitem"><span class="sbico">👤</span>Meu Perfil</a>
+        <a href="{{ url_for('ranking.index') }}" class="sbitem"><span class="sbico">🏅</span>Ranking</a>
+        <div class="sbsec">Estudar</div>
+        <a href="{{ url_for('dashboard.index') }}" class="sbitem"><span class="sbico">📊</span>Dashboard</a>
+        <a href="{{ url_for('simulados.index') }}" class="sbitem"><span class="sbico">📝</span>Simulados</a>
+        <a href="{{ url_for('progresso.index') }}" class="sbitem"><span class="sbico">📈</span>Progresso</a>
+      </nav>
     </div>
-</div>
+  </aside>
 
-<!-- Mobile Sidebar Overlay -->
-<div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="toggleMobileSidebar()"></div>
-
-<!-- Mobile Sidebar -->
-<div class="mobile-sidebar" id="mobileSidebar">
-<div class="mobile-sidebar-header">
-    <button class="mobile-sidebar-close" onclick="toggleMobileSidebar()">
-        <i class="fas fa-times"></i>
-    </button>
-</div>
-    
-<div class="mobile-sidebar-profile">
-    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-        <div class="sidebar-profile-header">
-            <div class="sidebar-profile-avatar">
-                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
-                {% else %}
-                    {{ current_user.nome_completo[0].upper() }}
-                {% endif %}
-                <div class="level-badge">{{ current_user.nivel or 1 }}</div>
+  <!-- MAIN FEED -->
+  <main class="cm">
+    <!-- Stories -->
+    <div class="card">
+      <div class="chd"><h3>Stories</h3><span class="tg">📸 seu dia de estudos</span></div>
+      <div class="strow">
+        <div class="st" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
+          <div class="stri mine">
+            <div class="stav g{{ current_user.id % 5 }}">
+              {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}<img src="{{ current_user.perfil_social.foto_perfil }}" alt="">{% else %}{{ current_user.nome_completo[0].upper() }}{% endif %}
+              <div class="stplus"><i class="fas fa-plus"></i></div>
             </div>
+          </div>
+          <div class="stnm">Meu story</div>
+        </div>
+        {% if stories is defined %}{% for s in stories %}
+        <div class="st">
+          <div class="stri">
+            <div class="stav g{{ s.user.id % 5 }}">
+              {% if s.user.perfil_social and s.user.perfil_social.foto_perfil %}<img src="{{ s.user.perfil_social.foto_perfil }}" alt="">{% else %}{{ s.user.nome_completo[0].upper() }}{% endif %}
+            </div>
+          </div>
+          <div class="stnm">{{ s.user.nome_completo.split()[0] }}</div>
+        </div>
+        {% endfor %}{% endif %}
+      </div>
+    </div>
 
-            <div class="sidebar-profile-info">
-                <div class="sidebar-profile-title">FOGUINHO</div>
+    <!-- Feed + Composer -->
+    <div class="card">
+      <div class="chd"><h3>Feed de estudos</h3><span class="tg tgt">💡 poste e ganhe +XP</span></div>
 
-                <div class="sidebar-profile-streak">
-                    <i class="fas fa-fire"></i>
-                    <span>
-                        {{ current_user.sequencia_dias or 0 }} dia{{ 's' if (current_user.sequencia_dias or 0) != 1 else '' }}
-                    </span>
+      <div class="compc" onclick="openCp()">
+        <div class="av avsm g{{ current_user.id % 5 }}">
+          {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}<img src="{{ current_user.perfil_social.foto_perfil }}" alt="">{% else %}{{ current_user.nome_completo[0].upper() }}{% endif %}
+        </div>
+        <div class="compf">O que você estudou hoje? Resumo, dúvida ou anotação...</div>
+      </div>
+      <div class="compacts">
+        <button class="btn btnsm" onclick="openCp()"><i class="fas fa-image" style="color:var(--bl)"></i> Foto</button>
+        <button class="btn btnsm" onclick="openCp()"><i class="fas fa-video" style="color:var(--rd)"></i> Vídeo</button>
+        <button class="btn btnsm" onclick="openCp()"><i class="fas fa-pen" style="color:var(--tl)"></i> Anotação</button>
+        <button class="btn btnsm btnt" onclick="openCp()" style="margin-left:auto"><i class="fas fa-plus"></i> Publicar +XP</button>
+      </div>
+
+      <div class="filt">
+        <div class="srchb">
+          <i class="fas fa-search"></i>
+          <input type="text" id="feedSearch" placeholder="Buscar posts, #tags..." oninput="filtFeed()">
+        </div>
+        <select class="fsl" id="feedSubj" onchange="filtFeed()">
+          <option value="">Todas as matérias</option>
+          <option value="matematica">Matemática</option>
+          <option value="portugues">Português</option>
+          <option value="historia">História</option>
+          <option value="quimica">Química</option>
+          <option value="fisica">Física</option>
+          <option value="biologia">Biologia</option>
+          <option value="redacao">Redação</option>
+          <option value="geografia">Geografia</option>
+          <option value="ingles">Inglês</option>
+        </select>
+        <select class="fsl" id="feedSort" onchange="filtFeed()">
+          <option value="new">Mais recentes</option>
+          <option value="top">Mais curtidos</option>
+          <option value="hot">Mais comentados</option>
+        </select>
+      </div>
+
+      <div id="feedList">
+        {% if posts.items %}
+          {% for p in posts.items %}
+          <article class="post" data-pid="{{ p.id }}" data-txt="{{ (p.texto or '') | lower | e }}" data-lk="{{ p.total_likes or 0 }}" data-cm="{{ p.total_comentarios or 0 }}">
+            <div class="ptop">
+              <div class="pwho">
+                <div class="av avsm g{{ p.user.id % 5 }}" style="cursor:pointer" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=p.user.id) }}'">
+                  {% if p.user.perfil_social and p.user.perfil_social.foto_perfil %}<img src="{{ p.user.perfil_social.foto_perfil }}" alt="" onerror="this.parentElement.textContent='{{ p.user.nome_completo[0].upper() }}'">{% else %}{{ p.user.nome_completo[0].upper() }}{% endif %}
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-    
-    <nav class="mobile-sidebar-nav">
-        <a href="{{ url_for('helpzone.feed') }}" class="active">
-            <i class="fas fa-home"></i>
-            <span>Feed</span>
-        </a>
-        <button type="button" onclick="openSearchModal(); toggleMobileSidebar();">
-            <i class="fas fa-search"></i>
-            <span>Explorar</span>
-        </button>
-        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </a>
-        <a href="#">
-            <i class="fas fa-bookmark"></i>
-            <span>Salvos</span>
-        </a>
-        <button type="button" onclick="openNotificationsPanel(); toggleMobileSidebar();">
-            <i class="far fa-bell"></i>
-            <span>Notificações</span>
-        </button>
-        <button type="button" onclick="openCreatePostModal(); toggleMobileSidebar();">
-            <i class="fas fa-plus-circle"></i>
-            <span>Criar Post</span>
-        </button>
-    </nav>
-</div>
-
-<!-- Main Content -->
-<div class="helpzone-main-content">
-    <div class="helpzone-feed-container">
-        
-        <!-- Stories -->
-        <div class="feed-stories">
-            <div class="stories-scroll" id="storiesContainer">
-                <div class="story-item" onclick="location.href='{{ url_for('helpzone.criar_story') }}'">
-                    <div class="story-ring no-story">
-                        <div class="story-avatar">
-                            {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                            <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Você">
-                            {% else %}
-                            {{ current_user.nome_completo[0].upper() }}
-                            {% endif %}
-                        </div>
-                        <div class="story-add-icon">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                    </div>
-                    <div class="story-username">Criar story</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Posts -->
-        <div id="postsContainer">
-            {% if posts.items %}
-                {% for post in posts.items %}
-                <div class="post-card" data-post-id="{{ post.id }}">
-                    <div class="post-header">
-                        <div class="post-user-info">
-                            <div class="post-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}'">
-                                {% if post.user.perfil_social and (post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil) %}
-                                <img src="{{ post.user.perfil_social.foto_perfil_url or post.user.perfil_social.foto_perfil }}" alt="{{ post.user.nome_completo }}">
-                                {% else %}
-                                {{ post.user.nome_completo[0].upper() }}
-                                {% endif %}
-                            </div>
-                            <div class="post-user-details">
-                                <a href="{{ url_for('helpzone.perfil_usuario', user_id=post.user.id) }}" class="post-username">
-                                    {{ post.user.nome_completo }}
-                                </a>
-                                <div class="post-time">{{ post.data_criacao.strftime('%d/%m às %H:%M') }}</div>
-                            </div>
-                        </div>
-                        <button class="post-options-btn">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="post-content">
-                        <div class="post-text">{{ post.texto }}</div>
-                    </div>
-                    
-                    {% if post.midia and (post.midia.url_public or post.midia.url) %}
-                    <div class="post-media">
-                        {% if post.midia.tipo == 'imagem' %}
-                        <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post">
-                        {% elif post.midia.tipo == 'video' %}
-                        <video src="{{ post.midia.url_public or post.midia.url }}" controls></video>
-                        {% endif %}
-                    </div>
+                <div>
+                  <div class="pnm">
+                    <a href="{{ url_for('helpzone.perfil_usuario', user_id=p.user.id) }}">{{ p.user.nome_completo }}</a>
+                    <span class="plv">Nv{{ p.user.nivel or 1 }}</span>
+                    {% if p.user.perfil_social %}
+                      {% if p.user.perfil_social.nivel_influencia == 'destaque' %}<span class="inf infd">✦ Destaque</span>
+                      {% elif p.user.perfil_social.nivel_influencia == 'influente' %}<span class="inf infi">Influente</span>
+                      {% elif p.user.perfil_social.nivel_influencia == 'ativo' %}<span class="inf infa">Ativo</span>{% endif %}
                     {% endif %}
-                    
-                    <div class="post-stats">
-                        <div class="post-likes">
-                            <i class="fas fa-heart" style="color: var(--like-red);"></i>
-                            <span>{{ post.total_likes or 0 }} curtidas</span>
-                        </div>
-                    </div>
-
-
-                    <div class="post-actions">
-                        <button class="post-action-btn {% if post.user_liked(current_user.id) %}liked{% endif %}" 
-                                onclick="toggleLike({{ post.id }})">
-                            <i class="{% if post.user_liked(current_user.id) %}fas{% else %}far{% endif %} fa-heart"></i>
-                            <span>Curtir</span>
-                        </button>
-                        <button class="post-action-btn" onclick="openCommentsModal({{ post.id }})">
-                            <i class="far fa-comment"></i>
-                            <span>Comentar</span>
-                        </button>
-                        <button class="post-action-btn" onclick="sharePost({{ post.id }})">
-                            <i class="far fa-paper-plane"></i>
-                            <span>Compartilhar</span>
-                        </button>
-                        <button class="post-action-btn {% if post.user_saved(current_user.id) %}saved{% endif %}" 
-                                onclick="toggleSave({{ post.id }}, this)" style="margin-left: auto;">
-                            <i class="{% if post.user_saved(current_user.id) %}fas{% else %}far{% endif %} fa-bookmark"></i>
-                        </button>
-                    </div>
+                  </div>
+                  <div class="pmt"><i class="far fa-clock" style="font-size:.7rem"></i> {{ p.data_criacao.strftime('%d/%m às %H:%M') }}</div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div style="text-align: center; padding: 60px 20px;">
-                    <i class="fas fa-comments" style="font-size: 4rem; color: var(--text-tertiary); margin-bottom: 20px;"></i>
-                    <h3>Seu feed está vazio</h3>
-                    <p style="color: var(--text-secondary); margin: 10px 0 20px;">
-                        Comece seguindo outros estudantes!
-                    </p>
-                    <button onclick="openSearchModal()" 
-                            style="padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
-                        Explorar Pessoas
-                    </button>
-                </div>
-            {% endif %}
-        </div>
-        
-    </div>
-
-
-<!-- Modal de Comentários -->
-<div class="comments-modal-overlay" id="commentsModal" onclick="closeCommentsModal(event)">
-    <div class="comments-modal-container" onclick="event.stopPropagation()">
-        <button class="modal-close-btn" onclick="closeCommentsModal()">
-            <i class="fas fa-times"></i>
-        </button>
-        
-        <!-- Seção de Mídia (Desktop) -->
-        <div class="modal-media-section" id="modalMediaSection">
-            <!-- Mídia será carregada aqui -->
-        </div>
-        
-        <!-- Seção de Comentários -->
-        <div class="modal-comments-section">
-            <div class="modal-drag-handle"></div>
-            
-            <div class="modal-post-header" id="modalPostHeader">
-                <!-- Header será carregado aqui -->
+              </div>
+              <button class="btn btnic btnsm" style="color:var(--mu)"><i class="fas fa-ellipsis-h"></i></button>
             </div>
-            
-            <div class="modal-comments-list" id="modalCommentsList">
-                <div class="modal-comments-loading">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
-                    <p style="margin-top: 12px;">Carregando comentários...</p>
-                </div>
-            </div>
-            
-            <div class="modal-comment-input-section">
-                <span class="modal-comment-emoji">😊</span>
-                <input type="text" 
-                       class="modal-comment-field" 
-                       id="modalCommentInput"
-                       placeholder="Adicione um comentário...">
-                <button class="modal-comment-submit" 
-                        id="modalCommentSubmit"
-                        onclick="submitComment()">
-                    Publicar
+            {% if p.texto %}<div class="pbody" data-raw="{{ p.texto | e }}"></div>{% endif %}
+            {% if p.midia and p.midia.url %}
+            <div class="pmedia">
+              {% if p.midia.tipo == 'imagem' %}<img src="{{ p.midia.url }}" alt="" loading="lazy" ondblclick="doLike({{ p.id }})">
+              {% elif p.midia.tipo == 'video' %}<video src="{{ p.midia.url }}" controls preload="metadata"></video>{% endif %}
+            </div>{% endif %}
+            <div class="pacts">
+              <button class="act {% if p.user_liked(current_user.id) %}liked{% endif %}" onclick="doLike({{ p.id }},this)" id="lb{{ p.id }}">
+                <i class="{% if p.user_liked(current_user.id) %}fas{% else %}far{% endif %} fa-heart"></i>
+                <span id="lc{{ p.id }}">{{ p.total_likes or 0 }}</span>
+              </button>
+              <button class="act" onclick="openCmt({{ p.id }})"><i class="far fa-comment"></i> {{ p.total_comentarios or 0 }}</button>
+              <button class="act" onclick="sharePost({{ p.id }})"><i class="far fa-share-square"></i></button>
+              <div class="acte">
+                <button class="act {% if p.user_saved(current_user.id) %}saved{% endif %}" onclick="doSave({{ p.id }},this)">
+                  <i class="{% if p.user_saved(current_user.id) %}fas{% else %}far{% endif %} fa-bookmark"></i>
                 </button>
+              </div>
             </div>
-        </div>
+          </article>
+          {% endfor %}
+        {% else %}
+          <div class="femp">
+            <div class="fempi">📡</div>
+            <h3>Feed vazio</h3>
+            <p>Siga estudantes ou publique sua primeira anotação!</p>
+            <button class="btn btnt" style="margin-top:16px" onclick="openExp()"><i class="fas fa-users"></i> Encontrar estudantes</button>
+          </div>
+        {% endif %}
+      </div>
     </div>
-</div>
+  </main>
 
-<div class="hz-story-viewer" id="storyViewer">
-    <div class="hz-story-backdrop" onclick="closeStoryViewer()"></div>
-    <div class="hz-story-panel">
-        <div class="hz-story-header">
-            <div class="hz-story-user">
-                <img id="storyViewerAvatar" alt="Story">
-                <span id="storyViewerUsername"></span>
+  <!-- RIGHT SIDEBAR -->
+  <aside class="cr">
+    <div class="chal">
+      <div class="chalh"><div class="chall"><i class="fas fa-bolt"></i> Desafio do dia</div><span class="tg tgg" style="font-size:10px">+200 XP</span></div>
+      <div class="chalt">Maratona de Questões</div>
+      <div class="chald">Resolva 10 questões e ganhe bônus de XP.</div>
+      <div class="chalb"><div class="chalf" style="width:30%"></div></div>
+      <div class="chalft"><span>3/10 questões</span><a href="{{ url_for('simulados.index') }}" class="btn btnsm btnt" style="font-size:11px;padding:4px 10px">Ir agora →</a></div>
+    </div>
+    <div class="card">
+      <div class="chd"><h3>Hoje</h3><span class="tg">🔥 consistência</span></div>
+      <div class="cbd">
+        <div class="stgrid">
+          <div class="stat"><div class="k">Streak</div><div class="v vtl">{{ current_user.sequencia_dias or 0 }} <small>dias</small></div></div>
+          <div class="stat"><div class="k">XP Total</div><div class="v vbl">{{ current_user.xp_total or 0 }} <small>XP</small></div></div>
+          <div class="stat"><div class="k">Diamantes</div><div class="v vgd">{{ current_user.diamantes or 0 }} <small>💎</small></div></div>
+          <div class="stat"><div class="k">Moedas</div><div class="v vgn">{{ current_user.total_moedas or 0 }} <small>🪙</small></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="chd"><h3>Em alta</h3><button class="tg" style="cursor:pointer;background:none;border:none" onclick="openExp()">ver tudo</button></div>
+      <div class="cbd">
+        <div class="trendl">
+          {% if trending_hashtags is defined and trending_hashtags %}
+            {% for ht in trending_hashtags[:6] %}
+            <div class="trendi" onclick="location.href='/helpzone/buscar?q=%23{{ ht.tag }}'">
+              <div class="trn {{ 'n1' if loop.index==1 else 'n2' if loop.index==2 else 'n3' if loop.index==3 else '' }}">{{ loop.index }}</div>
+              <div style="flex:1;min-width:0"><div class="trnm">#{{ ht.tag }}</div><div class="trct">{{ ht.total_uso or 0 }} posts</div></div>
             </div>
-            <button class="hz-story-close" onclick="closeStoryViewer()" aria-label="Fechar">×</button>
+            {% endfor %}
+          {% else %}
+            {% for it in [('enem2025','🔥'),('matematica','📐'),('redacao','✍️'),('portugues','📖'),('historia','🏛️'),('fisica','⚡')] %}
+            <div class="trendi" onclick="location.href='/helpzone/buscar?q=%23{{ it[0] }}'">
+              <div class="trn {{ 'n1' if loop.index==1 else 'n2' if loop.index==2 else 'n3' if loop.index==3 else '' }}">{{ loop.index }}</div>
+              <div style="flex:1;min-width:0"><div class="trnm">{{ it[1] }} #{{ it[0] }}</div><div class="trct">Trending</div></div>
+            </div>
+            {% endfor %}
+          {% endif %}
         </div>
-        <div class="hz-story-body">
-            <button class="hz-story-nav hz-story-prev" onclick="prevStory()" aria-label="Anterior">‹</button>
-            <div class="hz-story-media" id="storyViewerMedia"></div>
-            <button class="hz-story-nav hz-story-next" onclick="nextStory()" aria-label="Próximo">›</button>
-        </div>
+      </div>
     </div>
+    <div class="card">
+      <div class="chd"><h3>Quem seguir</h3><button class="tg" style="cursor:pointer;background:none;border:none" onclick="openExp()">explorar</button></div>
+      <div class="cbd"><div class="ppll" id="sugPpl"><div class="spin"><i class="fas fa-circle-notch"></i></div></div></div>
+    </div>
+    <div class="card">
+      <div class="chd"><h3>Top estudantes</h3><a href="{{ url_for('ranking.index') }}" class="tg" style="cursor:pointer">ranking</a></div>
+      <div class="cbd"><div class="lbl" id="miniLb"><div class="spin"><i class="fas fa-circle-notch"></i></div></div></div>
+    </div>
+  </aside>
 </div>
 
-<style>
-    .hz-story-viewer { position: fixed; inset: 0; display: none; z-index: 2000; }
-    .hz-story-viewer.active { display: block; }
-    .hz-story-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
-    .hz-story-panel { position: relative; width: min(420px, 92vw); height: min(740px, 90vh); margin: 5vh auto 0; background: #000; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
-    .hz-story-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; color: #fff; }
-    .hz-story-user { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-    .hz-story-user img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-    .hz-story-close { background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-    .hz-story-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
-    .hz-story-media { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .hz-story-media img, .hz-story-media video { width: 100%; height: 100%; object-fit: cover; }
-    .hz-story-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: #fff; font-size: 32px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
-    .hz-story-prev { left: 12px; }
-    .hz-story-next { right: 12px; }
-</style>
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bn on" onclick="location.href='{{ url_for('helpzone.feed') }}'"><i class="fas fa-home"></i></button>
+  <button class="bn" onclick="openExp()"><i class="fas fa-search"></i></button>
+  <button class="bnplus" onclick="openCp()"><i class="fas fa-plus"></i></button>
+  <button class="bn" onclick="openNot()"><i class="far fa-bell"></i></button>
+  <button class="bn" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'"><i class="fas fa-user"></i></button>
+</nav>
 
-<!-- INCLUIR OS OVERLAYS (criar post, notificações, busca) -->
-{% include 'helpzone/overlays.html' %}
-
+<!-- CREATE POST MODAL -->
+<div class="cpov" id="cpOv" onclick="if(event.target===this)closeM('cpOv')">
+  <div class="cpbox" onclick="event.stopPropagation()">
+    <div class="cphd"><span>Nova publicação</span><button class="xbtn" onclick="closeM('cpOv')"><i class="fas fa-times"></i></button></div>
+    <div class="cpbd">
+      <form id="cpForm" action="{{ url_for('helpzone.criar_post') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" id="cpTipo" name="tipo_midia" value="texto">
+        <input type="file" id="cpFile" name="midia" accept="image/*,video/*" style="display:none">
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+          <button type="button" class="chip on" onclick="selT(this,'texto')">📝 Post</button>
+          <button type="button" class="chip" onclick="selT(this,'texto')">📌 Anotação</button>
+          <button type="button" class="chip" onclick="selT(this,'texto')">💡 Dica</button>
+          <button type="button" class="chip" onclick="selT(this,'imagem')">📸 Foto</button>
+          <button type="button" class="chip" onclick="selT(this,'video')">🎥 Vídeo</button>
+        </div>
+        <div class="cpwho">
+          <div class="cpavat g{{ current_user.id % 5 }}">
+            {% if current_user.perfil_social and current_user.perfil_social.foto_perfil %}<img src="{{ current_user.perfil_social.foto_perfil }}" alt="">{% else %}{{ current_user.nome_completo[0].upper() }}{% endif %}
+          </div>
+          <textarea name="texto" id="cpTxt" class="inp ta" style="flex:1;min-height:96px" placeholder="O que você estudou? Use #tags para categorizar.&#10;Ex: Revisei funções quadráticas. #matematica #enem" maxlength="2000" oninput="cpUpd()"></textarea>
+        </div>
+        <div class="cpprev" id="cpPrev">
+          <button type="button" class="rmmed" onclick="cpRm()"><i class="fas fa-times"></i></button>
+          <img id="cpImg" style="display:none" alt=""><video id="cpVid" style="display:none" controls></video>
+        </div>
+        <div class="cpft">
+          <button type="button" class="btn btnsm" onclick="cpPick()"><i class="fas fa-paperclip"></i> Mídia</button>
+          <span class="cpch" id="cpChar">0/2000</span>
+          <button type="submit" class="btn btnt" id="cpBtn" disabled>Publicar +XP</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
-</body>
+<!-- EXPLORE PANEL -->
+<div class="exppanel" id="expPanel">
+  <div class="exptop">
+    <div class="expsb"><i class="fas fa-search"></i><input type="text" id="expInp" placeholder="Buscar estudantes, anotações, #hashtags..." oninput="dbSrch(this.value)"></div>
+    <button class="expcan" onclick="closeExp()">Cancelar</button>
+  </div>
+  <div class="exptabs">
+    <button class="exptab on" data-tab="pessoas" onclick="setTab(this)">Estudantes</button>
+    <button class="exptab" data-tab="posts" onclick="setTab(this)">Conteúdo</button>
+    <button class="exptab" data-tab="hashtags" onclick="setTab(this)"># Tópicos</button>
+  </div>
+  <div class="expbody" id="expBody"><div class="exphint"><i class="fas fa-graduation-cap"></i><p>Encontre estudantes e conteúdos incríveis</p></div></div>
+</div>
+
+<!-- NOTIF PANEL -->
+<div class="nbg" id="nBg" onclick="closeNot()"></div>
+<div class="npanel" id="nPanel">
+  <div class="nhd"><h3>Notificações</h3><button class="xbtn" onclick="closeNot()"><i class="fas fa-times"></i></button></div>
+  <div class="nbody" id="nBody"><div class="spin"><i class="fas fa-circle-notch"></i></div></div>
+</div>
+
+<!-- COMMENTS MODAL -->
+<div class="cmov" id="cmOv" onclick="if(event.target===this)closeM('cmOv')">
+  <div class="cmbox" onclick="event.stopPropagation()">
+    <div class="cmgrip"></div>
+    <div class="cmhd"><span>Comentários</span><button class="xbtn" onclick="closeM('cmOv')"><i class="fas fa-times"></i></button></div>
+    <div class="cmlist" id="cmList"><div class="spin"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="cminp-r">
+      <input type="text" class="cminp" id="cmInp" placeholder="Adicione um comentário..." onkeypress="if(event.key==='Enter')subCmt()">
+      <button class="cmsend" onclick="subCmt()">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toastd"></div><div class="toastt" id="toastTxt"></div></div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/helpzone-overlays.js') }}"></script>
 <script>
-let currentPostId = null;
+'use strict';
+let _pid=null,_etab='pessoas',_stt=null,_ttt=null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const mkAv = (foto,nome,id=0) => foto
+  ? `<img src="${esc(foto)}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.textContent='${esc((nome||'?')[0].toUpperCase())}'">` 
+  : esc((nome||'?')[0].toUpperCase());
 
-// Mobile Sidebar Toggle
-function toggleMobileSidebar() {
-    const overlay = document.getElementById('mobileSidebarOverlay');
-    const sidebar = document.getElementById('mobileSidebar');
-    
-    overlay.classList.toggle('active');
-    sidebar.classList.toggle('active');
-    
-    if (overlay.classList.contains('active')) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = '';
-    }
+/* TOAST */
+function toast(t,s=''){
+  const el=$('toast'),tx=$('toastTxt');
+  tx.innerHTML=`<b>${esc(t)}</b>${s?`<small>${esc(s)}</small>`:''}`;
+  el.classList.add('on');clearTimeout(_ttt);
+  _ttt=setTimeout(()=>el.classList.remove('on'),2900);
 }
 
-// Abrir Modal de Comentários
-async function openCommentsModal(postId) {
-    currentPostId = postId;
-    const modal = document.getElementById('commentsModal');
-    
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Carregar dados do post
-    await loadPostDetails(postId);
+/* MODALS */
+function openM(id){
+  const el=$(id);el.classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('vis')));
+  document.body.style.overflow='hidden';
+}
+function closeM(id){
+  const el=$(id);el.classList.remove('vis');
+  setTimeout(()=>{el.classList.remove('on');if(!document.querySelector('.cpov.on,.cmov.on'))document.body.style.overflow=''},280);
 }
 
-// Fechar Modal
-function closeCommentsModal(event) {
-    if (event && event.target !== event.currentTarget) return;
-    
-    const modal = document.getElementById('commentsModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-    currentPostId = null;
+/* CREATE POST */
+function openCp(){openM('cpOv');setTimeout(()=>$('cpTxt').focus(),280)}
+function selT(btn,tipo){
+  document.querySelectorAll('.cpbd .chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');$('cpTipo').value=tipo;
+  if(tipo==='imagem'||tipo==='video'){
+    const f=$('cpFile');f.value='';f.accept=tipo==='imagem'?'image/*':'video/mp4,video/webm';f.click();
+  }
+  cpUpd();
 }
-
-
-
-async function loadPostDetails(postId) {
-    console.log('🔍 Carregando post ID:', postId);
-    
-    try {
-        const url = `/helpzone/api/post/${postId}/detalhes`;
-        console.log('📡 Fazendo requisição para:', url);
-        
-        const response = await fetch(url);
-        console.log('📥 Response status:', response.status);
-        
-        const data = await response.json();
-        console.log('📦 Dados recebidos:', data);
-        
-        if (data.success) {
-            const post = data.post;
-            
-            // Renderizar Header
-            const header = document.getElementById('modalPostHeader');
-            header.innerHTML = `
-                <div class="modal-user-avatar">
-                    ${post.user.foto_perfil 
-                        ? `<img src="${post.user.foto_perfil}" alt="${post.user.nome}">`
-                        : post.user.nome[0].toUpperCase()
-                    }
-                </div>
-                <span class="modal-username">${post.user.nome}</span>
-            `;
-            
-            // Renderizar Mídia (Desktop)
-            const mediaSection = document.getElementById('modalMediaSection');
-            if (post.midia) {
-                if (post.midia.tipo === 'imagem') {
-                    mediaSection.innerHTML = `<img src="${post.midia.url}" alt="Post">`;
-                } else if (post.midia.tipo === 'video') {
-                    mediaSection.innerHTML = `<video src="${post.midia.url}" controls></video>`;
-                }
-            } else {
-                mediaSection.innerHTML = `<div style="padding: 40px; color: var(--text-secondary); text-align: center;">${post.texto}</div>`;
-            }
-            
-            // Carregar Comentários
-            await loadComments(postId);
-        } else {
-            console.error('❌ API retornou success: false');
-            const commentsList = document.getElementById('modalCommentsList');
-            commentsList.innerHTML = `
-                <div class="modal-comments-empty">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar post</p>
-                    <p style="font-size: 0.85rem;">Tente novamente mais tarde</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('💥 ERRO CAPTURADO:', error);
-        console.error('Stack trace:', error.stack);
-        
-        const commentsList = document.getElementById('modalCommentsList');
-        commentsList.innerHTML = `
-            <div class="modal-comments-empty" style="color: var(--error);">
-                <i class="fas fa-exclamation-circle"></i>
-                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Erro ao carregar</p>
-                <p style="font-size: 0.85rem;">${error.message}</p>
-            </div>
-        `;
-    }
+function cpUpd(){
+  const v=$('cpTxt').value,f=$('cpFile').files.length>0;
+  $('cpChar').textContent=v.length+'/2000';
+  $('cpBtn').disabled=!v.trim()&&!f;
 }
-
-
-// Carregar Comentários
-async function loadComments(postId) {
-    try {
-        const response = await fetch(`/helpzone/api/post/${postId}/comentarios`);
-        const data = await response.json();
-        
-        const commentsList = document.getElementById('modalCommentsList');
-        
-        if (data.success && data.comentarios && data.comentarios.length > 0) {
-            commentsList.innerHTML = data.comentarios.map(c => `
-                <div class="modal-comment-item">
-                    <div class="modal-comment-avatar">
-                        ${c.user.foto_perfil 
-                            ? `<img src="${c.user.foto_perfil}" alt="${c.user.nome}">`
-                            : c.user.nome[0].toUpperCase()
-                        }
-                    </div>
-                    <div class="modal-comment-content">
-                        <div>
-                            <span class="modal-comment-username">${c.user.nome}</span>
-                            <span class="modal-comment-text">${c.texto}</span>
-                        </div>
-                        <div class="modal-comment-meta">
-                            <span>${c.tempo}</span>
-                            <span onclick="likeComment(${c.id})">Curtir</span>
-                            ${c.is_owner ? `<span onclick="deleteComment(${c.id})" style="color: var(--error)">Excluir</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            commentsList.innerHTML = `
-                <div class="modal-comments-empty">
-                    <i class="far fa-comment-dots"></i>
-                    <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Nenhum comentário ainda</p>
-                    <p style="font-size: 0.85rem;">Seja o primeiro a comentar!</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Erro ao carregar comentários:', error);
-    }
+function cpPick(){const f=$('cpFile');f.value='';f.accept='image/*,video/mp4,video/webm';f.click()}
+$('cpFile').addEventListener('change',function(){
+  const f=this.files[0];if(!f)return;
+  const isV=f.type.startsWith('video/');
+  if(f.size>(isV?50:5)*1024*1024){toast('Arquivo muito grande','Tente um menor');this.value='';return;}
+  $('cpTipo').value=isV?'video':'imagem';
+  const r=new FileReader();r.onload=ev=>{
+    const p=$('cpPrev');p.classList.add('on');
+    const img=$('cpImg'),vid=$('cpVid');
+    if(!isV){img.src=ev.target.result;img.style.display='block';vid.style.display='none';}
+    else{vid.src=ev.target.result;vid.style.display='block';img.style.display='none';}
+    cpUpd();
+  };r.readAsDataURL(f);
+});
+function cpRm(){
+  $('cpFile').value='';$('cpPrev').classList.remove('on');
+  ['cpImg','cpVid'].forEach(id=>{const el=$(id);el.src='';el.style.display='none'});cpUpd();
 }
-
-// Enviar Comentário
-async function submitComment() {
-    const input = document.getElementById('modalCommentInput');
-    const texto = input.value.trim();
-    
-    if (!texto || !currentPostId) return;
-    
-    try {
-        const response = await fetch(`/helpzone/api/post/${currentPostId}/comentar`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({texto: texto})
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            input.value = '';
-            await loadComments(currentPostId);
-            showToast('Comentário publicado!', 'success');
-        }
-    } catch (error) {
-        console.error('Erro ao comentar:', error);
-        showToast('Erro ao publicar comentário', 'error');
-    }
-}
-
-// Enter para enviar
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('modalCommentInput');
-    if (input) {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitComment();
-            }
-        });
-    }
+$('cpForm').addEventListener('submit',async function(ev){
+  ev.preventDefault();const btn=$('cpBtn');btn.disabled=true;btn.textContent='Publicando...';
+  try{
+    const r=await fetch(this.action,{method:'POST',body:new FormData(this)});
+    const ct=r.headers.get('content-type')||'';
+    if(ct.includes('json')){
+      const d=await r.json();
+      if(d.success){toast('Publicado! 🎉','Você ganhou XP');closeM('cpOv');setTimeout(()=>location.reload(),900);}
+      else{toast('Erro',d.error||'Tente novamente');btn.disabled=false;btn.textContent='Publicar +XP';}
+    }else{toast('Publicado! 🎉','Você ganhou XP');closeM('cpOv');setTimeout(()=>location.reload(),900);}
+  }catch{toast('Erro de conexão','Verifique sua internet');btn.disabled=false;btn.textContent='Publicar +XP';}
 });
 
-// Load Ranking
-async function loadRanking() {
-    try {
-        const response = await fetch('/helpzone/api/ranking-seguidores');
-        const data = await response.json();
-        
-        if (data.success && data.ranking && data.ranking.length > 0) {
-            const container = document.getElementById('rankingList');
-            container.innerHTML = '';
-            
-            data.ranking.forEach((user, index) => {
-                const item = document.createElement('div');
-                item.className = 'sidebar-ranking-item';
-                item.onclick = () => location.href = `/helpzone/perfil/${user.id}`;
-                
-                item.innerHTML = `
-                    <div class="sidebar-ranking-position ${index < 3 ? 'top' : ''}">${index + 1}</div>
-                    <div class="sidebar-ranking-avatar">
-                        ${user.foto_perfil ? `<img src="${user.foto_perfil}" alt="${user.nome}">` : user.nome[0].toUpperCase()}
-                    </div>
-                    <div class="sidebar-ranking-info">
-                        <div class="sidebar-ranking-name">${user.nome}</div>
-                        <div class="sidebar-ranking-xp">${user.xp || 0} XP</div>
-                    </div>
-                `;
-                
-                container.appendChild(item);
-            });
-        }
-    } catch (error) {
-        console.error('Erro ao carregar ranking:', error);
-    }
+/* EXPLORE */
+function openExp(){
+  const p=$('expPanel');p.classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('vis')));
+  document.body.style.overflow='hidden';
+  setTimeout(()=>$('expInp').focus(),260);
+}
+function closeExp(){
+  const p=$('expPanel');p.classList.remove('vis');
+  setTimeout(()=>{p.classList.remove('on');document.body.style.overflow=''},200);
+}
+function setTab(btn){
+  document.querySelectorAll('.exptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');_etab=btn.dataset.tab;
+  const q=$('expInp').value.trim();if(q.length>=2)doSrch(q);
+}
+function dbSrch(v){
+  clearTimeout(_stt);
+  if(v.trim().length<2){$('expBody').innerHTML='<div class="exphint"><i class="fas fa-search"></i><p>Digite ao menos 2 letras</p></div>';return;}
+  _stt=setTimeout(()=>doSrch(v.trim()),400);
+}
+async function doSrch(q){
+  const b=$('expBody');b.innerHTML='<div class="spin"><i class="fas fa-circle-notch"></i></div>';
+  try{
+    const r=await fetch(`/helpzone/api/buscar?q=${encodeURIComponent(q)}&tipo=${_etab}`);
+    const d=await r.json();
+    if(_etab==='pessoas')rPpl(d,b,q);
+    else if(_etab==='posts')rPosts(d,b,q);
+    else rTags(d,b,q);
+  }catch{b.innerHTML='<div class="exphint"><i class="fas fa-exclamation-triangle"></i><p>Erro ao buscar</p></div>';}
+}
+function rPpl(d,b,q){
+  const it=d.usuarios||d.results||[];
+  if(!it.length){b.innerHTML=`<div class="exphint"><i class="fas fa-user-slash"></i><p>Nenhum estudante para "${esc(q)}"</p></div>`;return;}
+  b.innerHTML=it.map(u=>`
+    <div class="expper" onclick="location.href='/helpzone/perfil/${u.id}'">
+      <div class="expav g${u.id%5}">${mkAv(u.foto_perfil,u.nome,u.id)}</div>
+      <div class="exppi"><div class="exppn">${esc(u.nome)}</div><div class="exppm">${u.seguidores||0} seguidores · Nível ${u.nivel||1}</div></div>
+      <button class="fbtn ${u.seguindo?'fol':''}" onclick="event.stopPropagation();doFollow(this,${u.id})">${u.seguindo?'Seguindo':'Seguir'}</button>
+    </div>`).join('');
+}
+function rPosts(d,b,q){
+  const it=d.posts||d.results||[];
+  if(!it.length){b.innerHTML=`<div class="exphint"><i class="fas fa-file-alt"></i><p>Sem conteúdo para "${esc(q)}"</p></div>`;return;}
+  b.innerHTML='<div class="pgrid">'+it.map(p=>`<div class="gcell" onclick="openCmt(${p.id})">${p.midia_url?`<img src="${esc(p.midia_url)}" alt="" loading="lazy">`:`<div class="gtxt">${esc((p.texto||'').slice(0,60))}</div>`}</div>`).join('')+'</div>';
+}
+function rTags(d,b,q){
+  const it=d.hashtags||d.results||[];
+  if(!it.length){b.innerHTML=`<div class="exphint"><i class="fas fa-hashtag"></i><p>Sem tópicos para "${esc(q)}"</p></div>`;return;}
+  b.innerHTML=it.map(h=>`<div class="exph" onclick="location.href='/helpzone/buscar?q=%23${encodeURIComponent(h.tag)}'"><div class="exphic">#</div><div class="exppi"><div class="exppn">#${esc(h.tag)}</div><div class="exppm">${h.total||0} publicações</div></div></div>`).join('');
+}
+async function doFollow(btn,id){
+  try{
+    const r=await fetch(`/helpzone/api/seguir/${id}`,{method:'POST',headers:{'Content-Type':'application/json'}});
+    const d=await r.json();
+    if(d.success){const ok=d.action==='seguiu';btn.textContent=ok?'Seguindo':'Seguir';btn.classList.toggle('fol',ok);toast(ok?'Seguindo! 🎉':'Deixou de seguir',ok?'Posts aparecerão no feed':'');}
+  }catch{toast('Erro','Tente novamente');}
 }
 
-// Toggle Like
-async function toggleLike(postId) {
-    try {
-        const response = await fetch(`/helpzone/api/post/${postId}/like`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({tipo: 'like'})
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const card = document.querySelector(`[data-post-id="${postId}"]`);
-            const btn = card.querySelector('.post-action-btn.liked, .post-action-btn:not(.liked)');
-            const icon = btn.querySelector('i');
-            const stats = card.querySelector('.post-likes span');
-            
-            stats.textContent = `${data.total_likes} curtidas`;
-            
-            if (data.action !== 'removed') {
-                btn.classList.add('liked');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-            } else {
-                btn.classList.remove('liked');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-            }
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-    }
+/* NOTIFICATIONS */
+function openNot(){
+  $('nBg').classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{$('nBg').classList.add('vis');$('nPanel').classList.add('vis')}));
+  document.body.style.overflow='hidden';loadNot();
+}
+function closeNot(){
+  ['nBg','nPanel'].forEach(id=>$(id).classList.remove('vis'));
+  setTimeout(()=>{$('nBg').classList.remove('on');document.body.style.overflow=''},300);
+}
+async function loadNot(){
+  const b=$('nBody');
+  try{
+    const r=await fetch('/helpzone/api/notificacoes');const d=await r.json();
+    const items=d.notificacoes||d.notifications||[];
+    if(!items.length){b.innerHTML='<div class="nemp"><i class="far fa-bell-slash"></i><p>Nenhuma notificação ainda</p></div>';return;}
+    const now=new Date(),hoje=[],ant=[];
+    items.forEach(n=>{(((now-new Date(n.criada_em||n.created_at||0))/3600000)<24?hoje:ant).push(n)});
+    let html='';
+    if(hoje.length)html+='<div class="ngrp">Hoje</div>'+hoje.map(rNi).join('');
+    if(ant.length)html+='<div class="ngrp">Anteriores</div>'+ant.map(rNi).join('');
+    b.innerHTML=html;
+    const u=items.filter(n=>!n.lida).length;
+    $('sbDot').style.display=u?'':'none';$('mobPip').style.display=u?'':'none';
+  }catch{b.innerHTML='<div class="nemp"><i class="fas fa-exclamation-circle"></i><p>Erro ao carregar</p></div>';}
+}
+const niT={like:{e:'❤️',c:'nbl'},comment:{e:'💬',c:'nbc'},follow:{e:'👤',c:'nbf'},xp:{e:'⚡',c:'nbx'}};
+function rNi(n){
+  const tp=niT[n.tipo]||{e:'🔔',c:'nbf'};
+  const nm=(n.usuario_origem&&n.usuario_origem.nome)||(n.user&&n.user.nome)||'Alguém';
+  const ft=(n.usuario_origem&&n.usuario_origem.foto_perfil)||(n.user&&n.user.foto_perfil)||'';
+  return`<div class="nitem ${n.lida?'':'unrd'}" onclick="hNi(${n.id},'${n.tipo}',${n.post_id||'null'})">
+    <div class="navw"><div class="nav2 g0">${mkAv(ft,nm)}</div><div class="nbadge ${tp.c}">${tp.e}</div></div>
+    <div class="nct"><div class="ntxt"><strong>${esc(nm)}</strong> ${esc(n.mensagem||'')}</div><div class="ntime">${esc(n.tempo||n.time_ago||'agora')}</div></div>
+    ${n.post_thumb?`<div class="nthumb"><img src="${esc(n.post_thumb)}" alt=""></div>`:''}
+  </div>`;
+}
+async function hNi(id,tipo,pid){
+  try{await fetch(`/helpzone/api/notificacao/${id}/lida`,{method:'POST'})}catch{}
+  if(pid&&(tipo==='like'||tipo==='comment')){closeNot();openCmt(pid);}else if(tipo==='follow')closeNot();
 }
 
-// Toggle Save
-async function toggleSave(postId, button) {
-    try {
-        const response = await fetch(`/helpzone/api/post/${postId}/save`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const icon = button.querySelector('i');
-            
-            if (data.action === 'saved') {
-                button.classList.add('saved');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                showToast('Post salvo!', 'success');
-            } else {
-                button.classList.remove('saved');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                showToast('Removido', 'info');
-            }
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-    }
+/* COMMENTS */
+async function openCmt(pid){_pid=pid;openM('cmOv');await loadCmt(pid)}
+async function loadCmt(pid){
+  const l=$('cmList');l.innerHTML='<div class="spin"><i class="fas fa-circle-notch"></i></div>';
+  try{
+    const r=await fetch(`/helpzone/api/post/${pid}/comentarios`);const d=await r.json();
+    const items=d.comentarios||d.comments||[];
+    if(!items.length){l.innerHTML='<div class="cmemp">💬 Seja o primeiro a comentar!</div>';return;}
+    l.innerHTML=items.map(c=>`<div class="cmcmt">
+      <div class="cmcav g0">${mkAv(c.user.foto_perfil,c.user.nome)}</div>
+      <div class="cmbody">
+        <span class="cmname">${esc(c.user.nome)}</span>
+        <div class="cmtxt">${esc(c.texto)}</div>
+        <div class="cmmeta"><span>${esc(c.tempo||'')}</span>${c.is_owner?`<span onclick="delCmt(${c.id})" style="color:var(--rd)">Excluir</span>`:''}</div>
+      </div>
+    </div>`).join('');
+  }catch{l.innerHTML='<div class="cmemp">Erro ao carregar comentários</div>';}
+}
+async function subCmt(){
+  const inp=$('cmInp'),txt=inp.value.trim();if(!txt||!_pid)return;
+  try{
+    const r=await fetch(`/helpzone/api/post/${_pid}/comentar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})});
+    const d=await r.json();
+    if(d.success){inp.value='';await loadCmt(_pid);toast('Comentado! 💬','Você ganhou XP')}
+  }catch{toast('Erro','Tente novamente');}
+}
+async function delCmt(id){
+  if(!confirm('Excluir comentário?'))return;
+  try{await fetch(`/helpzone/api/comentario/${id}/deletar`,{method:'DELETE'});if(_pid)await loadCmt(_pid);}catch{}
 }
 
-// Share Post
-function sharePost(postId) {
-    const url = window.location.origin + '/helpzone/post/' + postId;
-    navigator.clipboard.writeText(url).then(() => {
-        showToast('Link copiado!', 'success');
-    });
+/* LIKE / SAVE / SHARE */
+async function doLike(pid,btn){
+  if(!btn)btn=$('lb'+pid);if(!btn)return;
+  try{
+    const r=await fetch(`/helpzone/api/post/${pid}/like`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'like'})});
+    const d=await r.json();if(!d.success)return;
+    const liked=d.action!=='removed';
+    btn.classList.toggle('liked',liked);btn.querySelector('i').className=liked?'fas fa-heart':'far fa-heart';
+    const c=$('lc'+pid);if(c)c.textContent=d.total_likes;
+  }catch{}
+}
+async function doSave(pid,btn){
+  try{
+    const r=await fetch(`/helpzone/api/post/${pid}/save`,{method:'POST',headers:{'Content-Type':'application/json'}});
+    const d=await r.json();if(!d.success)return;
+    const saved=d.action==='saved';
+    btn.classList.toggle('saved',saved);btn.querySelector('i').className=saved?'fas fa-bookmark':'far fa-bookmark';
+    toast(saved?'Post salvo! 🔖':'Removido dos salvos','');
+  }catch{}
+}
+function sharePost(pid){
+  if(navigator.share)navigator.share({title:'HelpZone',url:location.origin+'/helpzone/post/'+pid});
+  else navigator.clipboard?.writeText(location.origin+'/helpzone/post/'+pid).then(()=>toast('Link copiado! 🔗',''));
 }
 
-// Toast
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+/* FEED FILTER */
+function filtFeed(){
+  const q=$('feedSearch').value.toLowerCase().trim();
+  const subj=$('feedSubj').value.toLowerCase();
+  const sort=$('feedSort').value;
+  const posts=[...document.querySelectorAll('#feedList .post')];
+  posts.forEach(el=>{
+    const txt=(el.dataset.txt||'').toLowerCase();
+    el.style.display=(!q||txt.includes(q))&&(!subj||txt.includes(subj))?'':'none';
+  });
+  if(sort==='top')posts.sort((a,b)=>parseInt(b.dataset.lk||0)-parseInt(a.dataset.lk||0));
+  else if(sort==='hot')posts.sort((a,b)=>parseInt(b.dataset.cm||0)-parseInt(a.dataset.cm||0));
+  if(sort!=='new'){const l=$('feedList');posts.forEach(p=>l.appendChild(p));}
 }
 
-let storyGroups = [];
-let activeStoryGroupIndex = 0;
-let activeStoryIndex = 0;
-
-async function loadStories() {
-    const container = document.getElementById('storiesContainer');
-    if (!container) return;
-
-    try {
-        const response = await fetch('/helpzone/api/stories');
-        const data = await response.json();
-
-        if (!data.success || !Array.isArray(data.stories)) {
-            return;
-        }
-
-        storyGroups = data.stories;
-        data.stories.forEach((storyGroup, index) => {
-            if (!storyGroup.stories || storyGroup.stories.length === 0) return;
-
-            const storyItem = document.createElement('div');
-            storyItem.className = 'story-item';
-            storyItem.onclick = () => openStoryViewer(index);
-
-            const ring = document.createElement('div');
-            ring.className = 'story-ring';
-
-            const avatar = document.createElement('div');
-            avatar.className = 'story-avatar';
-
-            if (storyGroup.avatar) {
-                const img = document.createElement('img');
-                img.src = storyGroup.avatar;
-                img.alt = storyGroup.username || 'Story';
-                avatar.appendChild(img);
-            } else {
-                avatar.textContent = (storyGroup.username || '?')[0].toUpperCase();
-            }
-
-            ring.appendChild(avatar);
-            storyItem.appendChild(ring);
-
-            const username = document.createElement('div');
-            username.className = 'story-username';
-            username.textContent = storyGroup.username || 'Story';
-            storyItem.appendChild(username);
-
-            container.appendChild(storyItem);
-        });
-    } catch (error) {
-        console.error('Erro ao carregar stories:', error);
-    }
+/* SIDEBAR ASYNC */
+async function loadSug(){
+  const el=$('sugPpl');if(!el)return;
+  try{
+    const r=await fetch('/helpzone/api/ranking-seguidores');const d=await r.json();
+    const items=(d.ranking||d.results||[]).slice(0,4);
+    if(!items.length){el.innerHTML='<p class="hint">Nenhuma sugestão</p>';return;}
+    el.innerHTML=items.map(u=>`
+      <div class="pprs">
+        <div class="av avsm g${u.id%5}" onclick="location.href='/helpzone/perfil/${u.id}'" style="cursor:pointer">${mkAv(u.foto_perfil,u.nome,u.id)}</div>
+        <div class="ppri" onclick="location.href='/helpzone/perfil/${u.id}'"><div class="pprn">${esc(u.nome)}</div><div class="pprs2">${u.seguidores||0} seg · Nv${u.nivel||1}</div></div>
+        <button class="fbtn ${u.seguindo?'fol':''}" onclick="doFollow(this,${u.id})">${u.seguindo?'Seguindo':'Seguir'}</button>
+      </div>`).join('');
+  }catch{el.innerHTML='';}
+}
+async function loadLb(){
+  const el=$('miniLb');if(!el)return;
+  try{
+    const r=await fetch('/helpzone/api/ranking-seguidores');const d=await r.json();
+    const items=(d.ranking||d.results||[]).slice(0,5);
+    if(!items.length){el.innerHTML='';return;}
+    el.innerHTML=items.map((u,i)=>`
+      <div class="lbr">
+        <div class="lbrk ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</div>
+        <div class="av avxs g${u.id%5}" style="flex-shrink:0">${mkAv(u.foto_perfil,u.nome,u.id)}</div>
+        <span class="lbname">${esc(u.nome)}</span>
+        <span class="lbxp">⚡${u.xp||0}</span>
+      </div>`).join('');
+  }catch{el.innerHTML='';}
 }
 
-function openStoryViewer(groupIndex) {
-    if (!storyGroups[groupIndex]) return;
-    activeStoryGroupIndex = groupIndex;
-    activeStoryIndex = 0;
-    renderStory();
-    document.getElementById('storyViewer').classList.add('active');
-}
+/* HASHTAG LINKIFY + INIT */
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.pbody[data-raw]').forEach(el=>{
+    el.innerHTML=el.dataset.raw
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>')
+      .replace(/#([\wÀ-ÿ]+)/g,'<span class="ht" onclick="location.href=\'/helpzone/buscar?q=%23$1\'">#$1</span>');
+  });
+  loadSug();loadLb();
 
-function closeStoryViewer() {
-    const viewer = document.getElementById('storyViewer');
-    viewer.classList.remove('active');
-    document.getElementById('storyViewerMedia').innerHTML = '';
-}
+  /* check unread badge on load */
+  fetch('/helpzone/api/notificacoes').then(r=>r.json()).then(d=>{
+    const u=(d.notificacoes||d.notifications||[]).filter(n=>!n.lida).length;
+    $('sbDot').style.display=u?'':'none';$('mobPip').style.display=u?'':'none';
+  }).catch(()=>{});
 
-function renderStory() {
-    const group = storyGroups[activeStoryGroupIndex];
-    if (!group) return;
-    const story = group.stories[activeStoryIndex];
-    if (!story) return;
-
-    const avatar = document.getElementById('storyViewerAvatar');
-    const username = document.getElementById('storyViewerUsername');
-    avatar.style.display = group.avatar ? 'block' : 'none';
-    avatar.src = group.avatar || '';
-    username.textContent = group.username || 'Story';
-
-    const media = document.getElementById('storyViewerMedia');
-    media.innerHTML = '';
-
-    if (story.tipo === 'video') {
-        const video = document.createElement('video');
-        video.src = story.url;
-        video.controls = true;
-        video.autoplay = true;
-        media.appendChild(video);
-    } else {
-        const img = document.createElement('img');
-        img.src = story.url;
-        img.alt = group.username || 'Story';
-        media.appendChild(img);
-    }
-}
-
-function nextStory() {
-    const group = storyGroups[activeStoryGroupIndex];
-    if (!group) return;
-    if (activeStoryIndex < group.stories.length - 1) {
-        activeStoryIndex += 1;
-        renderStory();
-        return;
-    }
-    if (activeStoryGroupIndex < storyGroups.length - 1) {
-        activeStoryGroupIndex += 1;
-        activeStoryIndex = 0;
-        renderStory();
-        return;
-    }
-    closeStoryViewer();
-}
-
-function prevStory() {
-    if (activeStoryIndex > 0) {
-        activeStoryIndex -= 1;
-        renderStory();
-        return;
-    }
-    if (activeStoryGroupIndex > 0) {
-        activeStoryGroupIndex -= 1;
-        activeStoryIndex = storyGroups[activeStoryGroupIndex].stories.length - 1;
-        renderStory();
-        return;
-    }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadRanking();
-    loadStories();
-    console.log('✅ HelpZone Feed com Modal carregado!');
+  /* ESC closes modals */
+  document.addEventListener('keydown',ev=>{
+    if(ev.key!=='Escape')return;
+    ['cpOv','cmOv'].forEach(closeM);closeExp();closeNot();
+  });
 });
 </script>
 {% endblock %}

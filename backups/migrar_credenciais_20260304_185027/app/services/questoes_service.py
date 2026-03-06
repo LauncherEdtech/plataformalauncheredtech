@@ -13,13 +13,17 @@ from app import db
 # ============================================================
 #  CONEXÃO
 # ============================================================
-# DB_PARAMS removido — usar db_utils.get_db_params() ou get_connection()
-from app.services.db_utils import get_db_params, get_connection
-DB_PARAMS = get_db_params()
+DB_PARAMS = {
+    'host': '34.63.141.69',
+    'port': '5432',
+    'database': 'plataforma',
+    'user': 'postgres',
+    'password': '22092021Dd$'
+}
 
 
 def _conn():
-    conn = get_connection()
+    conn = psycopg2.connect(**DB_PARAMS)
     conn.cursor_factory = psycopg2.extras.RealDictCursor
     return conn
 

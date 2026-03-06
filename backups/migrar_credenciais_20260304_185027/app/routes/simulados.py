@@ -380,8 +380,13 @@ def resultado(simulado_id):
 
 
     try:
-        from app.services.db_utils import get_connection
-        conn = get_connection()
+        import psycopg2
+        conn = psycopg2.connect(
+            host='34.63.141.69',
+            user='postgres',
+            password='22092021Dd$',
+            database='plataforma'
+        )
         
         cursor = conn.cursor()
         
@@ -638,8 +643,12 @@ def diagnostico_onboarding():
         import psycopg2
         
         try:
-            from app.services.db_utils import get_connection
-            conn = get_connection()
+            conn = psycopg2.connect(
+                host='34.63.141.69',
+                user='postgres',
+                password='22092021Dd$',
+                database='plataforma'
+            )
             
             cursor = conn.cursor()
             

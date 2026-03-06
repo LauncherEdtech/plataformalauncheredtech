@@ -17,7 +17,7 @@ def create_app():
     
     # Configurações do app
     app.config['SECRET_KEY'] = 'sua-chave-secreta'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:22092021Dd$@34.63.141.69:5432/plataforma'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Inicialização de extensões

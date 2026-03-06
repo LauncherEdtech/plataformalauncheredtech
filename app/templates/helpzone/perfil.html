@@ -1,1390 +1,609 @@
 {% extends "layout.html" %}
-
-{% block title %}{{ usuario.nome_completo }} - HelpZone{% endblock %}
+{% block title %}{{ usuario.nome_completo }} — HelpZone{% endblock %}
 
 {% block styles %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-/* ================================================
-   RESET E VARIÁVEIS GLOBAIS
-   ================================================ */
-:root {
-    --bg-primary: #000000;
-    --bg-secondary: #0a0a0a;
-    --bg-surface: #141414;
-    --text-primary: #ffffff;
-    --text-secondary: #8e8e8e;
-    --text-tertiary: #666666;
-    --accent-purple: #8b5cf6;
-    --accent-blue: #0095f6;
-    --border-color: #262626;
-    --hover-overlay: rgba(0, 0, 0, 0.4);
-}
-
-/* ================================================
-   PERFIL CONTAINER
-   ================================================ */
-.profile-container {
-    max-width: 975px;
-    margin: 0 auto;
-    padding: 30px 20px 0;
-}
-
-/* ================================================
-   PROFILE HEADER - DESKTOP
-   ================================================ */
-.profile-header {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 30px;
-    margin-bottom: 44px;
-    align-items: center;
-}
-
-.profile-avatar-section {
-    display: flex;
-    justify-content: center;
-}
-
-.avatar-wrapper {
-    position: relative;
-    cursor: pointer;
-}
-
-.avatar-ring {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-image {
-    width: 144px;
-    height: 144px;
-    border-radius: 50%;
-    background: var(--bg-primary);
-    border: 3px solid var(--bg-primary);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-letter {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-/* Profile Info Section */
-.profile-info-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.profile-username-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.profile-username {
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 24px;
-    margin: 0;
-    color: var(--text-primary);
-}
-
-.profile-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.edit-profile-btn, 
-.follow-btn, 
-.following-btn,
-.message-btn {
-    padding: 5px 9px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    text-decoration: none;
-    line-height: 18px;
-    min-width: 44px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.edit-profile-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-.edit-profile-btn:hover {
-    background: var(--bg-surface);
-}
-
-.follow-btn {
-    background: var(--accent-blue);
-    color: white;
-}
-
-.follow-btn:hover {
-    background: #1877f2;
-}
-
-.following-btn {
-    background: var(--bg-surface);
-    color: var(--text-primary);
-}
-
-.message-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-.more-options-btn {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px 8px;
-}
-
-/* Stats Row */
-.profile-stats {
-    display: flex;
-    gap: 40px;
-}
-
-.stat {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.stat:hover .stat-label {
-    color: var(--text-primary);
-}
-
-.stat-number {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.stat-label {
-    color: var(--text-secondary);
-    font-weight: 400;
-    transition: color 0.2s;
-}
-
-/* Bio Section */
-.profile-bio-section {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.profile-fullname {
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 18px;
-    color: var(--text-primary);
-}
-
-.profile-category {
-    font-size: 14px;
-    line-height: 18px;
-    color: var(--text-tertiary);
-}
-
-.profile-bio {
-    font-size: 14px;
-    line-height: 18px;
-    color: var(--text-primary);
-    white-space: pre-line;
-    word-wrap: break-word;
-    margin-top: 8px;
-}
-
-.profile-website {
-    font-size: 14px;
-    line-height: 18px;
-    margin-top: 8px;
-}
-
-.profile-website a {
-    color: #e0f1ff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.profile-website a:hover {
-    text-decoration: underline;
-}
-
-/* ================================================
-   PROFILE TABS
-   ================================================ */
-.profile-content {
-    border-top: 1px solid var(--border-color);
-}
-
-.profile-tabs {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 52px;
-    position: relative;
-}
-
-.tab-button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 20px;
-    height: 52px;
-    background: none;
-    border: none;
-    border-top: 1px solid transparent;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.tab-button:hover {
-    color: var(--text-secondary);
-}
-
-.tab-button.active {
-    color: var(--text-primary);
-}
-
-.tab-button.active::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--text-primary);
-}
-
-.tab-icon {
-    font-size: 12px;
-}
-
-/* Tab Content with Transition */
-.tab-content {
-    min-height: 400px;
-    opacity: 1;
-    transition: opacity 0.2s ease;
-}
-
-.tab-content.switching {
-    opacity: 0.5;
-}
-
-/* ================================================
-   POSTS GRID
-   ================================================ */
-.posts-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-    margin: 0;
-}
-
-.post-item {
-    position: relative;
-    aspect-ratio: 1;
-    cursor: pointer;
-    overflow: hidden;
-    background: var(--bg-surface);
-}
-
-.post-item img,
-.post-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: filter 0.2s;
-}
-
-.post-item:hover img,
-.post-item:hover video {
-    filter: brightness(0.8);
-}
-
-.post-overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--hover-overlay);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.post-item:hover .post-overlay {
-    opacity: 1;
-}
-
-.post-stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.post-text-only {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: var(--bg-surface);
-    text-align: center;
-    font-size: 14px;
-    line-height: 1.4;
-    color: var(--text-secondary);
-}
-
-/* Empty State */
-.empty-posts {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-}
-
-.empty-icon {
-    width: 62px;
-    height: 62px;
-    border: 2px solid var(--text-primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-}
-
-.empty-icon i {
-    font-size: 32px;
-}
-
-.empty-title {
-    font-size: 28px;
-    font-weight: 200;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-}
-
-.empty-text {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-/* ================================================
-   MOBILE RESPONSIVE
-   ================================================ */
-@media (max-width: 768px) {
-    .profile-container {
-        padding: 16px 0 0;
-    }
-    
-    /* Mobile Header */
-    .profile-header {
-        display: block;
-        padding: 0 16px;
-        margin-bottom: 24px;
-    }
-    
-    /* Mobile Header Top Row */
-    .mobile-header-row {
-        display: flex;
-        align-items: center;
-        gap: 28px;
-        margin-bottom: 12px;
-    }
-    
-    .profile-avatar-section {
-        flex-shrink: 0;
-    }
-    
-    .avatar-ring {
-        width: 77px;
-        height: 77px;
-        padding: 2px;
-    }
-    
-    .avatar-image {
-        width: 73px;
-        height: 73px;
-    }
-    
-    .avatar-letter {
-        font-size: 2rem;
-    }
-    
-    /* Mobile Stats Section */
-    .mobile-stats-section {
-        flex: 1;
-        display: flex;
-        justify-content: space-around;
-        text-align: center;
-    }
-    
-    .profile-stats {
-        gap: 0;
-        width: 100%;
-        justify-content: space-around;
-    }
-    
-    .stat {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .stat-number {
-        font-size: 18px;
-        line-height: 24px;
-    }
-    
-    .stat-label {
-        font-size: 14px;
-        line-height: 18px;
-    }
-    
-    /* Mobile Profile Info */
-    .profile-info-section {
-        gap: 12px;
-    }
-    
-    .profile-username-row {
-        display: block;
-    }
-    
-    .profile-username {
-        font-size: 16px;
-        margin-bottom: 12px;
-    }
-    
-    .profile-actions {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-        margin-bottom: 12px;
-    }
-    
-    .edit-profile-btn,
-    .follow-btn,
-    .following-btn,
-    .message-btn {
-        flex: 1;
-    }
-    
-    .more-options-btn {
-        flex: 0 0 auto;
-    }
-    
-    /* Mobile Bio */
-    .profile-bio-section {
-        margin-bottom: 8px;
-    }
-    
-    /* Mobile Tabs */
-    .profile-tabs {
-        height: 44px;
-        justify-content: space-around;
-    }
-    
-    .tab-button {
-        flex: 1;
-        padding: 0;
-        height: 44px;
-    }
-}
-
-/* ================================================
-   MODAL (MANTIDO ORIGINAL)
-   ================================================ */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-.modal-content {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    padding: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-    animation: modalSlide 0.3s ease-out;
-}
-
-@keyframes modalSlide {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    text-align: center;
-    color: var(--text-primary);
-}
-
-.avatar-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.avatar-preview {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: var(--bg-surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.btn-upload {
-    color: var(--accent-blue);
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    background: none;
-    border: none;
-}
-
-.form-group { 
-    margin-bottom: 20px; 
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.form-input, .form-textarea {
-    width: 100%;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: white;
-    font-family: inherit;
-    font-size: 14px;
-}
-
-.form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: var(--accent-purple);
-}
-
-.char-count {
-    text-align: right;
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-top: 4px;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-}
-
-.btn-action {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-}
-
-.btn-primary-profile {
-    background: var(--accent-purple);
-    color: white;
-}
-
-.btn-primary-profile:hover {
-    opacity: 0.9;
-}
-
-.btn-secondary-profile {
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary-profile:hover {
-    background: var(--bg-surface);
-}
-
-/* Nav Actions Profile Avatar */
-.nav-profile-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border 0.2s;
-}
-
-.nav-profile-avatar:hover {
-    border-color: var(--accent-purple);
-}
-
-.nav-profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.nav-profile-avatar-letter {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: white;
-    font-size: 14px;
-}
+:root{
+  --bg:#080C14;--surface:#0D1117;--surface2:#141A23;--surface3:#1C2333;--surface4:#243044;
+  --border:rgba(99,130,190,0.12);--border2:rgba(99,130,190,0.22);
+  --text:#E8EDF5;--text2:#8B9DC3;--text3:#506080;
+  --blue:#3B82F6;--blue-l:#60A5FA;--blue-d:#2563EB;--blue-g:rgba(59,130,246,0.2);--blue-gs:rgba(59,130,246,0.08);
+  --gold:#F59E0B;--gold-l:#FCD34D;--gold-g:rgba(245,158,11,0.2);
+  --green:#10B981;--red:#F43F5E;--orange:#F97316;--purple:#8B5CF6;--cyan:#06B6D4;
+  --radius:12px;--radius-lg:18px;--radius-xl:24px;--radius-full:999px;
+  --ease:cubic-bezier(0.4,0,0.2,1);--font:'Plus Jakarta Sans',sans-serif;
+  --sidebar-w:260px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+@media(max-width:768px){body>nav.navbar,header>nav.navbar,.navbar.navbar-expand-lg{display:none!important}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--surface4);border-radius:4px}
+a{text-decoration:none;color:inherit}img{display:block}button{cursor:pointer;font-family:var(--font)}
+
+/* ══ LAYOUT ══ */
+.pf-layout{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);min-height:100vh}
+@media(max-width:768px){.pf-layout{grid-template-columns:1fr;padding-top:56px;padding-bottom:68px}.hz-sidebar{display:none}}
+
+/* ══ SIDEBAR ══ */
+.hz-sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 14px;background:var(--surface)}
+.hz-sidebar::-webkit-scrollbar{width:0}
+.hz-logo{display:flex;align-items:center;gap:10px;padding:6px 12px;margin-bottom:20px;font-size:1.15rem;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.hz-logo-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;color:#fff;box-shadow:0 4px 14px var(--blue-g)}
+.sb-divider{height:1px;background:var(--border);margin:10px 0}
+.sb-nav{display:flex;flex-direction:column;gap:1px}
+.sb-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius);color:var(--text2);font-size:.86rem;font-weight:500;transition:all .17s;background:none;border:none;width:100%;text-align:left}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:var(--blue-gs);color:var(--blue-l);font-weight:700}
+.sb-item.active .sb-item-icon{color:var(--blue)}
+.sb-item-icon{width:18px;text-align:center;font-size:1rem;flex-shrink:0}
+.sb-section{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);padding:0 12px;margin:8px 0 4px}
+
+/* ══ MOBILE TOPBAR ══ */
+.hz-topbar{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:rgba(8,12,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:500;align-items:center;justify-content:space-between;padding:0 16px}
+@media(max-width:768px){.hz-topbar{display:flex}}
+.hz-tb-logo{display:flex;align-items:center;gap:8px;font-size:1.05rem;font-weight:800;color:var(--text)}
+.hz-tb-logo-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#fff}
+.hz-tb-back{width:36px;height:36px;border-radius:50%;background:none;border:none;color:var(--text);font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+
+/* ══ MOBILE BOTTOM NAV ══ */
+.hz-bottomnav{display:none;position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(8,12,20,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:500;align-items:center;justify-content:space-around;padding:0 8px}
+@media(max-width:768px){.hz-bottomnav{display:flex}}
+.hz-bnav-item{display:flex;flex-direction:column;align-items:center;background:none;border:none;color:var(--text3);padding:8px 12px;border-radius:10px;transition:color .15s}
+.hz-bnav-item i{font-size:1.2rem}
+.hz-bnav-item.active{color:var(--blue-l)}
+
+/* ══ MAIN CONTENT ══ */
+.pf-main{overflow-y:auto}
+.pf-main::-webkit-scrollbar{width:0}
+
+/* ══ COVER BANNER ══ */
+.pf-cover{
+  width:100%;height:240px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,var(--surface2) 0%,var(--surface3) 50%,var(--surface2) 100%);
+}
+@media(max-width:600px){.pf-cover{height:160px}}
+.pf-cover-mesh{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 100% at 70% 30%,rgba(59,130,246,.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 80% at 20% 80%,rgba(6,182,212,.06) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 60% at 90% 90%,rgba(139,92,246,.07) 0%,transparent 50%);
+}
+.pf-cover-grid{
+  position:absolute;inset:0;opacity:.05;
+  background-image:linear-gradient(var(--border2) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.pf-cover-fade{position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to bottom,transparent,var(--bg))}
+.pf-cover-actions{position:absolute;top:16px;right:16px;display:flex;gap:8px}
+.pf-cover-btn{
+  display:flex;align-items:center;gap:7px;padding:8px 16px;
+  background:rgba(8,12,20,.7);backdrop-filter:blur(12px);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  color:var(--text2);font-size:.79rem;font-weight:600;
+  cursor:pointer;transition:all .18s;
+}
+.pf-cover-btn:hover{background:rgba(8,12,20,.9);color:var(--text)}
+.pf-cover-btn.blue{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 4px 14px var(--blue-g)}
+.pf-cover-btn.blue:hover{background:var(--blue-l)}
+
+/* ══ PROFILE HEADER ══ */
+.pf-header{
+  position:relative;padding:0 28px 0;
+  margin-bottom:0;
+}
+@media(max-width:600px){.pf-header{padding:0 16px 0}}
+
+.pf-av-wrap{
+  position:relative;display:inline-block;
+  margin-top:-56px;z-index:2;margin-bottom:12px;
+}
+.pf-av{
+  width:108px;height:108px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue-d));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.6rem;font-weight:700;color:#fff;
+  overflow:hidden;
+  border:4px solid var(--bg);
+  box-shadow:0 0 0 3px var(--blue),0 12px 40px rgba(59,130,246,.35);
+}
+.pf-av img{width:100%;height:100%;object-fit:cover}
+@media(max-width:600px){.pf-av{width:80px;height:80px;font-size:2rem;margin-top:-44px}}
+.pf-av-edit{
+  position:absolute;bottom:4px;right:4px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--surface3);border:2px solid var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);font-size:.68rem;
+  transition:all .15s;
+}
+.pf-av-edit:hover{background:var(--surface4);color:var(--text)}
+
+/* Level badge */
+.pf-lvl{
+  position:absolute;top:-6px;right:-6px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-l));
+  color:#000;font-size:.58rem;font-weight:900;
+  padding:3px 8px;border-radius:var(--radius-full);
+  border:2px solid var(--bg);text-transform:uppercase;letter-spacing:.3px;
+  box-shadow:0 3px 10px var(--gold-g);
+}
+
+/* Influence badge */
+.pf-influence{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:var(--radius-full);
+  font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  margin-left:6px;
+}
+.inf-destaque{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#000}
+.inf-influente{background:rgba(59,130,246,.2);color:var(--blue-l);border:1px solid rgba(59,130,246,.25)}
+.inf-ativo{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+
+.pf-name{font-size:1.45rem;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:3px}
+@media(max-width:600px){.pf-name{font-size:1.15rem}}
+.pf-username{font-size:.87rem;color:var(--text3);margin-bottom:8px}
+.pf-plan{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 11px;border-radius:var(--radius-full);
+  font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:10px;
+}
+.pf-plan.free{background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.pf-plan.premium{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#000}
+
+.pf-bio{font-size:.9rem;color:var(--text2);line-height:1.65;max-width:480px;margin-bottom:14px}
+
+/* Social stats */
+.pf-social-stats{display:flex;gap:28px;margin-bottom:18px}
+@media(max-width:480px){.pf-social-stats{gap:18px}}
+.pf-sstat{cursor:pointer;text-align:center;transition:opacity .15s}
+.pf-sstat:hover{opacity:.8}
+.pf-sstat-n{font-size:1.15rem;font-weight:800;display:block}
+.pf-sstat-l{font-size:.71rem;color:var(--text3);font-weight:500}
+
+/* Action buttons */
+.pf-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.pf-btn{display:flex;align-items:center;gap:8px;padding:9px 20px;border-radius:var(--radius);font-size:.85rem;font-weight:700;border:none;transition:all .2s;cursor:pointer}
+.pf-btn.primary{background:var(--blue);color:#fff;box-shadow:0 4px 14px var(--blue-g)}
+.pf-btn.primary:hover{background:var(--blue-l);transform:translateY(-1px)}
+.pf-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.pf-btn.secondary:hover{background:var(--surface3)}
+.pf-btn.danger{background:transparent;color:var(--text3);border:1px solid var(--border)}
+.pf-btn.danger:hover{background:var(--surface2)}
+
+/* ══ GAMIFICATION ROW ══ */
+.pf-gamif-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  margin-bottom:0;
+}
+@media(max-width:480px){.pf-gamif-row{grid-template-columns:repeat(2,1fr)}}
+.pf-gstat{
+  background:var(--surface);
+  padding:18px 12px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.pf-gstat::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.pf-gstat.xp::before{background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.pf-gstat.lvl::before{background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.pf-gstat.seq::before{background:linear-gradient(90deg,var(--orange),var(--red))}
+.pf-gstat.dia::before{background:linear-gradient(90deg,var(--purple),var(--cyan))}
+.pf-gstat-v{font-size:1.3rem;font-weight:800;display:block;margin-bottom:3px}
+.pf-gstat.xp .pf-gstat-v{color:var(--gold)}
+.pf-gstat.lvl .pf-gstat-v{color:var(--blue-l)}
+.pf-gstat.seq .pf-gstat-v{color:var(--orange)}
+.pf-gstat.dia .pf-gstat-v{color:var(--purple)}
+.pf-gstat-l{font-size:.67rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+/* ══ XP PROGRESS BAR ══ */
+.pf-xp-section{
+  padding:20px 28px 0;
+  border-bottom:1px solid var(--border);
+}
+@media(max-width:600px){.pf-xp-section{padding:16px 16px 0}}
+.pf-xp-label{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;margin-bottom:8px}
+.pf-xp-current{font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.pf-xp-current span{color:var(--gold);font-size:.85rem}
+.pf-xp-next{color:var(--text3)}
+.pf-xp-track{height:8px;background:var(--surface3);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.pf-xp-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:8px;transition:width 1.4s var(--ease)}
+.pf-xp-milestone{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.74rem;color:var(--text3);padding-bottom:16px}
+.pf-xp-milestone i{color:var(--gold)}
+
+/* ══ BADGES / CONQUISTAS ══ */
+.pf-badges-section{padding:20px 28px;border-bottom:1px solid var(--border)}
+@media(max-width:600px){.pf-badges-section{padding:16px 16px}}
+.pf-section-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.pf-section-more{font-size:.75rem;color:var(--blue-l);font-weight:600;background:none;border:none;cursor:pointer}
+.pf-badges-grid{display:flex;gap:12px;flex-wrap:wrap}
+.pf-badge{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);cursor:pointer;transition:all .2s;min-width:72px;
+}
+.pf-badge:hover{border-color:var(--border2);transform:translateY(-2px)}
+.pf-badge-ico{font-size:1.6rem}
+.pf-badge-name{font-size:.64rem;font-weight:600;color:var(--text3);text-align:center;max-width:64px;line-height:1.3}
+.pf-badge.earned .pf-badge-name{color:var(--text2)}
+.pf-badge.locked{opacity:.35;filter:grayscale(.8)}
+
+/* ══ TABS ══ */
+.pf-tabs{
+  display:flex;border-bottom:1px solid var(--border);
+  padding:0 28px;background:var(--bg);
+  position:sticky;top:0;z-index:10;
+}
+@media(max-width:600px){.pf-tabs{padding:0 16px;background:rgba(8,12,20,.97);backdrop-filter:blur(20px)}}
+.pf-tab{
+  padding:14px 18px;font-size:.84rem;font-weight:700;color:var(--text3);
+  cursor:pointer;border:none;background:none;
+  border-bottom:2.5px solid transparent;transition:all .2s;
+  position:relative;bottom:-1px;display:flex;align-items:center;gap:6px;
+}
+.pf-tab.active{color:var(--text);border-bottom-color:var(--blue)}
+.pf-tab:hover{color:var(--text2)}
+.pf-tab-n{
+  font-size:.64rem;background:var(--surface3);padding:2px 7px;
+  border-radius:var(--radius-full);color:var(--text3);font-weight:600;
+}
+.pf-tab.active .pf-tab-n{background:var(--blue);color:#fff}
+
+/* ══ POST GRID / LIST ══ */
+.pf-posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px 0}
+.pf-grid-cell{aspect-ratio:1;overflow:hidden;cursor:pointer;background:var(--surface2);position:relative}
+.pf-grid-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s var(--ease)}
+.pf-grid-cell:hover img{transform:scale(1.07)}
+.pf-grid-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;gap:16px;opacity:0;transition:opacity .2s;color:#fff;font-size:.88rem;font-weight:600}
+.pf-grid-cell:hover .pf-grid-overlay{opacity:1}
+.pf-grid-txt{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:12px;font-size:.78rem;color:var(--text3);text-align:center;line-height:1.5}
+
+.pf-post-list{padding:0}
+.pf-post-list-item{border-bottom:1px solid var(--border);padding:18px 28px;cursor:pointer;transition:background .15s}
+@media(max-width:600px){.pf-post-list-item{padding:14px 16px}}
+.pf-post-list-item:hover{background:var(--surface)}
+.pf-pli-type{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--radius-full);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;background:var(--blue-gs);color:var(--blue-l);border:1px solid rgba(59,130,246,.15)}
+.pf-pli-text{font-size:.91rem;line-height:1.6;color:var(--text);margin-bottom:10px}
+.pf-pli-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);margin-bottom:10px;display:block}
+.pf-pli-stats{display:flex;align-items:center;gap:16px;font-size:.76rem;color:var(--text3)}
+.pf-pli-stats span{display:flex;align-items:center;gap:5px}
+
+.pf-empty{text-align:center;padding:60px 24px;color:var(--text3)}
+.pf-empty i{font-size:2.5rem;display:block;margin-bottom:14px;opacity:.25}
+.pf-empty p{font-size:.88rem;line-height:1.5}
+
+/* TOAST */
+.hz-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--surface3);color:var(--text);padding:9px 22px;border-radius:var(--radius-full);font-size:.84rem;font-weight:600;z-index:9999;opacity:0;transition:all .3s var(--ease);border:1px solid var(--border2);pointer-events:none;white-space:nowrap}
+.hz-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hz-toast.ok{border-color:var(--green)}
+.hz-toast.err{border-color:var(--red)}
 </style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<body class="helpzone-page">
 
-<!-- Top Navigation Bar (MANTIDO ORIGINAL) -->
-<div class="helpzone-top-nav">
-    <div class="nav-content">
-        <a href="{{ url_for('helpzone.feed') }}" class="brand">
-            <div class="brand-icon">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <span class="d-none d-md-inline">HelpZone</span>
-        </a>
-        
-        <div class="search-quick d-none d-lg-block">
-            <input type="text" class="search-input" placeholder="Buscar na HelpZone..." 
-                   onclick="location.href='{{ url_for('helpzone.buscar_usuarios') }}'">
-        </div>
-        
-        <!-- NAV ACTIONS ALTERADO -->
-        <div class="nav-actions">
-            <button class="nav-icon-btn d-lg-none" onclick="openMobileMenu()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <button class="nav-icon-btn" onclick="location.href='{{ url_for('helpzone.notificacoes') }}'">
-                <i class="far fa-bell"></i>
-                <span class="badge-dot"></span>
-            </button>
-            <button class="nav-icon-btn" onclick="location.href='{{ url_for('dashboard.index') }}'">
-                <i class="fas fa-graduation-cap"></i>
-            </button>
-            <div class="nav-profile-avatar" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                    <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Perfil">
-                {% else %}
-                    <div class="nav-profile-avatar-letter">
-                        {{ current_user.nome_completo[0].upper() }}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
+<!-- MOBILE TOPBAR -->
+<nav class="hz-topbar">
+  <button class="hz-tb-back" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+  <a href="{{ url_for('helpzone.feed') }}" class="hz-tb-logo">
+    <div class="hz-tb-logo-mark">HZ</div>
+    {{ usuario.nome_completo.split()[0] }}
+  </a>
+  <div style="width:36px"></div>
+</nav>
 
-<!-- Desktop Sidebar (MANTIDO ORIGINAL) -->
-<div class="helpzone-sidebar d-none d-lg-flex">
-    <!-- Quick Profile -->
-    <div class="sidebar-profile" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'">
-        <div class="sidebar-profile-avatar">
-            {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-            <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Avatar">
-            {% else %}
-            {{ current_user.nome_completo[0].upper() }}
-            {% endif %}
-            <div class="level-badge">{{ current_user.nivel or 1 }}</div>
-        </div>
-        <div class="sidebar-profile-info">
-            <div class="sidebar-profile-name">{{ current_user.nome_completo }}</div>
-            <div class="sidebar-profile-stats">
-                <span><i class="fas fa-fire" style="color: var(--streak-orange);"></i> {{ current_user.xp_total or 0 }}</span>
-                <span><i class="fas fa-gem" style="color: var(--diamond-cyan);"></i> {{ current_user.diamantes or 0 }}</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- HelpZone Navigation -->
-    <nav class="sidebar-nav-links">
-        <a href="{{ url_for('helpzone.feed') }}" class="sidebar-nav-link">
-            <i class="fas fa-home"></i>
-            <span>Feed</span>
-        </a>
-        <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="sidebar-nav-link">
-            <i class="fas fa-search"></i>
-            <span>Explorar</span>
-        </a>
-        <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sidebar-nav-link active">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </a>
-        <a href="#" class="sidebar-nav-link">
-            <i class="fas fa-bookmark"></i>
-            <span>Salvos</span>
-        </a>
+<div class="pf-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="hz-sidebar">
+    <a href="{{ url_for('helpzone.feed') }}" class="hz-logo">
+      <div class="hz-logo-icon">HZ</div>
+      HelpZone
+    </a>
+    <div class="sb-divider"></div>
+    <nav class="sb-nav">
+      <a href="{{ url_for('helpzone.feed') }}" class="sb-item"><i class="fas fa-home sb-item-icon"></i>Feed</a>
+      <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="sb-item"><i class="fas fa-search sb-item-icon"></i>Explorar</a>
+      <a href="{{ url_for('helpzone.notificacoes') }}" class="sb-item"><i class="far fa-bell sb-item-icon"></i>Notificações</a>
+      <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="sb-item {% if usuario.id == current_user.id %}active{% endif %}"><i class="fas fa-user sb-item-icon"></i>Perfil</a>
+      <a href="{{ url_for('ranking.index') }}" class="sb-item"><i class="fas fa-trophy sb-item-icon"></i>Ranking</a>
     </nav>
-    
-    <button class="sidebar-create-btn" onclick="location.href='{{ url_for('helpzone.criar_post') }}'">
-        <i class="fas fa-plus"></i>
-        <span>Criar Post</span>
-    </button>
-    
-    <!-- Plataforma Launcher Navigation -->
-    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-subtle);">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-tertiary); margin-bottom: 10px; padding: 0 16px; text-transform: uppercase;">
-            Plataforma
-        </div>
-        <nav class="sidebar-nav-links">
-            <a href="{{ url_for('dashboard.index') }}" class="sidebar-nav-link">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ url_for('simulados.index') }}" class="sidebar-nav-link">
-                <i class="fas fa-file-alt"></i>
-                <span>Simulados</span>
-            </a>
-            <a href="{{ url_for('progresso.index') }}" class="sidebar-nav-link">
-                <i class="fas fa-chart-line"></i>
-                <span>Progresso</span>
-            </a>
-            <a href="{{ url_for('ranking.index') }}" class="sidebar-nav-link">
-                <i class="fas fa-trophy"></i>
-                <span>Ranking</span>
-            </a>
-        </nav>
-    </div>
-    
-    <!-- Gamification Stats -->
-    <div class="sidebar-gamification">
-        <div class="sidebar-gamification-title">Seu Progresso</div>
-        <div class="sidebar-gamification-stat">
-            <div class="sidebar-gamification-stat-label">
-                <i class="fas fa-fire" style="color: var(--streak-orange);"></i>
-                Sequência
-            </div>
-            <div class="sidebar-gamification-stat-value">{{ current_user.sequencia_dias or 0 }}d</div>
-        </div>
-        <div class="sidebar-gamification-stat">
-            <div class="sidebar-gamification-stat-label">
-                <i class="fas fa-star" style="color: var(--xp-gold);"></i>
-                Nível
-            </div>
-            <div class="sidebar-gamification-stat-value">{{ current_user.nivel or 1 }}</div>
-        </div>
-        
-        <div class="sidebar-xp-progress">
-            <div class="sidebar-xp-progress-label">
-                <span>XP para próximo nível</span>
-                <span>{{ current_user.xp_total or 0 }}/{{ (current_user.nivel or 1) * 1000 }}</span>
-            </div>
-            <div class="sidebar-xp-progress-bar">
-                <div class="sidebar-xp-progress-fill" style="width: {{ ((current_user.xp_total or 0) / ((current_user.nivel or 1) * 1000) * 100)|int }}%"></div>
-            </div>
-        </div>
-    </div>
-</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Estudar</div>
+    <nav class="sb-nav">
+      <a href="{{ url_for('dashboard.index') }}" class="sb-item"><i class="fas fa-th-large sb-item-icon"></i>Dashboard</a>
+      <a href="{{ url_for('simulados.index') }}" class="sb-item"><i class="fas fa-file-alt sb-item-icon"></i>Simulados</a>
+      <a href="{{ url_for('progresso.index') }}" class="sb-item"><i class="fas fa-chart-line sb-item-icon"></i>Progresso</a>
+    </nav>
+  </aside>
 
-<!-- Main Content Area -->
-<div class="helpzone-main-content">
-    <div class="helpzone-feed-container">
-        <div class="profile-container">
-            
-            <!-- Profile Header Desktop -->
-            <div class="profile-header d-none d-md-grid">
-                <!-- Avatar Section -->
-                <div class="profile-avatar-section">
-                    <div class="avatar-wrapper" {% if is_own_profile %}onclick="openEditModal()"{% endif %}>
-                        <div class="avatar-ring">
-                            <div class="avatar-image">
-                                {% if perfil.foto_perfil_url or perfil.foto_perfil %}
-                                    <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
-                                {% else %}
-                                    <span class="avatar-letter">{{ usuario.nome_completo[0].upper() }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Profile Info Section -->
-                <div class="profile-info-section">
-                    <!-- Username and Actions -->
-                    <div class="profile-username-row">
-                        <h1 class="profile-username">{{ usuario.nome_completo.lower().replace(' ', '') }}</h1>
-                        
-                        <div class="profile-actions">
-                            {% if is_own_profile %}
-                                <button class="edit-profile-btn" onclick="openEditModal()">
-                                    Editar perfil
-                                </button>
-                            {% else %}
-                                <button id="followBtn" 
-                                        class="{% if esta_seguindo %}following-btn{% else %}follow-btn{% endif %}" 
-                                        onclick="toggleFollow({{ usuario.id }})">
-                                    {% if esta_seguindo %}Seguindo{% else %}Seguir{% endif %}
-                                </button>
-                                <button class="message-btn">
-                                    Mensagem
-                                </button>
-                            {% endif %}
-                            <button class="more-options-btn">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats -->
-                    <div class="profile-stats">
-                        <div class="stat">
-                            <span class="stat-number">{{ perfil.total_posts or 0 }}</span>
-                            <span class="stat-label">publicações</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="followersCount">{{ perfil.total_seguidores or 0 }}</span>
-                            <span class="stat-label">seguidores</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number">{{ perfil.total_seguindo or 0 }}</span>
-                            <span class="stat-label">seguindo</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Bio -->
-                    <div class="profile-bio-section">
-                        <div class="profile-fullname">{{ usuario.nome_completo }}</div>
-                        {% if perfil.ocupacao %}
-                        <div class="profile-category">{{ perfil.ocupacao }}</div>
-                        {% endif %}
-                        {% if perfil.biografia %}
-                        <div class="profile-bio">{{ perfil.biografia }}</div>
-                        {% endif %}
-                        {% if perfil.website %}
-                        <div class="profile-website">
-                            <a href="{{ perfil.website }}" target="_blank" rel="noopener">{{ perfil.website }}</a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Profile Header Mobile -->
-            <div class="profile-header d-md-none">
-                <!-- Mobile Header Row -->
-                <div class="mobile-header-row">
-                    <!-- Avatar -->
-                    <div class="profile-avatar-section">
-                        <div class="avatar-wrapper" {% if is_own_profile %}onclick="openEditModal()"{% endif %}>
-                            <div class="avatar-ring">
-                                <div class="avatar-image">
-                                    {% if perfil.foto_perfil_url or perfil.foto_perfil %}
-                                        <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="{{ usuario.nome_completo }}">
-                                    {% else %}
-                                        <span class="avatar-letter">{{ usuario.nome_completo[0].upper() }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats -->
-                    <div class="mobile-stats-section">
-                        <div class="profile-stats">
-                            <div class="stat">
-                                <span class="stat-number">{{ perfil.total_posts or 0 }}</span>
-                                <span class="stat-label">publicações</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-number" id="followersCountMobile">{{ perfil.total_seguidores or 0 }}</span>
-                                <span class="stat-label">seguidores</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-number">{{ perfil.total_seguindo or 0 }}</span>
-                                <span class="stat-label">seguindo</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Mobile Info Section -->
-                <div class="profile-info-section">
-                    <h1 class="profile-username">{{ usuario.nome_completo.lower().replace(' ', '') }}</h1>
-                    
-                    <div class="profile-bio-section">
-                        <div class="profile-fullname">{{ usuario.nome_completo }}</div>
-                        {% if perfil.ocupacao %}
-                        <div class="profile-category">{{ perfil.ocupacao }}</div>
-                        {% endif %}
-                        {% if perfil.biografia %}
-                        <div class="profile-bio">{{ perfil.biografia }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="profile-actions">
-                        {% if is_own_profile %}
-                            <button class="edit-profile-btn" onclick="openEditModal()">
-                                Editar perfil
-                            </button>
-                        {% else %}
-                            <button id="followBtnMobile" 
-                                    class="{% if esta_seguindo %}following-btn{% else %}follow-btn{% endif %}" 
-                                    onclick="toggleFollow({{ usuario.id }})">
-                                {% if esta_seguindo %}Seguindo{% else %}Seguir{% endif %}
-                            </button>
-                            <button class="message-btn">
-                                Mensagem
-                            </button>
-                        {% endif %}
-                        <button class="more-options-btn">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Profile Content -->
-            <div class="profile-content">
-                <!-- Tabs -->
-                <div class="profile-tabs">
-                    <button class="tab-button {% if active_tab == 'posts' or not active_tab %}active{% endif %}"
-                            onclick="switchTab('posts')"
-                            data-tab="posts">
-                        <i class="fas fa-th tab-icon"></i>
-                        <span>PUBLICAÇÕES</span>
-                    </button>
-                    
-                    {% if is_own_profile %}
-                    <button class="tab-button {% if active_tab == 'salvos' %}active{% endif %}"
-                            onclick="switchTab('salvos')"
-                            data-tab="salvos">
-                        <i class="far fa-bookmark tab-icon"></i>
-                        <span>SALVOS</span>
-                    </button>
-                    {% endif %}
-                </div>
-                
-                <!-- Tab Content -->
-                <div class="tab-content" id="tabContent">
-                    <!-- Posts Grid -->
-                    <div class="posts-grid">
-                        {% if posts and posts.items %}
-                            {% for post in posts.items %}
-                            <div class="post-item" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=post.id) }}'">
-                                {% if post.midia and (post.midia.url_public or post.midia.url) %}
-                                    {% if post.midia.tipo == 'imagem' %}
-                                        <img src="{{ post.midia.url_public or post.midia.url }}" alt="Post" loading="lazy">
-                                    {% elif post.midia.tipo == 'video' %}
-                                        <video src="{{ post.midia.url_public or post.midia.url }}"></video>
-                                    {% endif %}
-                                {% else %}
-                                    <div class="post-text-only">
-                                        {{ post.texto[:120] }}{% if post.texto|length > 120 %}...{% endif %}
-                                    </div>
-                                {% endif %}
+  <!-- MAIN -->
+  <main class="pf-main">
 
-                                <div class="post-overlay">
-                                    <div class="post-stat">
-                                        <i class="fas fa-heart"></i>
-                                        <span>{{ post.total_likes or 0 }}</span>
-                                    </div>
-                                    <div class="post-stat">
-                                        <i class="fas fa-comment"></i>
-                                        <span>{{ post.total_comentarios or 0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-posts">
-                                <div class="empty-icon">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                                <h3 class="empty-title">Compartilhe fotos</h3>
-                                <p class="empty-text">Quando você compartilhar fotos, elas aparecerão no seu perfil.</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-</div>
-
-<!-- Right Sidebar (MANTIDO ORIGINAL) -->
-<div class="helpzone-sidebar-right d-none d-xl-flex">
-    <div class="sidebar-section">
-        <div class="sidebar-section-title">Sugestões para você</div>
-        <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
-            <i class="fas fa-user-friends" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
-            <p style="font-size: 0.9rem;">Conecte-se com mais alunos!</p>
-        </div>
-    </div>
-</div>
-
-<!-- Mobile Bottom Navigation (MANTIDO ORIGINAL) -->
-
-<!-- Mobile Menu Overlay (MANTIDO ORIGINAL) -->
-<div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
-
-<!-- Mobile Slide Menu (MANTIDO ORIGINAL) -->
-<div class="mobile-menu" id="mobileMenu">
-    <button class="mobile-menu-close" onclick="closeMobileMenu()">
-        <i class="fas fa-times"></i>
-    </button>
-    
-    <div class="mobile-menu-header">
-        <div class="mobile-menu-profile">
-            <div class="mobile-menu-avatar">
-                {% if current_user.perfil_social and (current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil) %}
-                <img src="{{ current_user.perfil_social.foto_perfil_url or current_user.perfil_social.foto_perfil }}" alt="Perfil">
-                {% else %}
-                {{ current_user.nome_completo[0].upper() }}
-                {% endif %}
-            </div>
-            <div class="mobile-menu-user-info">
-                <h3>{{ current_user.nome_completo }}</h3>
-                <p>Nível {{ current_user.nivel or 1 }} • {{ current_user.xp_total or 0 }} XP</p>
-            </div>
-        </div>
+    <!-- Cover -->
+    <div class="pf-cover">
+      <div class="pf-cover-mesh"></div>
+      <div class="pf-cover-grid"></div>
+      <div class="pf-cover-fade"></div>
+      <div class="pf-cover-actions">
+        {% if is_own_profile %}
+        <button class="pf-cover-btn" onclick="location.href='#'">
+          <i class="fas fa-camera"></i> Editar capa
+        </button>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="mobile-menu-nav">
-        <div class="mobile-menu-section">
-            <div class="mobile-menu-section-title">HelpZone</div>
-            <a href="{{ url_for('helpzone.feed') }}" class="mobile-menu-link">
-                <i class="fas fa-home"></i>
-                <span>Feed</span>
-            </a>
-            <a href="{{ url_for('helpzone.buscar_usuarios') }}" class="mobile-menu-link">
-                <i class="fas fa-search"></i>
-                <span>Explorar</span>
-            </a>
-            <a href="{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}" class="mobile-menu-link active">
-                <i class="fas fa-user"></i>
-                <span>Meu Perfil</span>
-            </a>
-            <a href="{{ url_for('helpzone.criar_post') }}" class="mobile-menu-link">
-                <i class="fas fa-plus-circle"></i>
-                <span>Criar Post</span>
-            </a>
+    <!-- Profile Header -->
+    <div class="pf-header">
+      <div class="pf-av-wrap">
+        <div class="pf-av">
+          {% if usuario.perfil_social and usuario.perfil_social.foto_perfil %}
+            <img src="{{ usuario.perfil_social.foto_perfil }}" alt="">
+          {% else %}{{ usuario.nome_completo[0].upper() }}{% endif %}
         </div>
-        
-        <div class="mobile-menu-section">
-            <div class="mobile-menu-section-title">Plataforma de Estudos</div>
-            <a href="{{ url_for('dashboard.index') }}" class="mobile-menu-link">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ url_for('simulados.index') }}" class="mobile-menu-link">
-                <i class="fas fa-file-alt"></i>
-                <span>Simulados</span>
-            </a>
-            <a href="{{ url_for('progresso.index') }}" class="mobile-menu-link">
-                <i class="fas fa-chart-line"></i>
-                <span>Meu Progresso</span>
-            </a>
-            <a href="{{ url_for('ranking.index') }}" class="mobile-menu-link">
-                <i class="fas fa-trophy"></i>
-                <span>Ranking</span>
-            </a>
-            <a href="{{ url_for('shop.index') }}" class="mobile-menu-link">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Shop</span>
-            </a>
+        {% if is_own_profile %}
+        <div class="pf-av-edit" title="Editar foto"><i class="fas fa-camera"></i></div>
+        {% endif %}
+        <div class="pf-lvl">Nv {{ usuario.nivel or 1 }}</div>
+      </div>
+
+      <div class="pf-name">
+        {{ usuario.nome_completo }}
+        {% if usuario.perfil_social %}
+          {% if usuario.perfil_social.nivel_influencia == 'destaque' %}
+            <span class="pf-influence inf-destaque">✦ Destaque</span>
+          {% elif usuario.perfil_social.nivel_influencia == 'influente' %}
+            <span class="pf-influence inf-influente">⭑ Influente</span>
+          {% elif usuario.perfil_social.nivel_influencia == 'ativo' %}
+            <span class="pf-influence inf-ativo">Ativo</span>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <div class="pf-username">@{{ usuario.username or (usuario.nome_completo.lower().replace(' ','_')) }}</div>
+
+      <span class="pf-plan {{ 'premium' if usuario.plano_ativo != 'free' else 'free' }}">
+        {% if usuario.plano_ativo != 'free' %}
+          <i class="fas fa-crown"></i> Premium
+        {% else %}
+          Free
+        {% endif %}
+      </span>
+
+      {% if usuario.perfil_social and usuario.perfil_social.biografia %}
+      <div class="pf-bio">{{ usuario.perfil_social.biografia }}</div>
+      {% elif is_own_profile %}
+      <div class="pf-bio" style="opacity:.35;font-style:italic">Adicione uma bio para se apresentar...</div>
+      {% endif %}
+
+      <div class="pf-social-stats">
+        <div class="pf-sstat">
+          <span class="pf-sstat-n">{{ posts.total if posts is defined else 0 }}</span>
+          <span class="pf-sstat-l">Posts</span>
         </div>
-        
-        <div class="mobile-menu-section">
-            <a href="{{ url_for('auth.logout') }}" class="mobile-menu-link" style="color: var(--error);">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Sair</span>
-            </a>
+        <div class="pf-sstat">
+          <span class="pf-sstat-n">{{ (usuario.perfil_social.total_seguidores if usuario.perfil_social else 0) or 0 }}</span>
+          <span class="pf-sstat-l">Seguidores</span>
         </div>
+        <div class="pf-sstat">
+          <span class="pf-sstat-n">{{ (usuario.perfil_social.total_seguindo if usuario.perfil_social else 0) or 0 }}</span>
+          <span class="pf-sstat-l">Seguindo</span>
+        </div>
+      </div>
+
+      <div class="pf-actions">
+        {% if is_own_profile %}
+          <a href="{{ url_for('helpzone.criar_post') }}" class="pf-btn primary">
+            <i class="fas fa-plus"></i> Nova publicação
+          </a>
+          <button class="pf-btn secondary"><i class="fas fa-pen"></i> Editar perfil</button>
+          <a href="{{ url_for('auth.logout') }}" class="pf-btn danger"><i class="fas fa-sign-out-alt"></i></a>
+        {% else %}
+          <button class="pf-btn primary" id="followBtn" onclick="toggleFollow()">
+            <i class="fas fa-user-{% if esta_seguindo %}check{% else %}plus{% endif %}"></i>
+            <span id="followTxt">{{ 'Seguindo' if esta_seguindo else 'Seguir' }}</span>
+          </button>
+          <button class="pf-btn secondary"><i class="far fa-paper-plane"></i> Mensagem</button>
+        {% endif %}
+      </div>
     </div>
-</div>
 
-<!-- MODAL EDIT PROFILE -->
-<div id="editModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">Editar Perfil</div>
-        
-        <form id="editProfileForm" enctype="multipart/form-data">
-            <div class="avatar-upload">
-                <div class="avatar-preview" id="avatarPreview">
-                    {% if perfil.foto_perfil_url or perfil.foto_perfil %}
-                        <img src="{{ perfil.foto_perfil_url or perfil.foto_perfil }}" alt="Avatar">
-                    {% else %}
-                        {{ usuario.nome_completo[0].upper() }}
-                    {% endif %}
-                </div>
-                
-                <label for="fotoInput" class="btn-upload">
-                    Alterar foto do perfil
-                </label>
-                <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" style="display:none;" onchange="previewPhoto(event)">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Nome</label>
-                <input type="text" class="form-input" value="{{ usuario.nome_completo }}" disabled>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Nome de usuário</label>
-                <input type="text" class="form-input" value="{{ usuario.nome_completo.lower().replace(' ', '') }}" disabled>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Ocupação</label>
-                <input type="text" name="ocupacao" class="form-input" value="{{ perfil.ocupacao or '' }}" placeholder="Ex: Estudante de Medicina">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Biografia</label>
-                <textarea name="biografia" class="form-textarea" rows="3" maxlength="150" oninput="updateCharCount(this)">{{ perfil.biografia or '' }}</textarea>
-                <div class="char-count"><span id="charCount">{{ perfil.biografia|length if perfil.biografia else 0 }}</span>/150</div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn-action btn-secondary-profile" onclick="closeEditModal()">Cancelar</button>
-                <button type="submit" class="btn-action btn-primary-profile" id="saveBtn">Salvar</button>
-            </div>
-        </form>
+    <!-- Gamification Row -->
+    <div class="pf-gamif-row">
+      <div class="pf-gstat xp">
+        <span class="pf-gstat-v">⚡ {{ usuario.xp_total or 0 }}</span>
+        <div class="pf-gstat-l">XP Total</div>
+      </div>
+      <div class="pf-gstat lvl">
+        <span class="pf-gstat-v">★ Nv {{ usuario.nivel or 1 }}</span>
+        <div class="pf-gstat-l">Nível</div>
+      </div>
+      <div class="pf-gstat seq">
+        <span class="pf-gstat-v">🔥 {{ usuario.sequencia_dias or 0 }}d</span>
+        <div class="pf-gstat-l">Sequência</div>
+      </div>
+      <div class="pf-gstat dia">
+        <span class="pf-gstat-v">💎 {{ usuario.diamantes or 0 }}</span>
+        <div class="pf-gstat-l">Diamantes</div>
+      </div>
     </div>
-</div>
 
-</body>
+    <!-- XP Progress Section -->
+    <div class="pf-xp-section">
+      <div class="pf-xp-label">
+        <div class="pf-xp-current">
+          <span>⚡ {{ (usuario.xp_total or 0) % 1000 }} XP</span>
+          Progresso para Nível {{ (usuario.nivel or 1) + 1 }}
+        </div>
+        <div class="pf-xp-next">{{ 1000 - ((usuario.xp_total or 0) % 1000) }} XP restantes</div>
+      </div>
+      <div class="pf-xp-track">
+        <div class="pf-xp-fill" id="xpFill" style="width:0%"></div>
+      </div>
+      <div class="pf-xp-milestone">
+        <i class="fas fa-star"></i>
+        Complete simulados e publique conteúdos para ganhar XP
+      </div>
+    </div>
+
+    <!-- Badges -->
+    {% if badges is defined and badges %}
+    <div class="pf-badges-section">
+      <div class="pf-section-title">
+        Conquistas
+        <button class="pf-section-more">ver todas</button>
+      </div>
+      <div class="pf-badges-grid">
+        {% for ub in badges[:6] %}
+        <div class="pf-badge earned" title="{{ ub.badge.descricao }}">
+          <div class="pf-badge-ico">{{ ub.badge.icon or '🏆' }}</div>
+          <div class="pf-badge-name">{{ ub.badge.nome }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="pf-badges-section">
+      <div class="pf-section-title">Conquistas</div>
+      <div class="pf-badges-grid">
+        {% for ico,nome in [('📚','Estudante'),('🔥','Sequência'),('⚡','XP Mestre'),('🏆','Campeão'),('✏️','Escritor'),('🎯','Precisão')] %}
+        <div class="pf-badge locked" title="Conquista bloqueada">
+          <div class="pf-badge-ico">{{ ico }}</div>
+          <div class="pf-badge-name">{{ nome }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="pf-tabs">
+      <button class="pf-tab active" data-tab="grid" onclick="setTab(this)">
+        <i class="fas fa-th"></i>
+        <span class="pf-tab-n">{{ posts.total if posts is defined else 0 }}</span>
+      </button>
+      <button class="pf-tab" data-tab="list" onclick="setTab(this)">
+        <i class="fas fa-list"></i> Lista
+      </button>
+    </div>
+
+    <!-- Grid View -->
+    <div id="tabGrid">
+      {% if posts is defined and posts.items %}
+      <div class="pf-posts-grid">
+        {% for post in posts.items %}
+        <div class="pf-grid-cell" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=post.id) }}'">
+          {% if post.midia and post.midia.url %}
+            <img src="{{ post.midia.url }}" alt="" loading="lazy">
+          {% elif post.texto %}
+            <div class="pf-grid-txt">{{ post.texto[:70] }}{% if post.texto|length > 70 %}…{% endif %}</div>
+          {% endif %}
+          <div class="pf-grid-overlay">
+            <span><i class="fas fa-heart"></i> {{ post.total_likes or 0 }}</span>
+            <span><i class="far fa-comment"></i> {{ post.total_comentarios or 0 }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="pf-empty">
+        <i class="fas fa-camera"></i>
+        <p>{% if is_own_profile %}Compartilhe sua primeira publicação!{% else %}Ainda sem publicações.{% endif %}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- List View -->
+    <div id="tabList" style="display:none" class="pf-post-list">
+      {% if posts is defined and posts.items %}
+        {% for post in posts.items %}
+        <div class="pf-post-list-item" onclick="location.href='{{ url_for('helpzone.detalhes_post', post_id=post.id) }}'">
+          <div class="pf-pli-type"><i class="fas fa-{{ 'image' if post.tipo_midia == 'imagem' else 'video' if post.tipo_midia == 'video' else 'align-left' }}"></i> {{ post.tipo_midia or 'post' }}</div>
+          {% if post.midia and post.midia.url and post.midia.tipo == 'imagem' %}
+          <img src="{{ post.midia.url }}" alt="" class="pf-pli-img" loading="lazy">
+          {% endif %}
+          {% if post.texto %}
+          <div class="pf-pli-text">{{ post.texto }}</div>
+          {% endif %}
+          <div class="pf-pli-stats">
+            <span><i class="far fa-heart"></i> {{ post.total_likes or 0 }}</span>
+            <span><i class="far fa-comment"></i> {{ post.total_comentarios or 0 }}</span>
+            <span><i class="far fa-clock"></i> {{ post.data_criacao.strftime('%d/%m/%Y') }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="pf-empty">
+        <i class="fas fa-camera"></i>
+        <p>{% if is_own_profile %}Compartilhe sua primeira publicação!{% else %}Ainda sem publicações.{% endif %}</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div><!-- /.pf-layout -->
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="hz-bottomnav">
+  <button class="hz-bnav-item" onclick="location.href='{{ url_for('helpzone.feed') }}'"><i class="fas fa-home"></i></button>
+  <button class="hz-bnav-item" onclick="location.href='{{ url_for('helpzone.buscar_usuarios') }}'"><i class="fas fa-search"></i></button>
+  <button class="hz-bnav-item" onclick="location.href='{{ url_for('helpzone.notificacoes') }}'"><i class="far fa-bell"></i></button>
+  <button class="hz-bnav-item active" onclick="location.href='{{ url_for('helpzone.perfil_usuario', user_id=current_user.id) }}'"><i class="fas fa-user"></i></button>
+</nav>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Mobile Menu Scripts
-function openMobileMenu() {
-    document.getElementById('mobileMenu').classList.add('active');
-    document.getElementById('mobileMenuOverlay').classList.add('active');
-    document.body.style.overflow = 'hidden';
+'use strict';
+const XP_PCT = {{ [((usuario.xp_total or 0) % 1000) / 10, 100]|min|int }};
+
+function setTab(btn){
+  document.querySelectorAll('.pf-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const tab=btn.dataset.tab;
+  document.getElementById('tabGrid').style.display=tab==='grid'?'':'none';
+  document.getElementById('tabList').style.display=tab==='list'?'':'none';
 }
 
-function closeMobileMenu() {
-    document.getElementById('mobileMenu').classList.remove('active');
-    document.getElementById('mobileMenuOverlay').classList.remove('active');
-    document.body.style.overflow = '';
+function toast(msg,t=''){
+  let el=document.querySelector('.hz-toast');
+  if(!el){el=document.createElement('div');el.className='hz-toast';document.body.appendChild(el);}
+  el.textContent=msg;el.className='hz-toast '+t;void el.offsetWidth;
+  el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// Tab Switching with Smooth Transition
-function switchTab(tab) {
-    const tabContent = document.getElementById('tabContent');
-    const buttons = document.querySelectorAll('.tab-button');
-    
-    // Add switching class for smooth transition
-    tabContent.classList.add('switching');
-    
-    setTimeout(() => {
-        // Update active button
-        buttons.forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.tab === tab) {
-                btn.classList.add('active');
-            }
-        });
-        
-        // Update URL
-        const newUrl = `{{ url_for('helpzone.perfil_usuario', user_id=usuario.id) }}?tab=${tab}`;
-        window.location.href = newUrl;
-    }, 200);
-}
-
-// Profile Edit Modal
-function openEditModal() {
-    document.getElementById('editModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeEditModal() {
-    document.getElementById('editModal').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-// Character Counter
-function updateCharCount(textarea) {
-    document.getElementById('charCount').textContent = textarea.value.length;
-}
-
-// Photo Preview
-function previewPhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('avatarPreview');
-        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-    };
-    reader.readAsDataURL(file);
-}
-
-// Save Profile
-document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const saveBtn = document.getElementById('saveBtn');
-    
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-    
-    try {
-        const response = await fetch('/helpzone/api/perfil/editar', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Erro ao salvar perfil.');
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Erro de conexão.');
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = 'Salvar';
+{% if not is_own_profile %}
+let seguindo = {{ 'true' if esta_seguindo else 'false' }};
+async function toggleFollow(){
+  try{
+    const r=await fetch(`/helpzone/api/seguir/{{ usuario.id }}`,{method:'POST',headers:{'Content-Type':'application/json'}});
+    const d=await r.json();
+    if(d.success){
+      seguindo=d.action==='seguiu';
+      document.getElementById('followTxt').textContent=seguindo?'Seguindo':'Seguir';
+      document.querySelector('#followBtn i').className=`fas fa-user-${seguindo?'check':'plus'}`;
+      document.getElementById('followBtn').className=`pf-btn ${seguindo?'secondary':'primary'}`;
+      toast(seguindo?'Agora você está seguindo!':'Deixou de seguir',seguindo?'ok':'');
     }
-});
-
-// Follow/Unfollow
-async function toggleFollow(userId) {
-    const btnDesktop = document.getElementById('followBtn');
-    const btnMobile = document.getElementById('followBtnMobile');
-    const followersDesktop = document.getElementById('followersCount');
-    const followersMobile = document.getElementById('followersCountMobile');
-    
-    try {
-        const response = await fetch(`/helpzone/api/user/${userId}/follow`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const currentCount = parseInt(followersDesktop.textContent);
-            const newCount = data.seguindo ? currentCount + 1 : Math.max(0, currentCount - 1);
-            
-            // Update desktop
-            if (btnDesktop) {
-                btnDesktop.className = data.seguindo ? 'following-btn' : 'follow-btn';
-                btnDesktop.textContent = data.seguindo ? 'Seguindo' : 'Seguir';
-            }
-            
-            // Update mobile
-            if (btnMobile) {
-                btnMobile.className = data.seguindo ? 'following-btn' : 'follow-btn';
-                btnMobile.textContent = data.seguindo ? 'Seguindo' : 'Seguir';
-            }
-            
-            // Update counts
-            followersDesktop.textContent = newCount;
-            if (followersMobile) followersMobile.textContent = newCount;
-        }
-    } catch (error) {
-        console.error(error);
-    }
+  }catch{toast('Erro','err');}
 }
+{% endif %}
 
-// Close modal on outside click
-document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeEditModal();
-    }
+document.addEventListener('DOMContentLoaded',()=>{
+  // XP bar animation
+  setTimeout(()=>{
+    const fill=document.getElementById('xpFill');
+    if(fill)fill.style.width=XP_PCT+'%';
+  },300);
 });
 </script>
 {% endblock %}
