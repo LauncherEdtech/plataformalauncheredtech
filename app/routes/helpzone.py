@@ -49,6 +49,27 @@ def conceder_xp_social(acao, descricao=''):
         current_app.logger.warning(f"[HELPZONE_XP] Falha ao conceder XP ({acao}): {e}")
 
 
+XP_SOCIAL_REWARD = {
+    'criar_post': 15,
+    'criar_story': 8,
+    'comentar': 5,
+    'receber_like': 2,
+    'seguir_usuario': 3,
+    'postar_progresso': 12,
+}
+
+
+def conceder_xp_social(acao, descricao=''):
+    """Concede XP social aproveitando a infraestrutura já existente da Launcher."""
+    quantidade = XP_SOCIAL_REWARD.get(acao, 0)
+    if quantidade <= 0:
+        return
+    try:
+        current_user.adicionar_xp(quantidade, atividade='helpzone_social', descricao=descricao or acao)
+    except Exception as e:
+        current_app.logger.warning(f"[HelpZone] Falha ao conceder XP social ({acao}): {e}")
+
+
 def allowed_file(filename, allowed_extensions):
     """Verifica se a extensão do arquivo é permitida"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
@@ -361,6 +382,9 @@ def like_post(post_id):
                 perfil_autor.total_likes_recebidos += 1
 
     db.session.commit()
+
+    if tipo == 'like' and post.user_id == current_user.id:
+        conceder_xp_social('receber_like', 'Post recebeu curtida')
 
     return jsonify({
         'success': True,
