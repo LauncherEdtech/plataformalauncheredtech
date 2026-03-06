@@ -713,6 +713,16 @@ body {
     background-size: 1000px 100%;
     animation: shimmer 2s infinite;
 }
+
+.inp {
+    width: 100%;
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(0,0,0,.45);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: .9rem;
+}
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -777,6 +787,11 @@ body {
                 <i class="fas fa-sync-alt"></i>
                 Trocar Arquivo
             </button>
+        </div>
+
+        <div style="position:absolute;left:12px;right:12px;bottom:24px;display:grid;gap:8px;z-index:9">
+            <input id="story-texto-curto" class="inp" maxlength="220" placeholder="Texto curto (opcional)">
+            <input id="story-meta-dia" class="inp" maxlength="180" placeholder="Meta do dia (opcional)">
         </div>
 
         <!-- Loading -->
@@ -942,6 +957,9 @@ async function publicarStory() {
     const formData = new FormData();
     formData.append('arquivo', selectedFile);
     formData.append('tipo', fileType);
+    formData.append('texto_curto', document.getElementById('story-texto-curto').value || '');
+    formData.append('meta_dia', document.getElementById('story-meta-dia').value || '');
+    formData.append('checkin_rapido', 'true');
 
     try {
         console.log('Enviando para servidor...');
