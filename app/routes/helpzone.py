@@ -113,12 +113,40 @@ def feed():
         lida=False
     ).count()
 
+    feed_seed = []
+    for p in posts.items:
+        feed_seed.append({
+            'id': p.id,
+            'author': {
+                'name': p.user.nome_completo if p.user else 'Anônimo',
+                'initials': (p.user.nome_completo[:2].upper() if p.user and p.user.nome_completo else 'ST'),
+                'handle': f"@{(p.user.nome_completo or 'aluno').split()[0].lower()}" if p.user else '@aluno',
+                'level': getattr(p.user, 'nivel', 1) if p.user else 1,
+                'is_me': p.user_id == current_user.id,
+            },
+            'subject': p.materia or 'Geral',
+            'text': p.texto or '',
+            'link': p.link_url or '',
+            'createdAt': int(p.data_criacao.timestamp() * 1000),
+            'likes': p.total_likes or 0,
+            'likedByMe': p.user_liked(current_user.id),
+            'commentsCount': p.total_comentarios or 0,
+        })
+
+    user_seed = {
+        'name': current_user.nome_completo or 'Estudante',
+        'handle': f"@{(current_user.nome_completo or 'aluno').split()[0].lower()}",
+        'initials': ((current_user.nome_completo or 'EU')[:2].upper()),
+    }
+
     return render_template(
         'helpzone/feed.html',
         posts=posts,
         tipo_feed=tipo_feed,
         stats=stats,
-        notificacoes_count=notificacoes_count
+        notificacoes_count=notificacoes_count,
+        feed_seed=feed_seed,
+        user_seed=user_seed,
     )
 
 
@@ -333,6 +361,9 @@ def like_post(post_id):
                 perfil_autor.total_likes_recebidos += 1
 
     db.session.commit()
+
+    if tipo == 'like' and post.user_id == current_user.id:
+        conceder_xp_social('receber_like', 'Post recebeu curtida')
 
     return jsonify({
         'success': True,
