@@ -114,7 +114,7 @@ def enviar_notificacao_usuario(
                             tag=tag,
                             require_interaction=False,
                         ),
-                        fcm_options=messaging.WebpushFCMOptions(link=url),
+                        fcm_options=messaging.WebpushFCMOptions(link='https://plataformalauncher.com.br' + url),
                     ),
                     token=token,
                 )

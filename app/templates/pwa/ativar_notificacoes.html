@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8b5cf6">
+    <title>Ativar Notificações - Launcher</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#000;
+            color:#fff;
+            font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height:100vh;
+            padding:24px;
+        }
+        .card {
+            background:#0a0a1a;
+            border:1px solid #8b5cf6;
+            border-radius:24px;
+            padding:40px 28px;
+            max-width:400px;
+            width:100%;
+            text-align:center;
+            margin:0 auto 24px;
+        }
+        .icon { font-size:64px; margin-bottom:20px; }
+        h1 { font-size:22px; margin-bottom:10px; }
+        .sub { color:#a3a3a3; font-size:14px; line-height:1.7; margin-bottom:32px; }
+        .btn-ativar {
+            background:linear-gradient(135deg, #8b5cf6, #6366f1);
+            color:white;
+            border:none;
+            border-radius:14px;
+            padding:16px;
+            font-size:16px;
+            font-weight:700;
+            cursor:pointer;
+            width:100%;
+            margin-bottom:12px;
+            transition:opacity 0.2s;
+        }
+        .btn-ativar:hover { opacity:0.9; }
+        .btn-ativar:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn-voltar {
+            background:transparent;
+            color:#a3a3a3;
+            border:1px solid #333;
+            border-radius:14px;
+            padding:12px;
+            font-size:14px;
+            cursor:pointer;
+            width:100%;
+            text-decoration:none;
+            display:block;
+        }
+        #msg { font-size:13px; min-height:20px; margin-bottom:12px; line-height:1.5; }
+        .msg-ok { color:#22c55e; }
+        .msg-erro { color:#f59e0b; }
+        .msg-info { color:#a3a3a3; }
+        .instrucoes {
+            display:none;
+            background:#1a1a2e;
+            border:1px solid #f59e0b;
+            border-radius:12px;
+            padding:16px;
+            text-align:left;
+            margin-bottom:12px;
+            font-size:13px;
+            color:#a3a3a3;
+            line-height:1.8;
+        }
+        .instrucoes strong { color:#fff; }
+
+        /* LOG PANEL */
+        .log-panel {
+            max-width:400px;
+            margin:0 auto;
+            background:#0a0a0a;
+            border:1px solid #262626;
+            border-radius:16px;
+            overflow:hidden;
+        }
+        .log-header {
+            background:#111;
+            padding:10px 16px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom:1px solid #262626;
+        }
+        .log-header span { font-size:12px; color:#a3a3a3; font-weight:600; letter-spacing:0.05em; }
+        .log-clear { background:transparent; border:1px solid #333; color:#a3a3a3; border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; }
+        .log-body {
+            padding:12px;
+            max-height:300px;
+            overflow-y:auto;
+            font-family: 'Courier New', monospace;
+            font-size:11px;
+            line-height:1.7;
+        }
+        .log-line { margin-bottom:4px; word-break:break-all; }
+        .log-info { color:#60a5fa; }
+        .log-ok { color:#22c55e; }
+        .log-warn { color:#f59e0b; }
+        .log-err { color:#ef4444; }
+        .log-time { color:#4b5563; margin-right:6px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="icon">🔔</div>
+    <h1>Ativar Notificações</h1>
+    <p class="sub">Receba alertas em tempo real sobre seus estudos, simulados e novidades da plataforma.</p>
+
+    <div id="msg" class="msg-info">Verificando suporte...</div>
+
+    <div class="instrucoes" id="instrucoes-bloqueado">
+        <strong>Notificações bloqueadas</strong><br>
+        Para desbloquear:<br>
+        1. Clique no 🔒 cadeado na barra de endereço<br>
+        2. Notificações → <strong>Permitir</strong><br>
+        3. Recarregue esta página
+    </div>
+
+    <button class="btn-ativar" id="btn-ativar">🔔 Ativar Notificações</button>
+    <a href="/dashboard" class="btn-voltar">Voltar ao início</a>
+</div>
+
+<!-- LOG PANEL -->
+<div class="log-panel">
+    <div class="log-header">
+        <span>📋 LOGS DE DIAGNÓSTICO</span>
+        <button class="log-clear" onclick="limparLogs()">Limpar</button>
+    </div>
+    <div class="log-body" id="log-body">
+        <div class="log-line log-info"><span class="log-time">--:--:--</span>Iniciando diagnóstico...</div>
+    </div>
+</div>
+
+<script type="module">
+    const btn = document.getElementById('btn-ativar');
+    const msg = document.getElementById('msg');
+    const instrucoes = document.getElementById('instrucoes-bloqueado');
+    const logBody = document.getElementById('log-body');
+
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyDsymFEW3dOAZIktTqq1aBl1A3ieqmqc_8",
+        authDomain: "launcher-educacao.firebaseapp.com",
+        projectId: "launcher-educacao",
+        storageBucket: "launcher-educacao.firebasestorage.app",
+        messagingSenderId: "411831431678",
+        appId: "1:411831431678:web:e648587d06a165c79190af",
+    };
+    const VAPID_KEY = "BL6LH47A1OVQuOX5_Y3eGAW_nT_2pyfv9jiiCZHT9CkugzUdBvSJ6qSXhMpcf3FuYV7aExKhwXiwMD732uItw8o";
+
+    // ── Logger visual ──
+    function log(tipo, texto) {
+        const agora = new Date();
+        const hora = agora.toTimeString().substring(0, 8);
+        const div = document.createElement('div');
+        div.className = `log-line log-${tipo}`;
+        div.innerHTML = `<span class="log-time">${hora}</span>${texto}`;
+        logBody.appendChild(div);
+        logBody.scrollTop = logBody.scrollHeight;
+        console.log(`[${tipo.toUpperCase()}] ${texto}`);
+    }
+
+    window.limparLogs = function() {
+        logBody.innerHTML = '';
+        log('info', 'Logs limpos.');
+    };
+
+    // ── Diagnóstico inicial ──
+    function diagnostico() {
+        log('info', `UA: ${navigator.userAgent.substring(0, 100)}`);
+        log('info', `ServiceWorker suportado: ${'serviceWorker' in navigator}`);
+        log('info', `Notification suportado: ${'Notification' in window}`);
+
+        if (!('Notification' in window)) {
+            log('err', 'Notificações NÃO suportadas neste navegador.');
+            msg.textContent = 'Seu navegador não suporta notificações.';
+            msg.className = 'msg-erro';
+            btn.disabled = true;
+            return;
+        }
+
+        log('info', `Notification.permission: "${Notification.permission}"`);
+
+        if (Notification.permission === 'granted') {
+            log('ok', 'Permissão já concedida! Registrando token automaticamente...');
+            msg.textContent = '✅ Permissão já ativa. Registrando dispositivo...';
+            msg.className = 'msg-ok';
+            btn.textContent = '⟳ Registrando...';
+            btn.disabled = true;
+            ativarNotificacoes();
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            log('err', 'Permissão BLOQUEADA. Usuário deve desbloquear manualmente.');
+            msg.textContent = 'Notificações bloqueadas. Siga as instruções:';
+            msg.className = 'msg-erro';
+            instrucoes.style.display = 'block';
+            btn.disabled = true;
+            return;
+        }
+
+        log('info', 'Permissão "default". Aguardando clique do usuário.');
+        msg.textContent = 'Clique no botão para ativar as notificações.';
+        msg.className = 'msg-info';
+    }
+
+    async function ativarNotificacoes() {
+        btn.disabled = true;
+        btn.textContent = 'Aguarde...';
+
+        try {
+            // PASSO 1: Registrar SW principal
+            log('info', 'PASSO 1: Registrando sw.js...');
+            if ('serviceWorker' in navigator) {
+                try {
+                    const swMain = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                    log('ok', `sw.js OK. State: ${swMain.active?.state || 'installing'}`);
+                } catch(e) {
+                    log('warn', `sw.js falhou (não crítico): ${e.message}`);
+                }
+            }
+
+            // PASSO 2: Pedir permissão
+            log('info', 'PASSO 2: Solicitando permissão...');
+            const permissao = await Notification.requestPermission();
+            log(permissao === 'granted' ? 'ok' : 'err', `Permissão: "${permissao}"`);
+
+            if (permissao !== 'granted') {
+                msg.textContent = 'Permissão negada. Ative nas configurações do navegador.';
+                msg.className = 'msg-erro';
+                instrucoes.style.display = 'block';
+                btn.textContent = '🔔 Tentar novamente';
+                btn.disabled = false;
+                return;
+            }
+
+            // PASSO 3: Registrar SW do Firebase (sem scope customizado)
+            log('info', 'PASSO 3: Registrando firebase-messaging-sw.js...');
+            let swFirebase;
+            try {
+                swFirebase = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                log('ok', `firebase-messaging-sw.js OK. Scope: ${swFirebase.scope}`);
+            } catch(e) {
+                log('err', `Erro no firebase-messaging-sw.js: ${e.message}`);
+                throw e;
+            }
+
+            // PASSO 4: Aguardar SW ativo
+            log('info', 'PASSO 4: Aguardando SW ready...');
+            await navigator.serviceWorker.ready;
+            log('ok', 'SW ready.');
+
+            // PASSO 5: Inicializar Firebase
+            log('info', 'PASSO 5: Inicializando Firebase...');
+            const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
+            const firebaseApp = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
+            const messaging = getMessaging(firebaseApp);
+            log('ok', 'Firebase inicializado.');
+
+            // PASSO 6: Obter token FCM
+            log('info', 'PASSO 6: Obtendo token FCM...');
+            log('info', `VAPID: ${VAPID_KEY.substring(0, 20)}...`);
+            log('info', `SW scope: ${swFirebase.scope}`);
+
+            const token = await getToken(messaging, {
+                vapidKey: VAPID_KEY,
+                serviceWorkerRegistration: swFirebase,
+            });
+
+            if (!token) {
+                log('err', 'Token FCM vazio.');
+                msg.textContent = 'Não foi possível gerar o token. Tente novamente.';
+                msg.className = 'msg-erro';
+                btn.disabled = false;
+                btn.textContent = '🔔 Tentar novamente';
+                return;
+            }
+
+            log('ok', `Token: ${token.substring(0, 40)}...`);
+
+            // PASSO 7: Salvar no servidor
+            log('info', 'PASSO 7: Salvando token no servidor...');
+            const plataforma = /android/i.test(navigator.userAgent) ? 'android'
+                : /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : 'desktop';
+            log('info', `Plataforma detectada: ${plataforma}`);
+
+            const response = await fetch('/pwa/salvar-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, plataforma, user_agent: navigator.userAgent }),
+            });
+
+            log('info', `HTTP: ${response.status} ${response.statusText}`);
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                log('err', `Resposta não-JSON! Content-Type: ${contentType}`);
+                throw new Error(`Servidor retornou status ${response.status} sem JSON`);
+            }
+
+            const data = await response.json();
+            log(data.success ? 'ok' : 'err', `Servidor: ${JSON.stringify(data)}`);
+
+            if (data.success) {
+                msg.textContent = '🎉 Notificações ativadas com sucesso!';
+                msg.className = 'msg-ok';
+                btn.textContent = '✅ Ativado!';
+                localStorage.setItem('notif_permission_asked', 'true');
+                log('ok', '✅ CONCLUÍDO! Redirecionando em 3s...');
+                setTimeout(() => window.location.href = '/dashboard', 3000);
+            } else {
+                log('err', `Erro servidor: ${data.error}`);
+                msg.textContent = 'Erro: ' + (data.error || 'tente novamente');
+                msg.className = 'msg-erro';
+                btn.disabled = false;
+                btn.textContent = '🔔 Tentar novamente';
+            }
+
+        } catch (err) {
+            log('err', `EXCEÇÃO: ${err.name}: ${err.message}`);
+            if (err.stack) log('err', `Stack: ${err.stack.substring(0, 300)}`);
+            msg.textContent = 'Erro: ' + err.message;
+            msg.className = 'msg-erro';
+            btn.disabled = false;
+            btn.textContent = '🔔 Tentar novamente';
+        }
+    }
+
+    btn.addEventListener('click', ativarNotificacoes);
+    diagnostico();
+</script>
+</body>
+</html>

@@ -27,7 +27,7 @@ async function registrarServiceWorker() {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
-    console.log('[PWA] Service Worker registrado com sucesso. Scope:', registration.scope);
+    console.log('[PWA] Service Worker registrado. Scope:', registration.scope);
     setInterval(() => registration.update(), 60 * 1000);
     return registration;
   } catch (err) {
@@ -46,11 +46,15 @@ async function inicializarFCM() {
   }
 
   try {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
     const { getMessaging, onMessage } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
 
-    const app = initializeApp(FIREBASE_CONFIG);
-    const messaging = getMessaging(app);
+    // Evita inicializar o Firebase duas vezes
+    const firebaseApp = getApps().length === 0
+      ? initializeApp(FIREBASE_CONFIG)
+      : getApps()[0];
+
+    const messaging = getMessaging(firebaseApp);
 
     onMessage(messaging, (payload) => {
       console.log('[FCM] Mensagem em foreground:', payload);
@@ -71,6 +75,14 @@ async function solicitarPermissaoNotificacao(messaging) {
   if (!messaging) return;
 
   try {
+    // ✅ Se já está bloqueado pelo usuário, orienta sem tentar requestPermission
+    // (requestPermission com 'denied' retorna 'denied' sem mostrar nenhum prompt)
+    if (Notification.permission === 'denied') {
+      console.warn('[FCM] Permissão bloqueada. Usuário precisa habilitar manualmente.');
+      mostrarAvisoPermissaoBloqueada();
+      return;
+    }
+
     const permissao = await Notification.requestPermission();
 
     if (permissao !== 'granted') {
@@ -83,7 +95,10 @@ async function solicitarPermissaoNotificacao(messaging) {
     const { getToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
 
     // Aguarda o SW estar pronto antes de pedir token
-    const swRegistration = await navigator.serviceWorker.ready;
+const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+    scope: '/firebase-cloud-messaging-push-scope'
+});
+await navigator.serviceWorker.ready;
 
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
@@ -91,18 +106,65 @@ async function solicitarPermissaoNotificacao(messaging) {
     });
 
     if (token) {
-      console.log('[FCM] Token obtido:', token);
+      console.log('[FCM] Token obtido:', token.substring(0, 30) + '...');
       await salvarTokenNoServidor(token);
     } else {
       console.warn('[FCM] Nenhum token gerado. Verifique a configuração VAPID.');
     }
   } catch (err) {
-    console.error('[FCM] Erro ao solicitar permissão:', err);
+    console.error('[FCM] Erro ao solicitar permissão/token:', err);
   }
 }
 
 // ─────────────────────────────────────────────
-// 4. ENVIAR TOKEN PARA O BACKEND FLASK
+// 4. AVISO QUANDO PERMISSÃO ESTÁ BLOQUEADA
+// ─────────────────────────────────────────────
+function mostrarAvisoPermissaoBloqueada() {
+  // Não duplica
+  if (document.getElementById('pwa-notif-bloqueada')) return;
+
+  const aviso = document.createElement('div');
+  aviso.id = 'pwa-notif-bloqueada';
+  aviso.style.cssText = `
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    border: 1px solid #f59e0b;
+    border-radius: 14px;
+    padding: 16px 20px;
+    max-width: 340px;
+    width: 90%;
+    z-index: 9999;
+    text-align: center;
+    color: white;
+    font-size: 13px;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+    animation: pwaFadeIn 0.3s ease;
+  `;
+  aviso.innerHTML = `
+    <style>
+      @keyframes pwaFadeIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+    </style>
+    <div style="font-size:28px; margin-bottom:8px;">🔕</div>
+    <strong style="font-size:14px;">Notificações bloqueadas</strong>
+    <p style="color:#a3a3a3; margin:8px 0 0; line-height:1.5;">
+      Para ativar, clique no <strong style="color:white;">🔒 cadeado</strong> na barra de endereço
+      → <strong style="color:white;">Notificações</strong> → <strong style="color:white;">Permitir</strong>
+      e recarregue a página.
+    </p>
+    <button onclick="document.getElementById('pwa-notif-bloqueada').remove()"
+      style="margin-top:12px; background:#f59e0b; color:#000; border:none; border-radius:8px; padding:8px 20px; font-weight:600; cursor:pointer; font-size:13px;">
+      Entendi
+    </button>
+  `;
+  document.body.appendChild(aviso);
+  setTimeout(() => aviso?.remove(), 20000);
+}
+
+// ─────────────────────────────────────────────
+// 5. ENVIAR TOKEN PARA O BACKEND FLASK
 // ─────────────────────────────────────────────
 async function salvarTokenNoServidor(token) {
   try {
@@ -119,9 +181,16 @@ async function salvarTokenNoServidor(token) {
       }),
     });
 
+    // Verifica se a resposta é JSON antes de parsear
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.error('[FCM] Servidor retornou resposta não-JSON. Status:', response.status);
+      return;
+    }
+
     const data = await response.json();
     if (data.success) {
-      console.log('[FCM] Token salvo no servidor com sucesso!');
+      console.log('[FCM] ✅ Token salvo no servidor com sucesso!');
     } else {
       console.warn('[FCM] Erro ao salvar token:', data.error);
     }
@@ -131,7 +200,7 @@ async function salvarTokenNoServidor(token) {
 }
 
 // ─────────────────────────────────────────────
-// 5. NOTIFICAÇÃO EM FOREGROUND (app aberto)
+// 6. NOTIFICAÇÃO EM FOREGROUND (app aberto)
 // ─────────────────────────────────────────────
 function mostrarNotificacaoForeground(payload) {
   const title = payload.notification?.title || 'Launcher Educação';
@@ -144,7 +213,6 @@ function mostrarNotificacaoForeground(payload) {
   toast.innerHTML = `
     <div class="toast show" role="alert" style="background:#1a1a2e; border:1px solid #8b5cf6; color:white;">
       <div class="toast-header" style="background:#0a0a1a; color:white; border-bottom:1px solid #8b5cf6;">
-        <img src="/static/images/icons/icon-72x72.png" class="rounded me-2" alt="Launcher" width="20" height="20">
         <strong class="me-auto">${title}</strong>
         <button type="button" class="btn-close btn-close-white" onclick="this.closest('.position-fixed').remove()"></button>
       </div>
@@ -159,12 +227,10 @@ function mostrarNotificacaoForeground(payload) {
 }
 
 // ─────────────────────────────────────────────
-// 6. BOTÃO FIXO DE INSTALAÇÃO (FAB)
-// Persiste na tela e reabre o prompt sempre que disponível
+// 7. BOTÃO FIXO DE INSTALAÇÃO (FAB)
 // ─────────────────────────────────────────────
 let deferredInstallPrompt = null;
 
-// Captura o prompt e guarda — Chrome só dispara uma vez por sessão
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
@@ -172,11 +238,8 @@ window.addEventListener('beforeinstallprompt', (event) => {
 });
 
 function mostrarBotaoInstalacao() {
-  // Não mostra se já instalou
   if (localStorage.getItem('pwa_instalado')) return;
-  // Não mostra se já está rodando como PWA instalado
   if (window.matchMedia('(display-mode: standalone)').matches) return;
-  // Não mostra se já existe na tela
   if (document.getElementById('pwa-fab-install')) return;
 
   const fab = document.createElement('div');
@@ -214,13 +277,11 @@ function mostrarBotaoInstalacao() {
 
   document.body.appendChild(fab);
 
-  // Botão X — apenas fecha o FAB (não impede reinstalação futura)
   document.getElementById('pwa-fab-close').addEventListener('click', (e) => {
     e.stopPropagation();
     fab.remove();
   });
 
-  // Clique principal — abre prompt ou redireciona para instrução manual
   fab.addEventListener('click', async (e) => {
     if (e.target.id === 'pwa-fab-close') return;
     await instalarPWA();
@@ -229,11 +290,9 @@ function mostrarBotaoInstalacao() {
 
 async function instalarPWA() {
   if (deferredInstallPrompt) {
-    // Chrome Android: abre o prompt nativo diretamente
     deferredInstallPrompt.prompt();
     const { outcome } = await deferredInstallPrompt.userChoice;
     console.log('[PWA] Resultado da instalação:', outcome);
-
     if (outcome === 'accepted') {
       localStorage.setItem('pwa_instalado', 'true');
       const fab = document.getElementById('pwa-fab-install');
@@ -241,7 +300,6 @@ async function instalarPWA() {
     }
     deferredInstallPrompt = null;
   } else {
-    // Sem prompt (usuário recusou antes ou iOS): abre página de instruções
     window.location.href = '/instalar-app';
   }
 }
@@ -254,7 +312,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 // ─────────────────────────────────────────────
-// 7. UTILITÁRIOS
+// 8. UTILITÁRIOS
 // ─────────────────────────────────────────────
 function obterCSRFToken() {
   const meta = document.querySelector('meta[name="csrf-token"]');
@@ -269,43 +327,49 @@ function detectarPlataforma() {
 }
 
 // ─────────────────────────────────────────────
-// 8. INICIALIZAÇÃO PRINCIPAL
+// 9. INICIALIZAÇÃO PRINCIPAL
 // ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
 
   // Registra Service Worker
   await registrarServiceWorker();
 
-  // Botão fixo de instalação aparece após 3s (em todas as páginas)
+  // Botão fixo de instalação aparece após 3s
   setTimeout(mostrarBotaoInstalacao, 3000);
 
   // FCM só para usuários logados
   const isLoggedIn = document.body.dataset.loggedIn === 'true';
+  if (!isLoggedIn) return;
 
-  if (isLoggedIn) {
-    const messaging = await inicializarFCM();
+  const messaging = await inicializarFCM();
+  if (!messaging) return;
 
+  if (Notification.permission === 'granted') {
+    // ✅ Permissão já concedida — gera/atualiza token imediatamente
+    await solicitarPermissaoNotificacao(messaging);
+
+  } else if (Notification.permission === 'denied') {
+    // ✅ Bloqueado — não tenta pedir, não mostra modal
+    console.warn('[FCM] Notificações bloqueadas pelo usuário nas configurações do navegador.');
+
+  } else {
+    // permission === 'default' — nunca perguntou ainda
     const jaSolicitouPermissao = localStorage.getItem('notif_permission_asked');
-
-    if (!jaSolicitouPermissao && Notification.permission === 'default') {
-      // Modal de permissão aparece após 5s (reduzido de 30s)
+    if (!jaSolicitouPermissao) {
       setTimeout(() => {
         mostrarModalPermissaoNotificacao(messaging);
       }, 5000);
-
-    } else if (Notification.permission === 'granted') {
-      // Já tem permissão — só atualiza o token se necessário
-      await solicitarPermissaoNotificacao(messaging);
     }
   }
 });
 
 // ─────────────────────────────────────────────
-// 9. MODAL CUSTOMIZADO PARA PERMISSÃO DE NOTIFICAÇÃO
+// 10. MODAL CUSTOMIZADO PARA PERMISSÃO DE NOTIFICAÇÃO
 // ─────────────────────────────────────────────
 function mostrarModalPermissaoNotificacao(messaging) {
-  // Não mostra se já pediu antes
   if (localStorage.getItem('notif_permission_asked')) return;
+  // Nunca mostra se já está bloqueado
+  if (Notification.permission === 'denied') return;
 
   const modal = document.createElement('div');
   modal.id = 'pwa-notif-modal';
@@ -356,11 +420,13 @@ function mostrarModalPermissaoNotificacao(messaging) {
 }
 
 // ─────────────────────────────────────────────
-// Expõe funções globalmente
+// Expõe funções globalmente (útil para debug no console)
 // ─────────────────────────────────────────────
 window.launcherPWA = {
   instalarPWA,
   solicitarPermissaoNotificacao,
   mostrarModalPermissaoNotificacao,
   mostrarBotaoInstalacao,
+  mostrarAvisoPermissaoBloqueada,
+  inicializarFCM,
 };

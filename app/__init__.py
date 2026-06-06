@@ -407,10 +407,26 @@ def create_app(config_name=None):
         response.headers['Cache-Control'] = 'no-cache'
         return response
 
+
+
+
     @app.route('/offline')
     def offline_page():
         from flask import render_template
         return render_template('pwa/offline.html')
+
+    @app.route('/instalar-app')
+    def instalar_app():
+        from flask import render_template
+        return render_template('pwa/instalar.html')
+
+
+    @app.route('/ativar-notificacoes')
+    def ativar_notificacoes():
+        from flask import render_template
+        return render_template('pwa/ativar_notificacoes.html')
+
+
 
     app.logger.info("🚀 Aplicação Flask criada com sucesso")
     return app
